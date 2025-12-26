@@ -20,9 +20,60 @@ Thumbs.db
 # Environment
 .env
 .env.local
+.env.*.local
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 venv/
+.pytest_cache/
+*.egg-info/
+.eggs/
+
+# Node.js / Frontend
+node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+
+# Vite
+.vite/
+
+# pnpm
+.pnpm-store/
+
+# Backend Python
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.env
+backend/logs/
+
+# Frontend iGreenApp
+iGreenApp/.env.local
+iGreenApp/dist/
+iGreenApp/.vite/
+iGreenApp/coverage/
+
+# Frontend iGreenticketing
+iGreenticketing/.env.local
+iGreenticketing/dist/
+iGreenticketing/.vite/
+iGreenticketing/coverage/
+
+# OpenSpec
+openspec/.cache/
+openspec/output/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Misc
+*.swp
+*.swo
+*~
+.fleet/

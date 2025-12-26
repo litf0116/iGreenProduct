@@ -1,0 +1,487 @@
+import { useState } from "react";
+import { SLAConfig, ProblemType, SiteLevelConfig, Priority } from "../lib/types";
+import { translations, TranslationKey, Language } from "../lib/i18n";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "./ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { Edit, Plus, Trash2, Settings, Clock, AlertTriangle, MapPin } from "lucide-react";
+
+interface SystemSettingsProps {
+  language: Language;
+  slaConfigs: SLAConfig[];
+  problemTypes: ProblemType[];
+  siteLevelConfigs: SiteLevelConfig[];
+  onUpdateSLA: (config: SLAConfig) => void;
+  onAddProblemType: (type: ProblemType) => void;
+  onUpdateProblemType: (type: ProblemType) => void;
+  onDeleteProblemType: (id: string) => void;
+  onAddSiteLevel: (level: SiteLevelConfig) => void;
+  onUpdateSiteLevel: (level: SiteLevelConfig) => void;
+  onDeleteSiteLevel: (id: string) => void;
+}
+
+export function SystemSettings({
+  language,
+  slaConfigs,
+  problemTypes,
+  siteLevelConfigs,
+  onUpdateSLA,
+  onAddProblemType,
+  onUpdateProblemType,
+  onDeleteProblemType,
+  onAddSiteLevel,
+  onUpdateSiteLevel,
+  onDeleteSiteLevel,
+}: SystemSettingsProps) {
+  const t = (key: TranslationKey) => translations[language][key];
+  const [activeTab, setActiveTab] = useState("sla");
+
+  // Delete Confirmation State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState<"problem" | "level" | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  // Dialog States
+  const [showProblemDialog, setShowProblemDialog] = useState(false);
+  const [editingProblem, setEditingProblem] = useState<ProblemType | null>(null);
+  const [problemForm, setProblemForm] = useState({ name: "", description: "" });
+
+  const [showLevelDialog, setShowLevelDialog] = useState(false);
+  const [editingLevel, setEditingLevel] = useState<SiteLevelConfig | null>(null);
+  const [levelForm, setLevelForm] = useState({ name: "", description: "", slaMultiplier: 1 });
+
+  const [editingSLA, setEditingSLA] = useState<SLAConfig | null>(null);
+  const [showSLADialog, setShowSLADialog] = useState(false);
+  const [slaForm, setSLAForm] = useState({ responseTime: 0, resolutionTime: 0 });
+
+  // Handlers
+  const handleOpenProblemDialog = (type?: ProblemType) => {
+    if (type) {
+      setEditingProblem(type);
+      setProblemForm({ name: type.name, description: type.description });
+    } else {
+      setEditingProblem(null);
+      setProblemForm({ name: "", description: "" });
+    }
+    setShowProblemDialog(true);
+  };
+
+  const handleSaveProblem = () => {
+    if (!problemForm.name) return;
+    
+    // Backend Integration: Create or Update Problem Type
+    // API: POST /api/problem-types (Create) or PUT /api/problem-types/:id (Update)
+    if (editingProblem) {
+      onUpdateProblemType({ ...editingProblem, ...problemForm });
+    } else {
+      onAddProblemType({ id: `PT${Date.now()}`, ...problemForm });
+    }
+    setShowProblemDialog(false);
+  };
+
+  const handleOpenLevelDialog = (level?: SiteLevelConfig) => {
+    if (level) {
+      setEditingLevel(level);
+      setLevelForm({ name: level.name, description: level.description, slaMultiplier: level.slaMultiplier });
+    } else {
+      setEditingLevel(null);
+      setLevelForm({ name: "", description: "", slaMultiplier: 1 });
+    }
+    setShowLevelDialog(true);
+  };
+
+  const handleSaveLevel = () => {
+    if (!levelForm.name) return;
+    
+    // Backend Integration: Create or Update Site Level
+    // API: POST /api/site-levels (Create) or PUT /api/site-levels/:id (Update)
+    if (editingLevel) {
+      onUpdateSiteLevel({ ...editingLevel, ...levelForm });
+    } else {
+      onAddSiteLevel({ id: `SL${Date.now()}`, ...levelForm });
+    }
+    setShowLevelDialog(false);
+  };
+
+  const handleOpenSLADialog = (config: SLAConfig) => {
+    setEditingSLA(config);
+    setSLAForm({ responseTime: config.responseTime, resolutionTime: config.resolutionTime });
+    setShowSLADialog(true);
+  };
+
+  const handleSaveSLA = () => {
+    if (editingSLA) {
+      // Backend Integration: Update SLA Configuration
+      // API: PUT /api/sla-configs/:priority
+      onUpdateSLA({ ...editingSLA, ...slaForm });
+    }
+    setShowSLADialog(false);
+  };
+
+  const handleDeleteProblemClick = (id: string) => {
+    setDeleteType("problem");
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteLevelClick = (id: string) => {
+    setDeleteType("level");
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteType === "problem" && deleteId) {
+      // Backend Integration: Delete Problem Type
+      // API: DELETE /api/problem-types/:id
+      onDeleteProblemType(deleteId);
+    } else if (deleteType === "level" && deleteId) {
+      // Backend Integration: Delete Site Level
+      // API: DELETE /api/site-levels/:id
+      onDeleteSiteLevel(deleteId);
+    }
+    setDeleteDialogOpen(false);
+    setDeleteType(null);
+    setDeleteId(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-primary text-2xl font-bold flex items-center gap-2">
+            <Settings className="h-6 w-6" />
+            {t("systemSettings")}
+          </h2>
+          <p className="text-muted-foreground mt-1">
+            Configure system parameters, SLAs, and classifications
+          </p>
+        </div>
+      </div>
+
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(val) => {
+          // Backend Integration: Fetch data for the selected tab (SLA, Problem Types, or Levels)
+          // API: GET /api/system-settings/:tab
+          setActiveTab(val);
+        }} 
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="sla" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            SLA Configuration
+          </TabsTrigger>
+          <TabsTrigger value="problems" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Problem Types
+          </TabsTrigger>
+          <TabsTrigger value="levels" className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Site Levels
+          </TabsTrigger>
+        </TabsList>
+
+        {/* SLA Content */}
+        <TabsContent value="sla" className="mt-6">
+          <Card className="p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-medium mb-2">Priority-based SLA</h3>
+              <p className="text-sm text-muted-foreground">
+                Define expected response and resolution times for each priority level.
+              </p>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Response Time (Hours)</TableHead>
+                  <TableHead>Resolution Time (Hours)</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {slaConfigs.map((config) => (
+                  <TableRow key={config.priority}>
+                    <TableCell className="font-medium">
+                      <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                        config.priority === "P1" || config.priority === "P2" ? "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80" : 
+                        config.priority === "P3" ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/80" :
+                        "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      }`}>
+                        {config.priority}
+                      </div>
+                    </TableCell>
+                    <TableCell>{config.responseTime}h</TableCell>
+                    <TableCell>{config.resolutionTime}h</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handleOpenSLADialog(config)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Problem Types Content */}
+        <TabsContent value="problems" className="mt-6">
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Problem Management Types</h3>
+                <p className="text-sm text-muted-foreground">
+                  Classify different types of problems for reporting and filtering.
+                </p>
+              </div>
+              <Button onClick={() => handleOpenProblemDialog()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Type
+              </Button>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {problemTypes.map((type) => (
+                  <TableRow key={type.id}>
+                    <TableCell className="font-medium">{type.name}</TableCell>
+                    <TableCell>{type.description}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleOpenProblemDialog(type)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteProblemClick(type.id)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {problemTypes.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                      No problem types defined.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Site Levels Content */}
+        <TabsContent value="levels" className="mt-6">
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Site Level Configuration</h3>
+                <p className="text-sm text-muted-foreground">
+                  Define site importance levels and their impact on SLAs.
+                </p>
+              </div>
+              <Button onClick={() => handleOpenLevelDialog()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Level
+              </Button>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Level Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>SLA Multiplier</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {siteLevelConfigs.map((level) => (
+                  <TableRow key={level.id}>
+                    <TableCell className="font-medium">{level.name}</TableCell>
+                    <TableCell>{level.description}</TableCell>
+                    <TableCell>x{level.slaMultiplier}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleOpenLevelDialog(level)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteLevelClick(level.id)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the {deleteType === "problem" ? "problem type" : "site level"} and remove it from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialogs */}
+      
+      {/* SLA Edit Dialog */}
+      <Dialog open={showSLADialog} onOpenChange={setShowSLADialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit SLA for {editingSLA?.priority}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Response Time (Hours)</Label>
+              <Input 
+                type="number" 
+                min="0"
+                value={slaForm.responseTime} 
+                onChange={(e) => setSLAForm({...slaForm, responseTime: Number(e.target.value)})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Resolution Time (Hours)</Label>
+              <Input 
+                type="number" 
+                min="0"
+                value={slaForm.resolutionTime} 
+                onChange={(e) => setSLAForm({...slaForm, resolutionTime: Number(e.target.value)})} 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSLADialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveSLA}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Problem Type Dialog */}
+      <Dialog open={showProblemDialog} onOpenChange={setShowProblemDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingProblem ? "Edit Problem Type" : "Add Problem Type"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input 
+                value={problemForm.name} 
+                onChange={(e) => setProblemForm({...problemForm, name: e.target.value})} 
+                placeholder="e.g., Hardware Failure"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input 
+                value={problemForm.description} 
+                onChange={(e) => setProblemForm({...problemForm, description: e.target.value})} 
+                placeholder="Description of this problem type"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProblemDialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveProblem}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Site Level Dialog */}
+      <Dialog open={showLevelDialog} onOpenChange={setShowLevelDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingLevel ? "Edit Site Level" : "Add Site Level"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input 
+                value={levelForm.name} 
+                onChange={(e) => setLevelForm({...levelForm, name: e.target.value})} 
+                placeholder="e.g., Super VIP"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input 
+                value={levelForm.description} 
+                onChange={(e) => setLevelForm({...levelForm, description: e.target.value})} 
+                placeholder="Description of this level"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>SLA Multiplier</Label>
+              <Input 
+                type="number"
+                step="0.1"
+                min="0.1"
+                value={levelForm.slaMultiplier} 
+                onChange={(e) => setLevelForm({...levelForm, slaMultiplier: Number(e.target.value)})} 
+                placeholder="0.5 for faster, 1.0 for normal"
+              />
+              <p className="text-xs text-muted-foreground">
+                Factor to multiply SLA times by. Lower means faster response required.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLevelDialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveLevel}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
