@@ -36,9 +36,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: openjdk:17-alpine
     container_name: igreen-backend
     restart: unless-stopped
     depends_on:
@@ -55,10 +53,14 @@ services:
       DATABASE_PASSWORD: root123
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    volumes:
+      - ./target/igreen-backend-1.0.0-SNAPSHOT.jar:/app.jar
+      - ./uploads:/app/uploads
+    command: java -jar /app.jar
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
