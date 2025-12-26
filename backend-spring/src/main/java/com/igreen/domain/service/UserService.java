@@ -1,0 +1,186 @@
+package com.igreen.domain.service;
+
+import com.igreen.common.exception.BusinessException;
+import com.igreen.common.exception.ErrorCode;
+import com.igreen.common.result.PageResult;
+import com.igreen.common.utils.JwtUtils;
+import com.igreen.domain.dto.LoginRequest;
+import com.igreen.domain.dto.RegisterRequest;
+import com.igreen.domain.dto.TokenResponse;
+import com.igreen.domain.dto.UserCreateRequest;
+import com.igreen.domain.dto.UserResponse;
+import com.igreen.domain.dto.UserUpdateRequest;
+import com.igreen.domain.entity.User;
+import com.igreen.domain.enums.UserRole;
+import com.igreen.domain.enums.UserStatus;
+import com.igreen.domain.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+
+    @Transactional
+    public UserResponse createUser(UserCreateRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new BusinessException(ErrorCode.USERNAME_EXISTS);
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
+        }
+
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .name(request.name())
+                .username(request.username())
+                .email(request.email())
+                .hashedPassword(passwordEncoder.encode(request.password()))
+                .role(request.role() != null ? request.role() : UserRole.ENGINEER)
+                .groupId(request.groupId())
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        user = userRepository.save(user);
+        return toResponse(user);
+    }
+
+    @Transactional
+    public TokenResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+
+        if (!passwordEncoder.matches(request.password(), user.getHashedPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new BusinessException(ErrorCode.USER_INACTIVE);
+        }
+
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
+        return new TokenResponse(token);
+    }
+
+    @Transactional
+    public TokenResponse register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new BusinessException(ErrorCode.USERNAME_EXISTS);
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
+        }
+
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .name(request.name())
+                .username(request.username())
+                .email(request.email())
+                .hashedPassword(passwordEncoder.encode(request.password()))
+                .role(request.role() != null ? UserRole.valueOf(request.role().toUpperCase()) : UserRole.ENGINEER)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        user = userRepository.save(user);
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
+        return new TokenResponse(token);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return toResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResult<UserResponse> getAllUsers(int page, int size, String keyword) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Page<User> userPage = userRepository.searchByKeyword(keyword, pageRequest);
+        List<UserResponse> users = userPage.getContent().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return PageResult.of(users, userPage.getTotalElements(), page, size);
+    }
+
+    @Transactional
+    public UserResponse updateUser(String id, UserUpdateRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (request.name() != null) {
+            user.setName(request.name());
+        }
+        if (request.username() != null && !request.username().equals(user.getUsername())) {
+            if (userRepository.existsByUsername(request.username())) {
+                throw new BusinessException(ErrorCode.USERNAME_EXISTS);
+            }
+            user.setUsername(request.username());
+        }
+        if (request.groupId() != null) {
+            user.setGroupId(request.groupId());
+        }
+        if (request.status() != null) {
+            user.setStatus(request.status());
+        }
+
+        user = userRepository.save(user);
+        return toResponse(user);
+    }
+
+    @Transactional
+    public void deleteUser(String id) {
+        if (!userRepository.existsById(id)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getEngineers() {
+        return userRepository.findByRole(UserRole.ENGINEER).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return toResponse(user);
+    }
+
+    private UserResponse toResponse(User user) {
+        String groupName = null;
+        if (user.getGroupId() != null) {
+            groupName = userRepository.findById(user.getGroupId())
+                    .map(User::getName)
+                    .orElse(null);
+        }
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.getGroupId(),
+                groupName,
+                user.getStatus().name(),
+                user.getCreatedAt()
+        );
+    }
+}
