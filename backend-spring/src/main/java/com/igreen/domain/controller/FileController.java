@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@Tag(name = "文件管理", description = "文件上传、删除、人脸识别接口")
+@Tag(name = "文件管理", description = "文件上传、删除接口")
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
@@ -35,13 +35,5 @@ public class FileController {
     public ResponseEntity<Result<Void>> deleteFile(@PathVariable String id) {
         fileService.deleteFile(id);
         return ResponseEntity.ok(Result.successResult());
-    }
-
-    @Operation(summary = "人脸识别验证")
-    @PostMapping("/face-recognition/verify")
-    public ResponseEntity<Result<Object>> verifyFace(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam(value = "userId", required = false) String userId) {
-        return ResponseEntity.ok(Result.success(fileService.verifyFace(image, userId)));
     }
 }

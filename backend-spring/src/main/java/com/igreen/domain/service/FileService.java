@@ -94,19 +94,4 @@ public class FileService {
 
         fileRepository.delete(fileEntity);
     }
-
-    public Object verifyFace(MultipartFile image, String userId) {
-        if (image == null || image.isEmpty()) {
-            throw new BusinessException(ErrorCode.FILE_EMPTY);
-        }
-
-        String contentType = image.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST);
-        }
-
-        return new FaceVerificationResult(true, 0.95, "Face verified successfully (mock implementation)");
-    }
-
-    public record FaceVerificationResult(boolean verified, double confidence, String message) {}
 }
