@@ -12,4 +12,6 @@ public interface SiteLevelConfigRepository extends JpaRepository<SiteLevelConfig
     Optional<SiteLevelConfig> findByName(String name);
 
     boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, String id);
 }

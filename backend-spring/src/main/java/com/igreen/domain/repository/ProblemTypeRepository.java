@@ -12,4 +12,6 @@ public interface ProblemTypeRepository extends JpaRepository<ProblemType, String
     Optional<ProblemType> findByName(String name);
 
     boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, String id);
 }
