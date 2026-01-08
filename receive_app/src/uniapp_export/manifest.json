@@ -1,0 +1,33 @@
+{
+	"name": "iGreen+",
+	"appid": "",
+	"description": "EV Charging Station Maintenance App",
+	"versionName": "1.0.0",
+	"versionCode": "100",
+	"transformPx": false,
+	"app-plus": {
+		"modules": {}
+	},
+	"quickapp": {},
+	"mp-weixin": {
+		"appid": "",
+		"setting": {
+			"urlCheck": false
+		}
+	},
+	"mp-alipay": {
+		"usingComponents": true
+	},
+	"mp-baidu": {
+		"usingComponents": true
+	},
+	"mp-toutiao": {
+		"setting": {
+			"es6": true
+		}
+	},
+	"uniStatistics": {
+		"enable": false
+	},
+	"vueVersion": "3"
+}

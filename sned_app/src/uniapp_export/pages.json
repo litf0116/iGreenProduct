@@ -1,0 +1,29 @@
+{
+	"pages": [
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "Login"
+			}
+		},
+		{
+			"path": "pages/dashboard/dashboard",
+			"style": {
+				"navigationBarTitleText": "iGreen+ Dashboard",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/ticket/create",
+			"style": {
+				"navigationBarTitleText": "Create Ticket"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "iGreen+ Ticket Management",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	}
+}

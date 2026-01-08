@@ -1,0 +1,46 @@
+import { Globe } from "lucide-react";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Language } from "../lib/i18n";
+
+interface LanguageSelectorProps {
+  currentLanguage: Language;
+  onLanguageChange: (language: Language) => void;
+}
+
+const languageNames: Record<Language, string> = {
+  en: "English",
+  th: "ไทย",
+};
+
+export function LanguageSelector({ currentLanguage, onLanguageChange }: LanguageSelectorProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 border-primary text-primary hover:bg-primary hover:text-white">
+          <Globe className="h-4 w-4" />
+          {languageNames[currentLanguage]}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-white">
+        <DropdownMenuItem 
+          onClick={() => onLanguageChange("en")}
+          className="cursor-pointer"
+        >
+          English
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => onLanguageChange("th")}
+          className="cursor-pointer"
+        >
+          ไทย (Thai)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
