@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "groups", indexes = {
+@Table(name = "`groups`", indexes = {
         @Index(name = "idx_group_name", columnList = "name"),
         @Index(name = "idx_group_status", columnList = "status")
 })
@@ -28,9 +28,6 @@ public class Group {
 
     @Column(length = 500)
     private String description;
-
-    @Column(columnDefinition = "TEXT")
-    private String tags;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

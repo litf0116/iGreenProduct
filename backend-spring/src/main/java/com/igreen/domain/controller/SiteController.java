@@ -25,7 +25,7 @@ public class SiteController {
     @Operation(summary = "获取所有站点")
     @GetMapping
     public ResponseEntity<Result<PageResult<Site>>> getAllSites(
-            @RequestParam @Min(1) @Max(100) int page,
+            @RequestParam @Min(0) @Max(100) int page,
             @RequestParam @Min(1) @Max(100) int size,
             @RequestParam(required = false) String keyword) {
         return ResponseEntity.ok(Result.success(siteService.getAllSites(page, size, keyword)));
