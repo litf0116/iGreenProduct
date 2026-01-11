@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,7 +71,8 @@ class UserServiceTest {
                 "test@example.com",
                 "password123",
                 UserRole.ENGINEER,
-                null
+                null,
+                "CN"
         );
 
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
@@ -90,6 +92,7 @@ class UserServiceTest {
         assertEquals("test@example.com", response.email());
         assertEquals("ENGINEER", response.role());
         assertEquals("ACTIVE", response.status());
+        assertEquals("CN", response.country());
         verify(userRepository).save(any(User.class));
     }
 
@@ -102,7 +105,8 @@ class UserServiceTest {
                 "test@example.com",
                 "password123",
                 UserRole.ENGINEER,
-                null
+                null,
+                "CN"
         );
 
         when(userRepository.existsByUsername("existinguser")).thenReturn(true);
@@ -122,7 +126,8 @@ class UserServiceTest {
                 "existing@example.com",
                 "password123",
                 UserRole.ENGINEER,
-                null
+                null,
+                "CN"
         );
 
         when(userRepository.existsByUsername("testuser")).thenReturn(false);
@@ -139,7 +144,7 @@ class UserServiceTest {
     void login_Success() {
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -150,16 +155,16 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when login with invalid credentials")
-    void login_InvalidCredentials() {
+    @DisplayName("Should throw exception when user not found")
+    void login_UserNotFound() {
         LoginRequest request = new LoginRequest("nonexistent", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("nonexistent", "CN")).thenReturn(Optional.empty());
+        when(userRepository.findAllByUsername("nonexistent")).thenReturn(Collections.emptyList());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
 
-        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+        assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
     }
 
     @Test
@@ -167,7 +172,7 @@ class UserServiceTest {
     void login_WrongPassword() {
         LoginRequest request = new LoginRequest("testuser", "wrongpassword", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("wrongpassword", "$2a$10$encodedpassword")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -182,7 +187,7 @@ class UserServiceTest {
         testUser.setStatus(UserStatus.INACTIVE);
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -196,12 +201,12 @@ class UserServiceTest {
     void login_UsernameRequired() {
         LoginRequest request = new LoginRequest("", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("", "CN")).thenReturn(Optional.empty());
+        when(userRepository.findAllByUsername("")).thenReturn(Collections.emptyList());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
 
-        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+        assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
     }
 
     @Test
@@ -209,7 +214,8 @@ class UserServiceTest {
     void login_PasswordRequired() {
         LoginRequest request = new LoginRequest("testuser", "", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("", "$2a$10$encodedpassword")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
@@ -218,16 +224,81 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when country is blank")
-    void login_CountryRequired() {
-        LoginRequest request = new LoginRequest("testuser", "password123", "");
+    @DisplayName("Should login successfully when engineer country matches")
+    void login_EngineerCountryMatch() {
+        LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "")).thenReturn(Optional.empty());
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
+        when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
+
+        TokenResponse response = userService.login(request);
+
+        assertNotNull(response);
+        assertEquals("jwt-token", response.accessToken());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when engineer country does not match")
+    void login_EngineerCountryMismatch() {
+        LoginRequest request = new LoginRequest("testuser", "password123", "US");
+
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
 
-        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+        assertEquals(ErrorCode.COUNTRY_NOT_ALLOWED.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should login successfully when admin has no country restriction")
+    void login_AdminNoCountryRestriction() {
+        testUser.setRole(UserRole.ADMIN);
+        testUser.setCountry("CN,US,JP");
+        LoginRequest request = new LoginRequest("testuser", "password123", "DE");
+
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
+        when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
+
+        TokenResponse response = userService.login(request);
+
+        assertNotNull(response);
+        assertEquals("jwt-token", response.accessToken());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when manager country does not match")
+    void login_ManagerCountryMismatch() {
+        testUser.setRole(UserRole.MANAGER);
+        LoginRequest request = new LoginRequest("testuser", "password123", "US");
+
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.login(request));
+
+        assertEquals(ErrorCode.COUNTRY_NOT_ALLOWED.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should login successfully when manager country matches")
+    void login_ManagerCountryMatch() {
+        testUser.setRole(UserRole.MANAGER);
+        testUser.setCountry("US");
+        LoginRequest request = new LoginRequest("testuser", "password123", "US");
+
+        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
+        when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
+
+        TokenResponse response = userService.login(request);
+
+        assertNotNull(response);
+        assertEquals("jwt-token", response.accessToken());
     }
 
     @Test
@@ -445,6 +516,76 @@ class UserServiceTest {
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.deleteUser("nonexistent"));
+
+        assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should update engineer country successfully")
+    void updateUserCountry_EngineerSuccess() {
+        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+        UserResponse response = userService.updateUserCountry("test-user-id", "US");
+
+        assertNotNull(response);
+        verify(userRepository).save(argThat(user -> "US".equals(user.getCountry())));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when engineer country is empty")
+    void updateUserCountry_EngineerEmptyCountry() {
+        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.updateUserCountry("test-user-id", ""));
+
+        assertEquals(ErrorCode.COUNTRY_REQUIRED.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when engineer country contains comma")
+    void updateUserCountry_EngineerMultipleCountries() {
+        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.updateUserCountry("test-user-id", "CN,US"));
+
+        assertEquals(ErrorCode.INVALID_COUNTRY_CODE.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should update admin country with multiple countries successfully")
+    void updateUserCountry_AdminMultipleCountries() {
+        testUser.setRole(UserRole.ADMIN);
+        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
+
+        UserResponse response = userService.updateUserCountry("test-user-id", "CN,US,JP");
+
+        assertNotNull(response);
+        verify(userRepository).save(argThat(user -> "CN,US,JP".equals(user.getCountry())));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when admin country has empty segment")
+    void updateUserCountry_AdminEmptySegment() {
+        testUser.setRole(UserRole.ADMIN);
+        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.updateUserCountry("test-user-id", "CN,,US"));
+
+        assertEquals(ErrorCode.INVALID_COUNTRY_CODE.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when user not found for country update")
+    void updateUserCountry_UserNotFound() {
+        when(userRepository.findById("nonexistent")).thenReturn(Optional.empty());
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.updateUserCountry("nonexistent", "CN"));
 
         assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
     }

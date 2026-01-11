@@ -3,7 +3,7 @@
 # ============================================
 # iGreen API 接口测试脚本
 # 用法: ./api_test.sh [base_url] [port]
-# 默认: http://localhost 8001
+# 默认: http://localhost 8000
 # ============================================
 
 set -e
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # 默认配置
 BASE_URL="${1:-http://localhost}"
-PORT="${2:-8001}"
+PORT="${2:-8000}"
 BASE_URL="${BASE_URL}:${PORT}"
 API_URL="${BASE_URL}/api"
 

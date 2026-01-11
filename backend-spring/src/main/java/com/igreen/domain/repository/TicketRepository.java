@@ -68,4 +68,20 @@ public interface TicketRepository extends JpaRepository<Ticket, String> {
     @Query("SELECT t FROM Ticket t LEFT JOIN FETCH t.creator LEFT JOIN FETCH t.assignee WHERE t.status = :status")
     @EntityGraph(attributePaths = {"creator", "assignee"})
     Page<Ticket> findByStatusWithDetails(@Param("status") TicketStatus status, Pageable pageable);
+
+    @Query("SELECT t FROM Ticket t WHERE " +
+           "(:type IS NULL OR t.type = :type) AND " +
+           "(:status IS NULL OR t.status = :status) AND " +
+           "(:priority IS NULL OR t.priority = :priority) AND " +
+           "(:assignedTo IS NULL OR t.assignedTo = :assignedTo) AND " +
+           "(:createdAfter IS NULL OR t.createdAt >= :createdAfter)")
+    @EntityGraph(attributePaths = {"creator", "assignee"})
+    Page<Ticket> findByFilters(
+            @Param("type") TicketType type,
+            @Param("status") TicketStatus status,
+            @Param("priority") Priority priority,
+            @Param("assignedTo") String assignedTo,
+            @Param("createdAfter") LocalDateTime createdAfter,
+            Pageable pageable
+    );
 }

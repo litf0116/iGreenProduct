@@ -24,7 +24,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.igreen.common.result.PageResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -235,5 +241,188 @@ class TicketServiceTest {
                 () -> ticketService.deleteTicket("nonexistent"));
 
         assertEquals(ErrorCode.TICKET_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should get tickets with type filter")
+    void getTickets_ByType() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(eq(TicketType.CORRECTIVE), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, "corrective", null, null, null, null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        assertEquals(1, result.records().size());
+        assertEquals("ticket-id", result.records().get(0).id());
+        verify(ticketRepository).findByFilters(eq(TicketType.CORRECTIVE), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with createdAfter filter")
+    void getTickets_ByCreatedAfter() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        LocalDateTime filterDate = LocalDateTime.now().minusDays(1);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), isNull(), isNull(), eq(filterDate), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, null, null, null, filterDate);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(isNull(), isNull(), isNull(), isNull(), eq(filterDate), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with status filter")
+    void getTickets_ByStatus() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), eq(TicketStatus.OPEN), isNull(), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, "OPEN", null, null, null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(isNull(), eq(TicketStatus.OPEN), isNull(), isNull(), isNull(), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with priority filter")
+    void getTickets_ByPriority() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), eq(Priority.P2), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, "P2", null, null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(isNull(), isNull(), eq(Priority.P2), isNull(), isNull(), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with assignedTo filter")
+    void getTickets_ByAssignedTo() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), isNull(), eq("assignee-id"), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, null, "assignee-id", null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(isNull(), isNull(), isNull(), eq("assignee-id"), isNull(), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with keyword filter")
+    void getTickets_ByKeyword() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, null, null, "Test", null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        assertEquals("Test Ticket", result.records().get(0).title());
+    }
+
+    @Test
+    @DisplayName("Should get tickets with combined filters")
+    void getTickets_CombinedFilters() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(
+                eq(TicketType.PLANNED),
+                eq(TicketStatus.OPEN),
+                eq(Priority.P2),
+                eq("assignee-id"),
+                isNull(),
+                any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, "planned", "OPEN", "P2", "assignee-id", null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(
+                eq(TicketType.PLANNED),
+                eq(TicketStatus.OPEN),
+                eq(Priority.P2),
+                eq("assignee-id"),
+                isNull(),
+                any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should get tickets with no filters returns all")
+    void getTickets_NoFilters() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, null, null, null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        verify(ticketRepository).findByFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("Should filter tickets by keyword in description")
+    void getTickets_KeywordInDescription() {
+        testTicket.setCreator(testCreator);
+        testTicket.setAssignee(testAssignee);
+        testTicket.setDescription("This is a test description with keyword");
+        Page<Ticket> ticketPage = new PageImpl<>(Collections.singletonList(testTicket), PageRequest.of(0, 20), 1);
+
+        when(ticketRepository.findByFilters(isNull(), isNull(), isNull(), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(ticketPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, null, null, null, null, "keyword", null);
+
+        assertNotNull(result);
+        assertEquals(1, result.total());
+    }
+
+    @Test
+    @DisplayName("Should return empty result when no tickets match filters")
+    void getTickets_NoMatchingResults() {
+        Page<Ticket> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 20), 0);
+
+        when(ticketRepository.findByFilters(any(), any(), any(), any(), any(), any(PageRequest.class)))
+                .thenReturn(emptyPage);
+
+        PageResult<TicketResponse> result = ticketService.getTickets(1, 20, "planned", "COMPLETED", "P1", "nonexistent", null, null);
+
+        assertNotNull(result);
+        assertEquals(0, result.total());
+        assertEquals(0, result.records().size());
     }
 }

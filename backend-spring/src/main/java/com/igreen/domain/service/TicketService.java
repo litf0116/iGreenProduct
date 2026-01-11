@@ -16,7 +16,9 @@ import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.CommentType;
+import com.igreen.domain.enums.Priority;
 import com.igreen.domain.enums.TicketStatus;
+import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.repository.TicketCommentRepository;
 import com.igreen.domain.repository.TicketRepository;
 import com.igreen.domain.repository.UserRepository;
@@ -81,12 +83,21 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<TicketResponse> getTickets(int page, int size, String status, String priority,
-                                                   String assignedTo, String keyword) {
+    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status,
+            String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageRequest pageRequest = PageRequest.of(page - 1, size);
-        Page<Ticket> ticketPage = ticketRepository.findAll(pageRequest);
+
+        TicketType ticketType = type != null ? TicketType.fromValue(type) : null;
+        TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
+        Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
+
+        Page<Ticket> ticketPage = ticketRepository.findByFilters(
+                ticketType, ticketStatus, ticketPriority, assignedTo, createdAfter, pageRequest);
 
         List<TicketResponse> tickets = ticketPage.getContent().stream()
+                .filter(ticket -> keyword == null ||
+                        ticket.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keyword.toLowerCase())))
                 .map(ticket -> toResponse(ticket, ticket.getCreator(), ticket.getAssignee()))
                 .collect(Collectors.toList());
 

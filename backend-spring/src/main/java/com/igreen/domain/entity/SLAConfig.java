@@ -21,9 +21,9 @@ public class SLAConfig {
     @Column(nullable = false, length = 10)
     private Priority priority;
 
-    @Column(name = "response_time", nullable = false)
-    private Integer responseTime;
+    @Column(name = "response_time_minutes", nullable = false)
+    private Integer responseTimeMinutes;
 
-    @Column(name = "resolution_time", nullable = false)
-    private Integer resolutionTime;
+    @Column(name = "completion_time_hours", nullable = false)
+    private Integer completionTimeHours;
 }

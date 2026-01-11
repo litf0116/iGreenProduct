@@ -2,7 +2,7 @@
 
 **测试日期**: 2026-01-11
 **运行环境**: Java 21.0.9 + Spring Boot 3.2.0
-**测试端口**: 8001
+**测试端口**: 8000
 
 ---
 
@@ -92,12 +92,12 @@ make run-jar
 make api-test
 
 # 或直接运行脚本
-bash scripts/api_test.sh localhost 8001
+bash scripts/api_test.sh localhost 8000
 ```
 
 ### 4. 查看 API 文档
 ```
-http://localhost:8001/swagger-ui.html
+http://localhost:8000/swagger-ui.html
 ```
 
 ---

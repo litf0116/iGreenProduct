@@ -16,12 +16,15 @@ public class SiteLevelConfig {
     @Column(length = 36)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String name;
+    @Column(name = "level_name", nullable = false, unique = true, length = 50)
+    private String levelName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "sla_multiplier", nullable = false)
-    private Double slaMultiplier;
+    @Column(name = "max_concurrent_tickets")
+    private Integer maxConcurrentTickets;
+
+    @Column(name = "escalation_time_hours")
+    private Integer escalationTimeHours;
 }

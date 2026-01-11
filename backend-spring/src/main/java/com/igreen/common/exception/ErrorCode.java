@@ -36,6 +36,8 @@ public enum ErrorCode {
     PASSWORD_MISMATCH("PASSWORD_MISMATCH", "两次输入的密码不一致"),
     NAME_EXISTS("NAME_EXISTS", "用户全名已存在"),
     COUNTRY_REQUIRED("COUNTRY_REQUIRED", "国家不能为空"),
+    COUNTRY_NOT_ALLOWED("COUNTRY_NOT_ALLOWED", "账号不支持在当前国家登录"),
+    INVALID_COUNTRY_CODE("INVALID_COUNTRY_CODE", "无效的国家代码"),
     INVALID_ROLE("INVALID_ROLE", "无效的用户角色");
 
     private final String code;

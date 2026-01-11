@@ -56,7 +56,7 @@ export function SignUp({ language, onSignUp, onSwitchToLogin }: SignUpProps) {
 
     setIsLoading(true);
     try {
-      await onSignUp(name, username, password, role, country);
+      await onSignUp(name, username, email, password, role, country);
     } catch (err) {
       // Basic error handling assumption
       setError("Username already exists"); 

@@ -11,5 +11,6 @@ public record UserCreateRequest(
     @NotBlank @Email String email,
     @NotBlank @Size(min = 6, max = 100) String password,
     UserRole role,
-    String groupId
+    String groupId,
+    String country
 ) {}

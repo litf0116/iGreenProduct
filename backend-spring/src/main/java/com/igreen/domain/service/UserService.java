@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +48,7 @@ public class UserService {
                 .role(request.role() != null ? request.role() : UserRole.ENGINEER)
                 .groupId(request.groupId())
                 .status(UserStatus.ACTIVE)
+                .country(request.country())
                 .build();
 
         user = userRepository.save(user);
@@ -57,33 +57,38 @@ public class UserService {
 
     @Transactional
     public TokenResponse login(LoginRequest request) {
-        if (request.country() == null || request.country().isBlank()) {
+        List<User> users = userRepository.findAllByUsername(request.username());
+        if (users.isEmpty()) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        User matchedUser = null;
+        for (User user : users) {
+            if (passwordEncoder.matches(request.password(), user.getHashedPassword())) {
+                matchedUser = user;
+                break;
+            }
+        }
+
+        if (matchedUser == null) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        User user = userRepository.findByUsernameAndCountry(request.username(), request.country()).orElse(null);
-
-        if (user == null) {
-            user = userRepository.findByUsernameAndCountryLike(request.username(), "%" + request.country() + "%").orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
-        }
-
-        if (!passwordEncoder.matches(request.password(), user.getHashedPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
-        }
-
-        if (user.getStatus() != UserStatus.ACTIVE) {
+        if (matchedUser.getStatus() != UserStatus.ACTIVE) {
             throw new BusinessException(ErrorCode.USER_INACTIVE);
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
+        if (matchedUser.getRole() != UserRole.ADMIN) {
+            if (request.country() == null || !request.country().equalsIgnoreCase(matchedUser.getCountry())) {
+                throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+            }
+        }
+
+        String token = jwtUtils.generateToken(matchedUser.getId(), matchedUser.getUsername(), matchedUser.getRole().name());
         return new TokenResponse(token, null, 0);
     }
 
 
-    public static void main(String[] args) {
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        System.out.println(bCryptPasswordEncoder.encode("password123"));
-    }
     @Transactional
     public TokenResponse register(RegisterRequest request) {
         if (request.country() == null || request.country().isBlank()) {
@@ -185,6 +190,24 @@ public class UserService {
     public UserResponse updateUserCountry(String id, String country) {
         User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        if (user.getRole() == UserRole.ADMIN) {
+            if (country != null && !country.isBlank()) {
+                String[] countries = country.split(",");
+                for (String c : countries) {
+                    if (c.trim().isEmpty()) {
+                        throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
+                    }
+                }
+            }
+        } else {
+            if (country == null || country.isBlank()) {
+                throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
+            }
+            if (country.contains(",")) {
+                throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
+            }
+        }
+
         user.setCountry(country);
         user = userRepository.save(user);
         return toResponse(user);
@@ -213,6 +236,7 @@ public class UserService {
                 user.getGroupId(),
                 groupName,
                 user.getStatus().name(),
+                user.getCountry(),
                 user.getCreatedAt()
         );
     }

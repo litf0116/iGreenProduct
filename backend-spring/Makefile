@@ -5,7 +5,7 @@
 
 # 配置
 APP_NAME = igreen-backend
-PORT = 8001
+PORT = 8000
 JAVA_HOME ?= $(shell /usr/libexec/java_home -v 21 2>/dev/null || echo "/usr/lib/jvm/java-21-openjdk-amd64")
 
 # 颜色
@@ -26,7 +26,7 @@ help:
 	@echo -e "${GREEN}╚════════════════════════════════════════════════╝${NC}"
 	@echo ""
 	@echo "可用命令:"
-	@echo "  start       启动应用 (默认端口 8001)"
+	@echo "  start       启动应用 (默认端口 8000)"
 	@echo "  stop        停止应用"
 	@echo "  restart     重启应用"
 	@echo "  build       构建应用 (JAR)"

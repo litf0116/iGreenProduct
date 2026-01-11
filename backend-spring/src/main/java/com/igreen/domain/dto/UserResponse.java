@@ -11,5 +11,6 @@ public record UserResponse(
     String groupId,
     String groupName,
     String status,
+    String country,
     LocalDateTime createdAt
 ) {}

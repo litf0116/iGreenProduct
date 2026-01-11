@@ -14,10 +14,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "工单管理", description = "工单全生命周期接口")
@@ -34,11 +36,13 @@ public class TicketController {
     public ResponseEntity<Result<PageResult<TicketResponse>>> getTickets(
             @RequestParam @Min(0) @Max(100) int page,
             @RequestParam @Min(1) @Max(100) int size,
+            @RequestParam(required = false) String type,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String assignedTo,
-            @RequestParam(required = false) String keyword) {
-        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, status, priority, assignedTo, keyword)));
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter) {
+        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter)));
     }
 
     @Operation(summary = "获取工单详情")

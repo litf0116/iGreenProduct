@@ -26,7 +26,7 @@ public class TemplateStep {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false,name = "`order`")
     private Integer order;
 
     @Column(name = "template_id", nullable = false, length = 36)

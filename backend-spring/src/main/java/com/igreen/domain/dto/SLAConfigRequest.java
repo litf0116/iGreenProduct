@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Min;
 
 public record SLAConfigRequest(
         Priority priority,
-        @Min(1) Integer responseTime,
-        @Min(1) Integer resolutionTime
+        @Min(1) Integer responseTimeMinutes,
+        @Min(1) Integer completionTimeHours
 ) {}

@@ -5,14 +5,21 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
-import { ClipboardList, Lock, AlertCircle, User } from "lucide-react";
+import { ClipboardList, Lock, AlertCircle, User, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 import appLogo from "figma:asset/e2d3be716f2b03621853146ef3c8dd02abba30cb.png";
 
 interface LoginProps {
   language: Language;
-  onLogin: (username: string, password: string) => Promise<void>;
+  onLogin: (username: string, password: string, country: string) => Promise<void>;
   onSwitchToSignUp: () => void;
 }
 
@@ -21,6 +28,7 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [country, setCountry] = useState("Thailand");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,14 +37,14 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
     e.preventDefault();
     setError("");
 
-    if (!username || !password) {
+    if (!username || !password || !country) {
       setError(t("fieldRequired"));
       return;
     }
 
     setIsLoading(true);
     try {
-      await onLogin(username, password);
+      await onLogin(username, password, country);
     } catch (err) {
       setError(t("invalidCredentials"));
     } finally {
@@ -57,14 +65,6 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
             <p className="text-muted-foreground">{t("signInToAccount")}</p>
           </div>
 
-          {/* Demo Credentials Info */}
-          <Alert className="bg-blue-50 border-primary/20">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-foreground">
-              <strong>Demo Account:</strong> demo@csenergy.com / demo123
-            </AlertDescription>
-          </Alert>
-
           {/* Error Alert */}
           {error && (
             <Alert variant="destructive">
@@ -75,21 +75,40 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
+            {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
+              <Label htmlFor="username" className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                {t("email")}
+                {t("username")}
               </Label>
               <Input
-                id="email"
+                id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="demo@csenergy.com"
+                placeholder={t("enterUsername")}
                 className="bg-input-background"
                 disabled={isLoading}
               />
+            </div>
+
+            {/* Country */}
+            <div className="space-y-2">
+              <Label htmlFor="country" className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                {t("country")}
+              </Label>
+              <Select value={country} onValueChange={setCountry} disabled={isLoading}>
+                <SelectTrigger className="bg-input-background">
+                  <SelectValue placeholder={t("selectCountry")} />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="Thailand">🇹🇭 Thailand / ไทย</SelectItem>
+                  <SelectItem value="Indonesia">🇮🇩 Indonesia / Indonesia</SelectItem>
+                  <SelectItem value="Brazil">🇧🇷 Brazil / Brasil</SelectItem>
+                  <SelectItem value="Mexico">🇲🇽 Mexico / México</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Password */}

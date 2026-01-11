@@ -48,8 +48,8 @@ public class ConfigService {
                     return newConfig;
                 });
 
-        config.setResponseTime(request.responseTime());
-        config.setResolutionTime(request.resolutionTime());
+        config.setResponseTimeMinutes(request.responseTimeMinutes());
+        config.setCompletionTimeHours(request.completionTimeHours());
 
         config = slaConfigRepository.save(config);
         return toSLAConfigResponse(config);
@@ -115,15 +115,16 @@ public class ConfigService {
 
     @Transactional
     public SiteLevelConfigResponse createSiteLevelConfig(SiteLevelConfigRequest request) {
-        if (siteLevelConfigRepository.existsByName(request.name())) {
+        if (siteLevelConfigRepository.existsByLevelName(request.levelName())) {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
         }
 
         SiteLevelConfig config = SiteLevelConfig.builder()
                 .id(UUID.randomUUID().toString())
-                .name(request.name())
+                .levelName(request.levelName())
                 .description(request.description())
-                .slaMultiplier(request.slaMultiplier())
+                .maxConcurrentTickets(request.maxConcurrentTickets())
+                .escalationTimeHours(request.escalationTimeHours())
                 .build();
 
         config = siteLevelConfigRepository.save(config);
@@ -135,19 +136,23 @@ public class ConfigService {
         SiteLevelConfig config = siteLevelConfigRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND));
 
-        if (request.name() != null) {
-            if (siteLevelConfigRepository.existsByNameAndIdNot(request.name(), id)) {
+        if (request.levelName() != null) {
+            if (siteLevelConfigRepository.existsByLevelNameAndIdNot(request.levelName(), id)) {
                 throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
             }
-            config.setName(request.name());
+            config.setLevelName(request.levelName());
         }
 
         if (request.description() != null) {
             config.setDescription(request.description());
         }
 
-        if (request.slaMultiplier() != null) {
-            config.setSlaMultiplier(request.slaMultiplier());
+        if (request.maxConcurrentTickets() != null) {
+            config.setMaxConcurrentTickets(request.maxConcurrentTickets());
+        }
+
+        if (request.escalationTimeHours() != null) {
+            config.setEscalationTimeHours(request.escalationTimeHours());
         }
 
         config = siteLevelConfigRepository.save(config);
@@ -166,8 +171,8 @@ public class ConfigService {
         return new SLAConfigResponse(
                 config.getId(),
                 config.getPriority(),
-                config.getResponseTime(),
-                config.getResolutionTime()
+                config.getResponseTimeMinutes(),
+                config.getCompletionTimeHours()
         );
     }
 
@@ -182,9 +187,10 @@ public class ConfigService {
     private SiteLevelConfigResponse toSiteLevelConfigResponse(SiteLevelConfig config) {
         return new SiteLevelConfigResponse(
                 config.getId(),
-                config.getName(),
+                config.getLevelName(),
                 config.getDescription(),
-                config.getSlaMultiplier()
+                config.getMaxConcurrentTickets(),
+                config.getEscalationTimeHours()
         );
     }
 }

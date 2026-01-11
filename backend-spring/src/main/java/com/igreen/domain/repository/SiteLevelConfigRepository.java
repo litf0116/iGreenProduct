@@ -9,9 +9,9 @@ import java.util.Optional;
 @Repository
 public interface SiteLevelConfigRepository extends JpaRepository<SiteLevelConfig, String> {
 
-    Optional<SiteLevelConfig> findByName(String name);
+    Optional<SiteLevelConfig> findByLevelName(String levelName);
 
-    boolean existsByName(String name);
+    boolean existsByLevelName(String levelName);
 
-    boolean existsByNameAndIdNot(String name, String id);
+    boolean existsByLevelNameAndIdNot(String levelName, String id);
 }

@@ -35,6 +35,12 @@ import {
 
 interface DashboardProps {
   tickets: Ticket[];
+  stats?: {
+    total: number;
+    pending: number;
+    inProgress: number;
+    completed: number;
+  };
   language: Language;
   onCreateTicket: () => void;
   onViewTicket: (ticket: Ticket) => void;
@@ -42,10 +48,10 @@ interface DashboardProps {
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
-export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: DashboardProps) {
+export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket, onViewTicket }: DashboardProps) {
   const t = (key: TranslationKey) => translations[language][key];
 
-  const [activeTab, setActiveTab] = useState<TicketType>("corrective");
+  const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
@@ -108,17 +114,20 @@ export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: D
 
   // Calculate stats based on current filters (excluding status filter to show distribution)
   const stats = useMemo(() => {
+    if (propsStats) {
+      return {
+        ...propsStats,
+        open: propsStats.pending,
+        submitted: 0,
+        onHold: 0,
+      };
+    }
+
     const relevantTickets = tickets.filter((ticket) => {
-      // Type filter
-      if (ticket.type !== activeTab) return false;
-      
-      // Time filter
+      const ticketType = ticket.type.toUpperCase();
+      if (ticketType !== activeTab.toUpperCase()) return false;
       if (!filterByTime(ticket)) return false;
-      
-      // Priority filter
       if (priorityFilter !== "all" && ticket.priority !== priorityFilter) return false;
-      
-      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -128,65 +137,61 @@ export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: D
           ticket.assignedToName.toLowerCase().includes(query)
         );
       }
-      
       return true;
     });
 
+    const s = (status: string) => status.toUpperCase();
+
     return {
       total: relevantTickets.length,
-      open: relevantTickets.filter((t) => t.status === "open").length,
-      inProgress: relevantTickets.filter((t) => t.status === "inProgress" || t.status === "accepted").length,
-      submitted: relevantTickets.filter((t) => t.status === "submitted").length,
-      completed: relevantTickets.filter((t) => t.status === "closed").length,
-      onHold: relevantTickets.filter((t) => t.status === "onHold").length,
+      open: relevantTickets.filter((t) => s(t.status) === "OPEN").length,
+      inProgress: relevantTickets.filter((t) => s(t.status) === "IN_PROGRESS" || s(t.status) === "ACCEPTED").length,
+      submitted: relevantTickets.filter((t) => s(t.status) === "SUBMITTED").length,
+      completed: relevantTickets.filter((t) => s(t.status) === "COMPLETED").length,
+      onHold: relevantTickets.filter((t) => s(t.status) === "ON_HOLD").length,
     };
-  }, [tickets, activeTab, timeFilter, priorityFilter, searchQuery]);
+  }, [tickets, activeTab, timeFilter, priorityFilter, searchQuery, propsStats]);
 
   const getStatusColor = (status: TicketStatus) => {
-    switch (status) {
-      case "open":
+    const s = status.toUpperCase();
+    switch (s) {
+      case "OPEN":
         return "bg-blue-500";
-      case "accepted":
+      case "ASSIGNED":
+        return "bg-indigo-500";
+      case "ACCEPTED":
         return "bg-cyan-500";
-      case "inProgress":
+      case "IN_PROGRESS":
         return "bg-orange-500";
-      case "submitted":
+      case "SUBMITTED":
         return "bg-purple-500";
-      case "closed":
+      case "COMPLETED":
         return "bg-green-500";
-      case "onHold":
+      case "ON_HOLD":
         return "bg-yellow-500";
-      case "cancelled":
-        return "bg-gray-500";
+      case "CANCELLED":
+        return "bg-red-500";
       default:
         return "bg-gray-500";
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const variants: Record<string, any> = {
-      P1: "destructive",
-      P2: "destructive",
-      P3: "default",
-      P4: "secondary",
-    };
-    return variants[priority] || "default";
-  };
-
   const getStatusBadgeVariant = (status: TicketStatus) => {
-    switch (status) {
-      case "open":
+    const s = status.toUpperCase();
+    switch (s) {
+      case "OPEN":
         return "default";
-      case "accepted":
-      case "inProgress":
+      case "ASSIGNED":
+      case "ACCEPTED":
+      case "IN_PROGRESS":
         return "secondary";
-      case "submitted":
+      case "SUBMITTED":
         return "default";
-      case "closed":
+      case "COMPLETED":
         return "outline";
-      case "onHold":
+      case "ON_HOLD":
         return "default";
-      case "cancelled":
+      case "CANCELLED":
         return "destructive";
       default:
         return "default";
@@ -218,10 +223,10 @@ export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: D
       {/* Tabs for Ticket Types */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TicketType)} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="corrective">{t("correctiveTickets")}</TabsTrigger>
-          <TabsTrigger value="preventive">{t("preventiveTickets")}</TabsTrigger>
-          <TabsTrigger value="planned">{t("plannedTickets")}</TabsTrigger>
-          <TabsTrigger value="problem">{t("problemTickets")}</TabsTrigger>
+          <TabsTrigger value="CORRECTIVE">{t("correctiveTickets")}</TabsTrigger>
+          <TabsTrigger value="PREVENTIVE">{t("preventiveTickets")}</TabsTrigger>
+          <TabsTrigger value="PLANNED">{t("plannedTickets")}</TabsTrigger>
+          <TabsTrigger value="PROBLEM">{t("problemTickets")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-6">
@@ -258,12 +263,13 @@ export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: D
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="all">{t("allStatus")}</SelectItem>
-                  <SelectItem value="open">{t("open")}</SelectItem>
-                  <SelectItem value="accepted">{t("accepted")}</SelectItem>
-                  <SelectItem value="inProgress">{t("inProgress")}</SelectItem>
-                  <SelectItem value="submitted">{t("submitted")}</SelectItem>
-                  <SelectItem value="onHold">{t("onHold")}</SelectItem>
-                  <SelectItem value="closed">{t("closed")}</SelectItem>
+                  <SelectItem value="OPEN">{t("open")}</SelectItem>
+                  <SelectItem value="ASSIGNED">{t("assigned")}</SelectItem>
+                  <SelectItem value="ACCEPTED">{t("accepted")}</SelectItem>
+                  <SelectItem value="IN_PROGRESS">{t("inProgress")}</SelectItem>
+                  <SelectItem value="SUBMITTED">{t("submitted")}</SelectItem>
+                  <SelectItem value="ON_HOLD">{t("onHold")}</SelectItem>
+                  <SelectItem value="COMPLETED">{t("closed")}</SelectItem>
                 </SelectContent>
               </Select>
 

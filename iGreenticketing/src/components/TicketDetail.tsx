@@ -99,15 +99,15 @@ export function TicketDetail({
   
   const isCreator = ticket.createdBy === currentUserId;
   const isAssigned = ticket.assignedTo === currentUserId;
-  const canAcceptOrDecline = isAssigned && !isCreator && ticket.status === "open" && !ticket.accepted;
-  const canHold = isAssigned && (ticket.status === "accepted" || ticket.status === "inProgress");
-  const canResume = isAssigned && ticket.status === "onHold";
-  const canReassign = isCreator && (ticket.status === "open" || ticket.status === "accepted");
+  const canAcceptOrDecline = isAssigned && !isCreator && ticket.status === "OPEN" && !ticket.accepted;
+  const canHold = isAssigned && (ticket.status === "ACCEPTED" || ticket.status === "IN_PROGRESS");
+  const canResume = isAssigned && ticket.status === "ON_HOLD";
+  const canReassign = isCreator && (ticket.status === "OPEN" || ticket.status === "ACCEPTED");
   const canDeparture = isAssigned && ticket.accepted && !ticket.departureAt;
   const canArrival = isAssigned && ticket.departureAt && !ticket.arrivalAt;
-  const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "closed" && ticket.status !== "submitted";
-  const canConfirm = ticket.status === "submitted";
-  const canReject = ticket.status === "submitted";
+  const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "COMPLETED" && ticket.status !== "SUBMITTED";
+  const canConfirm = ticket.status === "SUBMITTED";
+  const canReject = ticket.status === "SUBMITTED";
 
   const handleAccept = () => {
     if (onAccept) {
@@ -583,14 +583,14 @@ export function TicketDetail({
               {/* Completion Status */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  {ticket.status === "closed" ? (
+                  {ticket.status === "COMPLETED" ? (
                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                   ) : (
                     <Circle className="h-5 w-5 text-gray-300" />
                   )}
                   <span className="font-medium">{t("complete")}</span>
                 </div>
-                {ticket.status === "closed" && ticket.completionPhoto ? (
+                {ticket.status === "COMPLETED" && ticket.completionPhoto ? (
                   <div className="pl-7">
                     <img
                       src={ticket.completionPhoto}
@@ -730,7 +730,7 @@ export function TicketDetail({
                       {comment.type === "cancel" && (
                         <Badge className="bg-orange-500 flex-shrink-0">{t("cancelled")}</Badge>
                       )}
-                      {ticket.status === "onHold" && comment.comment.toLowerCase().includes("hold") && (
+                      {ticket.status === "ON_HOLD" && comment.comment.toLowerCase().includes("hold") && (
                         <Badge className="bg-yellow-500 flex-shrink-0">{t("onHold")}</Badge>
                       )}
                     </div>

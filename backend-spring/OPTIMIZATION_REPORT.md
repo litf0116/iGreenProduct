@@ -152,5 +152,5 @@ mvn package -DskipTests
 mvn spring-boot:run
 
 # 5. 运行 API 测试
-bash scripts/api_test.sh localhost 8001
+bash scripts/api_test.sh localhost 8000
 ```
