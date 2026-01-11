@@ -56,6 +56,7 @@ class UserServiceTest {
                 .hashedPassword("$2a$10$encodedpassword")
                 .role(UserRole.ENGINEER)
                 .status(UserStatus.ACTIVE)
+                .country("CN")
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -136,9 +137,9 @@ class UserServiceTest {
     @Test
     @DisplayName("Should login successfully with valid credentials")
     void login_Success() {
-        LoginRequest request = new LoginRequest("test@example.com", "password123");
+        LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -149,11 +150,11 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when login with invalid email")
-    void login_InvalidEmail() {
-        LoginRequest request = new LoginRequest("nonexistent@example.com", "password123");
+    @DisplayName("Should throw exception when login with invalid credentials")
+    void login_InvalidCredentials() {
+        LoginRequest request = new LoginRequest("nonexistent", "password123", "CN");
 
-        when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameAndCountry("nonexistent", "CN")).thenReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
@@ -164,9 +165,9 @@ class UserServiceTest {
     @Test
     @DisplayName("Should throw exception when login with wrong password")
     void login_WrongPassword() {
-        LoginRequest request = new LoginRequest("test@example.com", "wrongpassword");
+        LoginRequest request = new LoginRequest("testuser", "wrongpassword", "CN");
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("wrongpassword", "$2a$10$encodedpassword")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -179,9 +180,9 @@ class UserServiceTest {
     @DisplayName("Should throw exception when login with inactive user")
     void login_InactiveUser() {
         testUser.setStatus(UserStatus.INACTIVE);
-        LoginRequest request = new LoginRequest("test@example.com", "password123");
+        LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -191,19 +192,59 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw exception when username is blank")
+    void login_UsernameRequired() {
+        LoginRequest request = new LoginRequest("", "password123", "CN");
+
+        when(userRepository.findByUsernameAndCountry("", "CN")).thenReturn(Optional.empty());
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.login(request));
+
+        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when password is blank")
+    void login_PasswordRequired() {
+        LoginRequest request = new LoginRequest("testuser", "", "CN");
+
+        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.login(request));
+
+        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when country is blank")
+    void login_CountryRequired() {
+        LoginRequest request = new LoginRequest("testuser", "password123", "");
+
+        when(userRepository.findByUsernameAndCountry("testuser", "")).thenReturn(Optional.empty());
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.login(request));
+
+        assertEquals(ErrorCode.INVALID_CREDENTIALS.getCode(), exception.getCode());
+    }
+
+    @Test
     @DisplayName("Should register new user successfully")
     void register_Success() {
         RegisterRequest request = new RegisterRequest(
                 "New User",
                 "newuser",
-                "new@example.com",
                 "password123",
+                "password123",
+                "CN",
                 "engineer"
         );
 
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("$2a$10$newencoded");
+        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$newencoded");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId("new-user-id");
@@ -215,6 +256,133 @@ class UserServiceTest {
 
         assertNotNull(response);
         assertEquals("jwt-token", response.accessToken());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when password mismatch")
+    void register_PasswordMismatch() {
+        RegisterRequest request = new RegisterRequest(
+                "New User",
+                "newuser",
+                "password123",
+                "differentpassword",
+                "CN",
+                "engineer"
+        );
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.register(request));
+
+        assertEquals(ErrorCode.PASSWORD_MISMATCH.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when country is required")
+    void register_CountryRequired() {
+        RegisterRequest request = new RegisterRequest(
+                "New User",
+                "newuser",
+                "password123",
+                "password123",
+                "",
+                "engineer"
+        );
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.register(request));
+
+        assertEquals(ErrorCode.COUNTRY_REQUIRED.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when username exists in country")
+    void register_UsernameExistsInCountry() {
+        RegisterRequest request = new RegisterRequest(
+                "New User",
+                "existinguser",
+                "password123",
+                "password123",
+                "CN",
+                "engineer"
+        );
+
+        when(userRepository.existsByUsernameAndCountry("existinguser", "CN")).thenReturn(true);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.register(request));
+
+        assertEquals(ErrorCode.USERNAME_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when name exists in country")
+    void register_NameExistsInCountry() {
+        RegisterRequest request = new RegisterRequest(
+                "Existing User",
+                "newuser",
+                "password123",
+                "password123",
+                "CN",
+                "engineer"
+        );
+
+        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userRepository.existsByNameAndCountry("Existing User", "CN")).thenReturn(true);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.register(request));
+
+        assertEquals(ErrorCode.NAME_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when role is invalid")
+    void register_InvalidRole() {
+        RegisterRequest request = new RegisterRequest(
+                "New User",
+                "newuser",
+                "password123",
+                "password123",
+                "CN",
+                "invalid_role"
+        );
+
+        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> userService.register(request));
+
+        assertEquals(ErrorCode.INVALID_ROLE.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("Should use default role when role is null")
+    void register_DefaultRole() {
+        RegisterRequest request = new RegisterRequest(
+                "New User",
+                "newuser",
+                "password123",
+                "password123",
+                "CN",
+                null
+        );
+
+        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$newencoded");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId("new-user-id");
+            return user;
+        });
+        when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
+
+        TokenResponse response = userService.register(request);
+
+        assertNotNull(response);
+        assertEquals("jwt-token", response.accessToken());
+        verify(userRepository).save(argThat(user -> user.getRole() == UserRole.ENGINEER));
     }
 
     @Test

@@ -4,12 +4,7 @@ import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.common.utils.JwtUtils;
-import com.igreen.domain.dto.LoginRequest;
-import com.igreen.domain.dto.RegisterRequest;
-import com.igreen.domain.dto.TokenResponse;
-import com.igreen.domain.dto.UserCreateRequest;
-import com.igreen.domain.dto.UserResponse;
-import com.igreen.domain.dto.UserUpdateRequest;
+import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
@@ -61,7 +56,7 @@ public class UserService {
 
     @Transactional
     public TokenResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
+        User user = userRepository.findByUsernameAndCountry(request.username(), request.country())
                 .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), user.getHashedPassword())) {
@@ -78,21 +73,37 @@ public class UserService {
 
     @Transactional
     public TokenResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        if (request.country() == null || request.country().isBlank()) {
+            throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
+        }
+
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        if (userRepository.existsByUsernameAndCountry(request.username(), request.country())) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
+
+        if (userRepository.existsByNameAndCountry(request.name(), request.country())) {
+            throw new BusinessException(ErrorCode.NAME_EXISTS);
+        }
+
+        UserRole role;
+        try {
+            role = request.role() != null ? UserRole.valueOf(request.role().toUpperCase()) : UserRole.ENGINEER;
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.INVALID_ROLE);
         }
 
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
                 .username(request.username())
-                .email(request.email())
                 .hashedPassword(passwordEncoder.encode(request.password()))
-                .role(request.role() != null ? UserRole.valueOf(request.role().toUpperCase()) : UserRole.ENGINEER)
+                .role(role)
                 .status(UserStatus.ACTIVE)
+                .country(request.country())
                 .build();
 
         user = userRepository.save(user);

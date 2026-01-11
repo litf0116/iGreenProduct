@@ -32,7 +32,11 @@ public enum ErrorCode {
     INVALID_TOKEN("INVALID_TOKEN", "无效令牌"),
     TOKEN_EXPIRED("TOKEN_EXPIRED", "令牌已过期"),
     INVALID_REQUEST("INVALID_REQUEST", "请求无效"),
-    INTERNAL_ERROR("INTERNAL_ERROR", "内部服务器错误");
+    INTERNAL_ERROR("INTERNAL_ERROR", "内部服务器错误"),
+    PASSWORD_MISMATCH("PASSWORD_MISMATCH", "两次输入的密码不一致"),
+    NAME_EXISTS("NAME_EXISTS", "用户全名已存在"),
+    COUNTRY_REQUIRED("COUNTRY_REQUIRED", "国家不能为空"),
+    INVALID_ROLE("INVALID_ROLE", "无效的用户角色");
 
     private final String code;
     private final String message;
