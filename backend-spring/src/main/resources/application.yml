@@ -24,6 +24,13 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+# PageHelper 分页配置
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
 server:
   port: ${SERVER_PORT:8000}
 

@@ -6,7 +6,6 @@ import com.igreen.domain.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +16,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
-@Slf4j
 public class FileController {
 
     private final FileService fileService;

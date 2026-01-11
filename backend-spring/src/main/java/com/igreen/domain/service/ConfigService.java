@@ -1,11 +1,14 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.*;
 import com.igreen.domain.enums.Priority;
-import com.igreen.domain.repository.*;
+import com.igreen.domain.mapper.ProblemTypeMapper;
+import com.igreen.domain.mapper.SLAConfigMapper;
+import com.igreen.domain.mapper.SiteLevelConfigMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,30 +20,30 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ConfigService {
 
-    private final SLAConfigRepository slaConfigRepository;
-    private final ProblemTypeRepository problemTypeRepository;
-    private final SiteLevelConfigRepository siteLevelConfigRepository;
+
+    private final SLAConfigMapper slaConfigMapper;
+    private final ProblemTypeMapper problemTypeMapper;
+    private final SiteLevelConfigMapper siteLevelConfigMapper;
 
     @Transactional(readOnly = true)
     public List<SLAConfigResponse> getAllSLAConfigs() {
-        return slaConfigRepository.findAll().stream()
+        return slaConfigMapper.selectList(new LambdaQueryWrapper<>()).stream()
                 .map(this::toSLAConfigResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public SLAConfigResponse getSLAConfigByPriority(Priority priority) {
-        SLAConfig config = slaConfigRepository.findByPriority(priority)
+        SLAConfig config = slaConfigMapper.selectByPriority(priority.name())
                 .orElseThrow(() -> new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND));
         return toSLAConfigResponse(config);
     }
 
     @Transactional
     public SLAConfigResponse createOrUpdateSLAConfig(SLAConfigRequest request) {
-        SLAConfig config = slaConfigRepository.findByPriority(request.priority())
+        SLAConfig config = slaConfigMapper.selectByPriority(request.priority().name())
                 .orElseGet(() -> {
                     SLAConfig newConfig = new SLAConfig();
                     newConfig.setId(UUID.randomUUID().toString());
@@ -51,20 +54,23 @@ public class ConfigService {
         config.setResponseTimeMinutes(request.responseTimeMinutes());
         config.setCompletionTimeHours(request.completionTimeHours());
 
-        config = slaConfigRepository.save(config);
+        if (config.getId() == null) {
+            config.setId(UUID.randomUUID().toString());
+        }
+        slaConfigMapper.insert(config);
         return toSLAConfigResponse(config);
     }
 
     @Transactional(readOnly = true)
     public List<ProblemTypeResponse> getAllProblemTypes() {
-        return problemTypeRepository.findAll().stream()
+        return problemTypeMapper.selectList(new LambdaQueryWrapper<>()).stream()
                 .map(this::toProblemTypeResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public ProblemTypeResponse createProblemType(ProblemTypeRequest request) {
-        if (problemTypeRepository.existsByName(request.name())) {
+        if (problemTypeMapper.selectByName(request.name()).isPresent()) {
             throw new BusinessException(ErrorCode.PROBLEM_TYPE_EXISTS);
         }
 
@@ -74,17 +80,19 @@ public class ConfigService {
                 .description(request.description())
                 .build();
 
-        problemType = problemTypeRepository.save(problemType);
+        problemTypeMapper.insert(problemType);
         return toProblemTypeResponse(problemType);
     }
 
     @Transactional
     public ProblemTypeResponse updateProblemType(String id, ProblemTypeUpdateRequest request) {
-        ProblemType problemType = problemTypeRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND));
+        ProblemType problemType = problemTypeMapper.selectById(id);
+        if (problemType == null) {
+            throw new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND);
+        }
 
         if (request.name() != null) {
-            if (problemTypeRepository.existsByNameAndIdNot(request.name(), id)) {
+            if (problemTypeMapper.countByNameAndIdNot(request.name(), id) > 0) {
                 throw new BusinessException(ErrorCode.PROBLEM_TYPE_EXISTS);
             }
             problemType.setName(request.name());
@@ -94,28 +102,28 @@ public class ConfigService {
             problemType.setDescription(request.description());
         }
 
-        problemType = problemTypeRepository.save(problemType);
+        problemTypeMapper.updateById(problemType);
         return toProblemTypeResponse(problemType);
     }
 
     @Transactional
     public void deleteProblemType(String id) {
-        if (!problemTypeRepository.existsById(id)) {
+        if (problemTypeMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND);
         }
-        problemTypeRepository.deleteById(id);
+        problemTypeMapper.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public List<SiteLevelConfigResponse> getAllSiteLevelConfigs() {
-        return siteLevelConfigRepository.findAll().stream()
+        return siteLevelConfigMapper.selectList(new LambdaQueryWrapper<>()).stream()
                 .map(this::toSiteLevelConfigResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public SiteLevelConfigResponse createSiteLevelConfig(SiteLevelConfigRequest request) {
-        if (siteLevelConfigRepository.existsByLevelName(request.levelName())) {
+        if (siteLevelConfigMapper.countByLevelName(request.levelName()) > 0) {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
         }
 
@@ -127,17 +135,19 @@ public class ConfigService {
                 .escalationTimeHours(request.escalationTimeHours())
                 .build();
 
-        config = siteLevelConfigRepository.save(config);
+        siteLevelConfigMapper.insert(config);
         return toSiteLevelConfigResponse(config);
     }
 
     @Transactional
     public SiteLevelConfigResponse updateSiteLevelConfig(String id, SiteLevelConfigUpdateRequest request) {
-        SiteLevelConfig config = siteLevelConfigRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND));
+        SiteLevelConfig config = siteLevelConfigMapper.selectById(id);
+        if (config == null) {
+            throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND);
+        }
 
         if (request.levelName() != null) {
-            if (siteLevelConfigRepository.existsByLevelNameAndIdNot(request.levelName(), id)) {
+            if (siteLevelConfigMapper.countByLevelNameAndIdNot(request.levelName(), id) > 0) {
                 throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
             }
             config.setLevelName(request.levelName());
@@ -155,16 +165,16 @@ public class ConfigService {
             config.setEscalationTimeHours(request.escalationTimeHours());
         }
 
-        config = siteLevelConfigRepository.save(config);
+        siteLevelConfigMapper.updateById(config);
         return toSiteLevelConfigResponse(config);
     }
 
     @Transactional
     public void deleteSiteLevelConfig(String id) {
-        if (!siteLevelConfigRepository.existsById(id)) {
+        if (siteLevelConfigMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND);
         }
-        siteLevelConfigRepository.deleteById(id);
+        siteLevelConfigMapper.deleteById(id);
     }
 
     private SLAConfigResponse toSLAConfigResponse(SLAConfig config) {

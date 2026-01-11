@@ -1,47 +1,52 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.entity.Template;
 import com.igreen.domain.entity.TemplateField;
 import com.igreen.domain.entity.TemplateStep;
-import com.igreen.domain.repository.TemplateFieldRepository;
-import com.igreen.domain.repository.TemplateRepository;
-import com.igreen.domain.repository.TemplateStepRepository;
+import com.igreen.domain.mapper.TemplateFieldMapper;
+import com.igreen.domain.mapper.TemplateMapper;
+import com.igreen.domain.mapper.TemplateStepMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TemplateService {
 
-    private final TemplateRepository templateRepository;
-    private final TemplateStepRepository templateStepRepository;
-    private final TemplateFieldRepository templateFieldRepository;
+
+    private final TemplateMapper templateMapper;
+    private final TemplateStepMapper templateStepMapper;
+    private final TemplateFieldMapper templateFieldMapper;
 
     @Transactional
     public Template createTemplate(Template template) {
-        if (templateRepository.existsByName(template.getName())) {
+        if (templateMapper.countByName(template.getName()) > 0) {
             throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
         }
 
         template.setId(UUID.randomUUID().toString());
-        return templateRepository.save(template);
+        templateMapper.insert(template);
+        return template;
     }
 
     @Transactional
     public Template updateTemplate(String id, Template template) {
-        Template existing = templateRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND));
+        Template existing = templateMapper.selectById(id);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
+        }
 
         if (template.getName() != null && !template.getName().equals(existing.getName())) {
-            if (templateRepository.existsByName(template.getName())) {
+            if (templateMapper.countByName(template.getName()) > 0) {
                 throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
             }
             existing.setName(template.getName());
@@ -50,48 +55,64 @@ public class TemplateService {
             existing.setDescription(template.getDescription());
         }
 
-        return templateRepository.save(existing);
+        templateMapper.updateById(existing);
+        return existing;
     }
 
     @Transactional(readOnly = true)
     public Template getTemplateById(String id) {
-        return templateRepository.findByIdWithStepsAndFields(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND));
+        Template template = templateMapper.selectById(id);
+        if (template == null) {
+            throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
+        }
+
+        List<TemplateStep> steps = templateStepMapper.selectByTemplateIdOrderByOrderAsc(id);
+        for (TemplateStep step : steps) {
+            List<TemplateField> fields = templateFieldMapper.selectByStepId(step.getId());
+            step.setFields(fields);
+        }
+        template.setSteps(steps);
+
+        return template;
     }
 
     @Transactional(readOnly = true)
     public List<Template> getAllTemplates() {
-        return templateRepository.findAll();
+        return templateMapper.selectList(new LambdaQueryWrapper<>());
     }
 
     @Transactional
     public void deleteTemplate(String id) {
-        if (!templateRepository.existsById(id)) {
+        if (templateMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
-        templateRepository.deleteById(id);
+        templateMapper.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public List<TemplateStep> getTemplateSteps(String templateId) {
-        return templateStepRepository.findByTemplateIdOrderByOrderAsc(templateId);
+        return templateStepMapper.selectByTemplateIdOrderByOrderAsc(templateId);
     }
 
     @Transactional
     public TemplateStep createStep(String templateId, TemplateStep step) {
-        if (!templateRepository.existsById(templateId)) {
+        if (templateMapper.selectById(templateId) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
         step.setId(UUID.randomUUID().toString());
         step.setTemplateId(templateId);
-        return templateStepRepository.save(step);
+        step.setFields(new ArrayList<>());
+        templateStepMapper.insert(step);
+        return step;
     }
 
     @Transactional
     public TemplateStep updateStep(String stepId, TemplateStep step) {
-        TemplateStep existing = templateStepRepository.findById(stepId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND));
+        TemplateStep existing = templateStepMapper.selectById(stepId);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
+        }
 
         if (step.getName() != null) {
             existing.setName(step.getName());
@@ -103,37 +124,41 @@ public class TemplateService {
             existing.setOrder(step.getOrder());
         }
 
-        return templateStepRepository.save(existing);
+        templateStepMapper.updateById(existing);
+        return existing;
     }
 
     @Transactional
     public void deleteStep(String stepId) {
-        if (!templateStepRepository.existsById(stepId)) {
+        if (templateStepMapper.selectById(stepId) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
-        templateStepRepository.deleteById(stepId);
+        templateStepMapper.deleteById(stepId);
     }
 
     @Transactional(readOnly = true)
     public List<TemplateField> getStepFields(String stepId) {
-        return templateFieldRepository.findByStepId(stepId);
+        return templateFieldMapper.selectByStepId(stepId);
     }
 
     @Transactional
     public TemplateField createField(String stepId, TemplateField field) {
-        if (!templateStepRepository.existsById(stepId)) {
+        if (templateStepMapper.selectById(stepId) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
         field.setId(UUID.randomUUID().toString());
         field.setStepId(stepId);
-        return templateFieldRepository.save(field);
+        templateFieldMapper.insert(field);
+        return field;
     }
 
     @Transactional
     public TemplateField updateField(String fieldId, TemplateField field) {
-        TemplateField existing = templateFieldRepository.findById(fieldId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND));
+        TemplateField existing = templateFieldMapper.selectById(fieldId);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
+        }
 
         if (field.getName() != null) {
             existing.setName(field.getName());
@@ -148,14 +173,15 @@ public class TemplateService {
             existing.setOptions(field.getOptions());
         }
 
-        return templateFieldRepository.save(existing);
+        templateFieldMapper.updateById(existing);
+        return existing;
     }
 
     @Transactional
     public void deleteField(String fieldId) {
-        if (!templateFieldRepository.existsById(fieldId)) {
+        if (templateFieldMapper.selectById(fieldId) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
-        templateFieldRepository.deleteById(fieldId);
+        templateFieldMapper.deleteById(fieldId);
     }
 }

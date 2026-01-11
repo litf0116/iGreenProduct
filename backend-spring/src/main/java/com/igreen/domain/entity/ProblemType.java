@@ -1,24 +1,21 @@
 package com.igreen.domain.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
-@Entity
-@Table(name = "problem_types")
+import java.time.LocalDateTime;
+
+@TableName("problem_types")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ProblemType {
 
-    @Id
-    @Column(length = 36)
     private String id;
-
-    @Column(nullable = false, unique = true, length = 255)
     private String name;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -1,5 +1,8 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
@@ -8,11 +11,8 @@ import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
-import com.igreen.domain.repository.UserRepository;
+import com.igreen.domain.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,19 +23,24 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
-    private final UserRepository userRepository;
+
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, request.username());
+        if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
-        if (userRepository.existsByEmail(request.email())) {
+
+        wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getEmail, request.email());
+        if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.EMAIL_EXISTS);
         }
 
@@ -51,13 +56,16 @@ public class UserService {
                 .country(request.country())
                 .build();
 
-        user = userRepository.save(user);
+        userMapper.insert(user);
         return toResponse(user);
     }
 
     @Transactional
     public TokenResponse login(LoginRequest request) {
-        List<User> users = userRepository.findAllByUsername(request.username());
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, request.username());
+        List<User> users = userMapper.selectList(wrapper);
+
         if (users.isEmpty()) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
@@ -88,7 +96,6 @@ public class UserService {
         return new TokenResponse(token, null, 0);
     }
 
-
     @Transactional
     public TokenResponse register(RegisterRequest request) {
         if (request.country() == null || request.country().isBlank()) {
@@ -99,11 +106,15 @@ public class UserService {
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        if (userRepository.existsByUsernameAndCountry(request.username(), request.country())) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, request.username()).eq(User::getCountry, request.country());
+        if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
 
-        if (userRepository.existsByNameAndCountry(request.name(), request.country())) {
+        wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getName, request.name()).eq(User::getCountry, request.country());
+        if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.NAME_EXISTS);
         }
 
@@ -117,45 +128,62 @@ public class UserService {
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
-                .username(request.username())
+                .username(request.username()).email(request.username() + "@igreen.com")
                 .hashedPassword(passwordEncoder.encode(request.password()))
                 .role(role)
                 .status(UserStatus.ACTIVE)
                 .country(request.country())
                 .build();
 
-        user = userRepository.save(user);
+        userMapper.insert(user);
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
         return new TokenResponse(token, null, 0);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getUserById(String id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
         return toResponse(user);
     }
 
     @Transactional(readOnly = true)
     public PageResult<UserResponse> getAllUsers(int page, int size, String keyword) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        Page<User> userPage = userRepository.searchByKeyword(keyword, pageRequest);
-        List<UserResponse> users = userPage.getContent().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-        return PageResult.of(users, userPage.getTotalElements(), page, size);
+        PageHelper.startPage(page, size);
+        try {
+            LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+            if (keyword != null && !keyword.isBlank()) {
+                wrapper.and(w -> w.like(User::getUsername, keyword).or().like(User::getName, keyword));
+            }
+            wrapper.orderByDesc(User::getCreatedAt);
+
+            List<User> users = userMapper.selectList(wrapper);
+            PageInfo<User> pageInfo = new PageInfo<>(users);
+
+            List<UserResponse> userResponses = users.stream().map(this::toResponse).collect(Collectors.toList());
+
+            return PageResult.of(pageInfo, userResponses);
+        } finally {
+            PageHelper.clearPage();
+        }
     }
 
     @Transactional
     public UserResponse updateUser(String id, UserUpdateRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
 
         if (request.name() != null) {
             user.setName(request.name());
         }
         if (request.username() != null && !request.username().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(request.username())) {
+            LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(User::getUsername, request.username());
+            if (userMapper.selectCount(wrapper) > 0) {
                 throw new BusinessException(ErrorCode.USERNAME_EXISTS);
             }
             user.setUsername(request.username());
@@ -167,28 +195,33 @@ public class UserService {
             user.setStatus(request.status());
         }
 
-        user = userRepository.save(user);
+        userMapper.updateById(user);
         return toResponse(user);
     }
 
     @Transactional
     public void deleteUser(String id) {
-        if (!userRepository.existsById(id)) {
+        if (userMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
-        userRepository.deleteById(id);
+        userMapper.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> getEngineers() {
-        return userRepository.findByRole(UserRole.ENGINEER).stream()
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getRole, UserRole.ENGINEER);
+        return userMapper.selectList(wrapper).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public UserResponse updateUserCountry(String id, String country) {
-        User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
 
         if (user.getRole() == UserRole.ADMIN) {
             if (country != null && !country.isBlank()) {
@@ -209,23 +242,26 @@ public class UserService {
         }
 
         user.setCountry(country);
-        user = userRepository.save(user);
+        userMapper.updateById(user);
         return toResponse(user);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
         return toResponse(user);
     }
 
     private UserResponse toResponse(User user) {
         String groupName = null;
         if (user.getGroupId() != null) {
-            groupName = userRepository.findById(user.getGroupId())
-                    .map(User::getName)
-                    .orElse(null);
+            User groupUser = userMapper.selectById(user.getGroupId());
+            if (groupUser != null) {
+                groupName = groupUser.getName();
+            }
         }
         return new UserResponse(
                 user.getId(),

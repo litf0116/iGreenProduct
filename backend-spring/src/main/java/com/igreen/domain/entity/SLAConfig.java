@@ -1,29 +1,26 @@
 package com.igreen.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.igreen.domain.enums.Priority;
-import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
-@Table(name = "sla_configs")
+import java.time.LocalDateTime;
+
+@TableName("sla_configs")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class SLAConfig {
 
-    @Id
-    @Column(length = 36)
     private String id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    private String name;
+    private Integer responseTimeHours;
+    private Integer resolutionTimeHours;
     private Priority priority;
-
-    @Column(name = "response_time_minutes", nullable = false)
     private Integer responseTimeMinutes;
-
-    @Column(name = "completion_time_hours", nullable = false)
     private Integer completionTimeHours;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

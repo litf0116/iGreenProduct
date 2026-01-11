@@ -1,15 +1,16 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.domain.entity.Site;
 import com.igreen.domain.enums.SiteStatus;
-import com.igreen.domain.repository.SiteRepository;
+import com.igreen.domain.mapper.SiteMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,14 +19,14 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SiteService {
 
-    private final SiteRepository siteRepository;
+
+    private final SiteMapper siteMapper;
 
     @Transactional
     public Site createSite(Site site) {
-        if (siteRepository.existsByName(site.getName())) {
+        if (siteMapper.countByName(site.getName()) > 0) {
             throw new BusinessException(ErrorCode.SITE_EXISTS);
         }
 
@@ -37,44 +38,51 @@ public class SiteService {
             site.setLevel("normal");
         }
 
-        return siteRepository.save(site);
+        siteMapper.insert(site);
+        return site;
     }
 
     @Transactional(readOnly = true)
     public Site getSiteById(String id) {
-        return siteRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SITE_NOT_FOUND));
+        Site site = siteMapper.selectById(id);
+        if (site == null) {
+            throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
+        }
+        return site;
     }
 
     @Transactional(readOnly = true)
     public PageResult<Site> getAllSites(int page, int size, String keyword) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        Page<Site> sitePage;
-        if (keyword != null && !keyword.isEmpty()) {
-            sitePage = siteRepository.findByNameContaining(keyword, pageRequest);
-        } else {
-            sitePage = siteRepository.findAll(pageRequest);
+        PageHelper.startPage(page, size);
+        try {
+            List<Site> sites;
+            if (keyword != null && !keyword.isEmpty()) {
+                sites = siteMapper.selectByNameContaining(keyword);
+            } else {
+                sites = siteMapper.selectList(new LambdaQueryWrapper<>());
+            }
+
+            PageInfo<Site> pageInfo = new PageInfo<>(sites);
+            return PageResult.of(pageInfo, sites);
+        } finally {
+            PageHelper.clearPage();
         }
-        return PageResult.of(
-                sitePage.getContent(),
-                sitePage.getTotalElements(),
-                page,
-                size
-        );
     }
 
     @Transactional(readOnly = true)
     public List<Site> getSitesByStatus(SiteStatus status) {
-        return siteRepository.findByStatus(status);
+        return siteMapper.selectByStatus(status.name());
     }
 
     @Transactional
     public Site updateSite(String id, Site site) {
-        Site existingSite = siteRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SITE_NOT_FOUND));
+        Site existingSite = siteMapper.selectById(id);
+        if (existingSite == null) {
+            throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
+        }
 
         if (site.getName() != null && !site.getName().equals(existingSite.getName())) {
-            if (siteRepository.existsByName(site.getName())) {
+            if (siteMapper.countByName(site.getName()) > 0) {
                 throw new BusinessException(ErrorCode.SITE_EXISTS);
             }
             existingSite.setName(site.getName());
@@ -89,14 +97,15 @@ public class SiteService {
             existingSite.setStatus(site.getStatus());
         }
 
-        return siteRepository.save(existingSite);
+        siteMapper.updateById(existingSite);
+        return existingSite;
     }
 
     @Transactional
     public void deleteSite(String id) {
-        if (!siteRepository.existsById(id)) {
+        if (siteMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
         }
-        siteRepository.deleteById(id);
+        siteMapper.deleteById(id);
     }
 }

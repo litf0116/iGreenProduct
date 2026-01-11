@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igreen.domain.mapper.TemplateFieldMapper">
+
+    <resultMap id="BaseResultMap" type="com.igreen.domain.entity.TemplateField">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="required" column="required"/>
+        <result property="options" column="options"/>
+        <result property="stepId" column="step_id"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, type, required, options, step_id
+    </sql>
+
+    <select id="selectByStepId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM template_fields
+        WHERE step_id = #{stepId}
+    </select>
+
+</mapper>

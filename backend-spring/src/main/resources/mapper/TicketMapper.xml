@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igreen.domain.mapper.TicketMapper">
+
+    <resultMap id="BaseResultMap" type="com.igreen.domain.entity.Ticket">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="priority" column="priority"/>
+        <result property="site" column="site"/>
+        <result property="templateId" column="template_id"/>
+        <result property="assignedTo" column="assigned_to"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="completedSteps" column="completed_steps"/>
+        <result property="stepData" column="step_data"/>
+        <result property="accepted" column="accepted"/>
+        <result property="acceptedAt" column="accepted_at"/>
+        <result property="departureAt" column="departure_at"/>
+        <result property="departurePhoto" column="departure_photo"/>
+        <result property="arrivalAt" column="arrival_at"/>
+        <result property="arrivalPhoto" column="arrival_photo"/>
+        <result property="completionPhoto" column="completion_photo"/>
+        <result property="cause" column="cause"/>
+        <result property="solution" column="solution"/>
+        <result property="relatedTicketIds" column="related_ticket_ids"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="dueDate" column="due_date"/>
+    </resultMap>
+
+    <resultMap id="TicketWithDetailsResultMap" type="com.igreen.domain.entity.Ticket" extends="BaseResultMap">
+        <association property="creator" javaType="com.igreen.domain.entity.User">
+            <id property="id" column="creator_id"/>
+            <result property="name" column="creator_name"/>
+            <result property="username" column="creator_username"/>
+        </association>
+        <association property="assignee" javaType="com.igreen.domain.entity.User">
+            <id property="id" column="assignee_id"/>
+            <result property="name" column="assignee_name"/>
+            <result property="username" column="assignee_username"/>
+        </association>
+        <association property="template" javaType="com.igreen.domain.entity.Template">
+            <id property="id" column="template_id"/>
+            <result property="name" column="template_name"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, title, description, type, status, priority, site, template_id, assigned_to, created_by,
+        completed_steps, step_data, accepted, accepted_at, departure_at, departure_photo,
+        arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
+        created_at, updated_at, due_date
+    </sql>
+
+    <select id="selectByIdWithDetails" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username,
+               template.name as template_name
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN templates template ON t.template_id = template.id
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="selectByStatus" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.status = #{status}
+    </select>
+
+    <select id="selectByAssignedTo" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.assigned_to = #{assignedTo}
+    </select>
+
+    <select id="selectByCreatedBy" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.created_by = #{createdBy}
+    </select>
+
+    <select id="selectByTemplateId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM tickets
+        WHERE template_id = #{templateId}
+    </select>
+
+    <select id="selectByStatusAndAssignedTo" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.status = #{status} AND t.assigned_to = #{assignedTo}
+    </select>
+
+    <select id="selectByTypeAndPriority" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.type = #{type} AND t.priority = #{priority}
+    </select>
+
+    <select id="selectOverdueTickets" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.due_date &lt; #{date}
+        AND t.status NOT IN
+        <foreach item="status" collection="excludedStatuses" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+    </select>
+
+    <select id="selectByStatusIn" resultMap="TicketWithDetailsResultMap">
+        SELECT t.*,
+               creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
+               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+        FROM tickets t
+        LEFT JOIN users creator ON t.created_by = creator.id
+        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        WHERE t.status IN
+        <foreach item="status" collection="statuses" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+    </select>
+
+    <select id="countByAssignedToAndStatus" resultType="long">
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE assigned_to = #{userId} AND status = #{status}
+    </select>
+
+    <select id="countByFilters" resultType="int">
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE 1=1
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="priority != null">
+            AND priority = #{priority}
+        </if>
+        <if test="assignedTo != null">
+            AND assigned_to = #{assignedTo}
+        </if>
+        <if test="createdAfter != null">
+            AND created_at &gt;= #{createdAfter}
+        </if>
+    </select>
+
+</mapper>

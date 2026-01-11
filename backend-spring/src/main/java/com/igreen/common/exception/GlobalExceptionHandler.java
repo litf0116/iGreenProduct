@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Result<Void>> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         log.error("Business error at {}: {}", request.getRequestURI(), ex.getMessage());

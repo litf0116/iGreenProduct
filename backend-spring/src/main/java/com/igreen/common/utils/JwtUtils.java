@@ -23,6 +23,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
+
     @Value("${app.jwt.secret-key}")
     private String secretKey;
 

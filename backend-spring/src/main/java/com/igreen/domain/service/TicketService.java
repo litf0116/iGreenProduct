@@ -1,5 +1,8 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
@@ -19,42 +22,47 @@ import com.igreen.domain.enums.CommentType;
 import com.igreen.domain.enums.Priority;
 import com.igreen.domain.enums.TicketStatus;
 import com.igreen.domain.enums.TicketType;
-import com.igreen.domain.repository.TicketCommentRepository;
-import com.igreen.domain.repository.TicketRepository;
-import com.igreen.domain.repository.UserRepository;
+import com.igreen.domain.mapper.TicketCommentMapper;
+import com.igreen.domain.mapper.TicketMapper;
+import com.igreen.domain.mapper.UserMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TicketService {
 
-    private final TicketRepository ticketRepository;
-    private final TicketCommentRepository ticketCommentRepository;
-    private final UserRepository userRepository;
+
+    private final TicketMapper ticketMapper;
+    private final TicketCommentMapper ticketCommentMapper;
+    private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
 
     @Transactional
     public TicketResponse createTicket(TicketCreateRequest request, String currentUserId) {
-        User creator = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User creator = userMapper.selectById(currentUserId);
+        if (creator == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
 
-        User assignee = userRepository.findById(request.assignedTo())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User assignee = userMapper.selectById(request.assignedTo());
+        if (assignee == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
 
         Ticket ticket = Ticket.builder()
                 .id(UUID.randomUUID().toString())
@@ -70,43 +78,71 @@ public class TicketService {
                 .status(TicketStatus.OPEN)
                 .build();
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.insert(ticket);
         return toResponse(ticket, creator, assignee);
     }
 
     @Transactional(readOnly = true)
     public TicketResponse getTicketById(String id) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getTickets(int page, int size, String type, String status,
             String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        PageHelper.startPage(page, size);
+        try {
+            TicketType ticketType = type != null ? TicketType.fromValue(type) : null;
+            TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
+            Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
 
-        TicketType ticketType = type != null ? TicketType.fromValue(type) : null;
-        TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
-        Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
+            LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+            if (ticketType != null) {
+                wrapper.eq(Ticket::getType, ticketType);
+            }
+            if (ticketStatus != null) {
+                wrapper.eq(Ticket::getStatus, ticketStatus);
+            }
+            if (ticketPriority != null) {
+                wrapper.eq(Ticket::getPriority, ticketPriority);
+            }
+            if (assignedTo != null) {
+                wrapper.eq(Ticket::getAssignedTo, assignedTo);
+            }
+            if (createdAfter != null) {
+                wrapper.ge(Ticket::getCreatedAt, createdAfter);
+            }
 
-        Page<Ticket> ticketPage = ticketRepository.findByFilters(
-                ticketType, ticketStatus, ticketPriority, assignedTo, createdAfter, pageRequest);
+            List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
-        List<TicketResponse> tickets = ticketPage.getContent().stream()
-                .filter(ticket -> keyword == null ||
-                        ticket.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
-                        (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keyword.toLowerCase())))
-                .map(ticket -> toResponse(ticket, ticket.getCreator(), ticket.getAssignee()))
-                .collect(Collectors.toList());
+            final String keywordLower = keyword != null ? keyword.toLowerCase() : null;
+            List<TicketResponse> ticketResponses = tickets.stream()
+                    .filter(ticket -> keywordLower == null ||
+                            (ticket.getTitle() != null && ticket.getTitle().toLowerCase().contains(keywordLower)) ||
+                            (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower)))
+                    .map(ticket -> {
+                        User creator = userMapper.selectById(ticket.getCreatedBy());
+                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        return toResponse(ticket, creator, assignee);
+                    })
+                    .collect(Collectors.toList());
 
-        return PageResult.of(tickets, ticketPage.getTotalElements(), page, size);
+            PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
+            return PageResult.of(pageInfo, ticketResponses);
+        } finally {
+            PageHelper.clearPage();
+        }
     }
 
     @Transactional
     public TicketResponse updateTicket(String id, TicketUpdateRequest request) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (request.title() != null) {
@@ -176,22 +212,24 @@ public class TicketService {
             }
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public void deleteTicket(String id) {
-        if (!ticketRepository.existsById(id)) {
+        if (ticketMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
-        ticketRepository.deleteById(id);
+        ticketMapper.deleteById(id);
     }
 
     @Transactional
     public TicketResponse acceptTicket(String id, TicketAcceptRequest request, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -214,17 +252,19 @@ public class TicketService {
                     .ticketId(id)
                     .userId(userId)
                     .build();
-            ticketCommentRepository.save(comment);
+            ticketCommentMapper.insert(comment);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse declineTicket(String id, TicketDeclineRequest request, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -241,16 +281,18 @@ public class TicketService {
                 .ticketId(id)
                 .userId(userId)
                 .build();
-        ticketCommentRepository.save(comment);
+        ticketCommentMapper.insert(comment);
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse cancelTicket(String id, TicketCancelRequest request, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getCreatedBy().equals(userId)) {
@@ -266,16 +308,18 @@ public class TicketService {
                 .ticketId(id)
                 .userId(userId)
                 .build();
-        ticketCommentRepository.save(comment);
+        ticketCommentMapper.insert(comment);
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse departTicket(String id, String departurePhoto, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -288,14 +332,16 @@ public class TicketService {
             ticket.setDeparturePhoto(departurePhoto);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse arriveTicket(String id, String arrivalPhoto, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -307,14 +353,16 @@ public class TicketService {
             ticket.setArrivalPhoto(arrivalPhoto);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse submitTicket(String id, StepData stepData, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -324,11 +372,11 @@ public class TicketService {
         try {
             if (stepData != null && stepData.data() != null) {
                 String existingData = ticket.getStepData();
-                java.util.Map<String, Object> dataMap;
+                Map<String, Object> dataMap;
                 if (existingData != null && !existingData.isEmpty()) {
-                    dataMap = objectMapper.readValue(existingData, java.util.Map.class);
+                    dataMap = objectMapper.readValue(existingData, Map.class);
                 } else {
-                    dataMap = new java.util.HashMap<>();
+                    dataMap = new HashMap<>();
                 }
                 dataMap.putAll(stepData.data());
                 ticket.setStepData(objectMapper.writeValueAsString(dataMap));
@@ -337,14 +385,16 @@ public class TicketService {
             throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse completeTicket(String id, String completionPhoto, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getAssignedTo().equals(userId)) {
@@ -356,14 +406,16 @@ public class TicketService {
             ticket.setCompletionPhoto(completionPhoto);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketResponse reviewTicket(String id, String cause, String userId) {
-        Ticket ticket = ticketRepository.findByIdWithDetails(id)
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (cause != null) {
@@ -373,15 +425,19 @@ public class TicketService {
             ticket.setStatus(TicketStatus.COMPLETED);
         }
 
-        ticket = ticketRepository.save(ticket);
+        ticketMapper.updateById(ticket);
 
-        return toResponse(ticket, ticket.getCreator(), ticket.getAssignee());
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        return toResponse(ticket, creator, assignee);
     }
 
     @Transactional
     public TicketCommentResponse addTicketComment(String ticketId, TicketCommentCreateRequest request, String userId) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectById(ticketId);
+        if (ticket == null) {
+            throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
+        }
 
         TicketComment comment = TicketComment.builder()
                 .id(UUID.randomUUID().toString())
@@ -391,9 +447,9 @@ public class TicketService {
                 .userId(userId)
                 .build();
 
-        comment = ticketCommentRepository.save(comment);
+        ticketCommentMapper.insert(comment);
 
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userMapper.selectById(userId);
         return new TicketCommentResponse(
                 comment.getId(),
                 comment.getComment(),
@@ -407,50 +463,81 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public List<TicketCommentResponse> getTicketComments(String ticketId) {
-        return ticketCommentRepository.findByTicketIdWithUser(ticketId).stream()
-                .map(comment -> new TicketCommentResponse(
-                        comment.getId(),
-                        comment.getComment(),
-                        comment.getType().name(),
-                        comment.getUserId(),
-                        comment.getUser() != null ? comment.getUser().getName() : null,
-                        ticketId,
-                        comment.getCreatedAt()
-                ))
+        return ticketCommentMapper.selectByTicketIdWithUser(ticketId).stream()
+                .map(comment -> {
+                    User user = userMapper.selectById(comment.getUserId());
+                    return new TicketCommentResponse(
+                            comment.getId(),
+                            comment.getComment(),
+                            comment.getType().name(),
+                            comment.getUserId(),
+                            user != null ? user.getName() : null,
+                            ticketId,
+                            comment.getCreatedAt()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getMyTickets(int page, int size, String status, String userId) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        Page<Ticket> ticketPage = ticketRepository.findByAssignedToWithDetails(userId, pageRequest);
+        PageHelper.startPage(page, size);
+        try {
+            List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
+            if (status != null) {
+                tickets = tickets.stream()
+                        .filter(t -> t.getStatus().name().equals(status))
+                        .collect(Collectors.toList());
+            }
 
-        List<TicketResponse> tickets = ticketPage.getContent().stream()
-                .map(ticket -> toResponse(ticket, ticket.getCreator(), ticket.getAssignee()))
-                .collect(Collectors.toList());
+            List<TicketResponse> ticketResponses = tickets.stream()
+                    .map(ticket -> {
+                        User creator = userMapper.selectById(ticket.getCreatedBy());
+                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        return toResponse(ticket, creator, assignee);
+                    })
+                    .collect(Collectors.toList());
 
-        return PageResult.of(tickets, ticketPage.getTotalElements(), page, size);
+            PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
+            return PageResult.of(pageInfo, ticketResponses);
+        } finally {
+            PageHelper.clearPage();
+        }
     }
 
     @Transactional(readOnly = true)
     public List<TicketResponse> getPendingTickets() {
-        return ticketRepository.findByStatusIn(
-                        List.of(TicketStatus.OPEN, TicketStatus.ASSIGNED)
-                ).stream()
-                .map(ticket -> toResponse(ticket, ticket.getCreator(), ticket.getAssignee()))
+        List<String> statuses = Arrays.asList(TicketStatus.OPEN.name(), TicketStatus.ASSIGNED.name());
+        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses);
+
+        return tickets.stream()
+                .map(ticket -> {
+                    User creator = userMapper.selectById(ticket.getCreatedBy());
+                    User assignee = userMapper.selectById(ticket.getAssignedTo());
+                    return toResponse(ticket, creator, assignee);
+                })
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getCompletedTickets(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page - 1, size);
-        Page<Ticket> ticketPage = ticketRepository.findByStatusWithDetails(TicketStatus.COMPLETED, pageRequest);
+        PageHelper.startPage(page, size);
+        try {
+            List<Ticket> tickets = ticketMapper.selectByStatus(TicketStatus.COMPLETED.name());
 
-        List<TicketResponse> tickets = ticketPage.getContent().stream()
-                .map(ticket -> toResponse(ticket, ticket.getCreator(), ticket.getAssignee()))
-                .collect(Collectors.toList());
+            List<TicketResponse> ticketResponses = tickets.stream()
+                    .map(ticket -> {
+                        User creator = userMapper.selectById(ticket.getCreatedBy());
+                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        return toResponse(ticket, creator, assignee);
+                    })
+                    .collect(Collectors.toList());
 
-        return PageResult.of(tickets, ticketPage.getTotalElements(), page, size);
+            PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
+            return PageResult.of(pageInfo, ticketResponses);
+        } finally {
+            PageHelper.clearPage();
+        }
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, User assignee) {
@@ -466,7 +553,7 @@ public class TicketService {
         StepData stepData = null;
         if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
             try {
-                stepData = new StepData(objectMapper.readValue(ticket.getStepData(), java.util.Map.class));
+                stepData = new StepData(objectMapper.readValue(ticket.getStepData(), Map.class));
             } catch (JsonProcessingException e) {
                 log.error("Error parsing step data", e);
             }

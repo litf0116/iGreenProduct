@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igreen.domain.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.igreen.domain.entity.User">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="hashedPassword" column="hashed_password"/>
+        <result property="role" column="role"/>
+        <result property="status" column="status"/>
+        <result property="groupId" column="group_id"/>
+        <result property="country" column="country"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <resultMap id="UserWithGroupResultMap" type="com.igreen.domain.entity.User" extends="UserResultMap">
+        <association property="group" javaType="com.igreen.domain.entity.Group">
+            <id property="id" column="group_id"/>
+            <result property="name" column="group_name"/>
+        </association>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, username, email, hashed_password, role, status, group_id, country, created_at, updated_at
+    </sql>
+
+    <select id="selectByIdWithGroup" resultMap="UserWithGroupResultMap">
+        SELECT u.*, g.name as group_name
+        FROM users u
+        LEFT JOIN groups g ON u.group_id = g.id
+        WHERE u.id = #{id}
+    </select>
+
+    <select id="selectByRoleAndStatus" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE role = #{role} AND status = #{status}
+    </select>
+
+    <select id="selectByGroupId" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE group_id = #{groupId}
+    </select>
+
+    <select id="selectByEmail" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <select id="selectByUsername" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE username = #{username}
+    </select>
+
+    <select id="selectByUsernameAndCountry" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE username = #{username} AND country = #{country}
+    </select>
+
+</mapper>

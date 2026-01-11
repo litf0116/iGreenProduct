@@ -4,7 +4,7 @@ import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.FileUploadResponse;
 import com.igreen.domain.entity.File;
-import com.igreen.domain.repository.FileRepository;
+import com.igreen.domain.mapper.FileMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +18,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class FileService {
 
-    private final FileRepository fileRepository;
+
+    private final FileMapper fileMapper;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -67,7 +68,7 @@ public class FileService {
                 .fieldType(fieldType)
                 .build();
 
-        fileEntity = fileRepository.save(fileEntity);
+        fileMapper.insert(fileEntity);
 
         return new FileUploadResponse(
                 fileEntity.getId(),
@@ -80,8 +81,10 @@ public class FileService {
 
     @Transactional
     public void deleteFile(String fileId) {
-        File fileEntity = fileRepository.findById(fileId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+        File fileEntity = fileMapper.selectById(fileId);
+        if (fileEntity == null) {
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
 
         Path filePath = Paths.get("." + fileEntity.getUrl());
         if (Files.exists(filePath)) {
@@ -92,6 +95,6 @@ public class FileService {
             }
         }
 
-        fileRepository.delete(fileEntity);
+        fileMapper.deleteById(fileId);
     }
 }
