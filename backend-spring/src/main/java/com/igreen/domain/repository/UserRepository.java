@@ -49,4 +49,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.group WHERE u.id = :id")
     Optional<User> findByIdWithGroup(@Param("id") String id);
+
+    @Query("SELECT u FROM User u WHERE u.username = :username AND u.country LIKE %:country%")
+    Optional<User> findByUsernameAndCountryLike(@Param("username") String username, @Param("country") String country);
 }

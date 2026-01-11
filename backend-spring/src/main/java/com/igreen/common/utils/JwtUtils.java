@@ -29,6 +29,9 @@ public class JwtUtils {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
+    @Value("${app.jwt.refresh-expiration-ms}")
+    private long refreshExpirationMs;
+
     private SecretKey signingKey;
 
     @jakarta.annotation.PostConstruct
@@ -44,6 +47,14 @@ public class JwtUtils {
     public String extractUserId(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("userId", String.class);
+    }
+
+    public long getExpirationMs() {
+        return jwtExpirationMs;
+    }
+
+    public long getRefreshExpirationMs() {
+        return refreshExpirationMs;
     }
 
     public String extractRole(String token) {
@@ -69,12 +80,19 @@ public class JwtUtils {
         claims.put("userId", userId);
         claims.put("username", username);
         claims.put("role", role);
-        return createToken(claims, username);
+        return createToken(claims, username, jwtExpirationMs);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String generateRefreshToken(String userId, String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("type", "refresh");
+        return createToken(claims, username, refreshExpirationMs);
+    }
+
+    private String createToken(Map<String, Object> claims, String subject, long expirationMs) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .claims(claims)

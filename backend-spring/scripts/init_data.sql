@@ -84,21 +84,31 @@ INSERT INTO template_fields (id, step_id, name, field_type, required, options, c
 ('tf-006', 'ts-004', '测试备注', 'TEXTAREA', 0, NULL, NOW(), NOW());
 
 -- ============================================
--- 9. 管理员用户 (Admin User)
+-- 9. 管理员用户 (Admin User) - 支持多国家登录
 -- ============================================
-INSERT INTO users (id, name, username, email, hashed_password, role, status, group_id, created_at, updated_at) VALUES
-('admin-001', '系统管理员', 'admin', 'admin@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ADMIN', 'ACTIVE', 'group-001', NOW(), NOW());
+INSERT INTO users (id, name, username, email, hashed_password, role, status, group_id, country, created_at, updated_at) VALUES
+('admin-001', '系统管理员', 'admin', 'admin@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ADMIN', 'ACTIVE', 'group-001', 'CN,US,JP', NOW(), NOW());
 
 -- ============================================
 -- 10. 工程师用户 (Engineer Users)
 -- ============================================
-INSERT INTO users (id, name, username, email, hashed_password, role, status, group_id, created_at, updated_at) VALUES
-('eng-001', '张三工程师', 'zhangsan', 'zhangsan@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-001', NOW(), NOW()),
-('eng-002', '李四工程师', 'lisi', 'lisi@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-001', NOW(), NOW()),
-('eng-003', '王五工程师', 'wangwu', 'wangwu@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-002', NOW(), NOW());
+INSERT INTO users (id, name, username, email, hashed_password, role, status, group_id, country, created_at, updated_at) VALUES
+('eng-001', '张三工程师', 'zhangsan', 'zhangsan@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-001', 'CN', NOW(), NOW()),
+('eng-002', '李四工程师', 'lisi', 'lisi@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-001', 'CN', NOW(), NOW()),
+('eng-003', '王五工程师', 'wangwu', 'wangwu@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'ENGINEER', 'ACTIVE', 'group-002', 'US', NOW(), NOW());
+
+-- ============================================
+-- 11. 经理用户 (Manager Users)
+-- ============================================
+INSERT INTO users (id, name, username, email, hashed_password, role, status, group_id, country, created_at, updated_at) VALUES
+('mgr-001', '张经理', 'zhangmanager', 'zhangmanager@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'MANAGER', 'ACTIVE', 'group-001', 'CN', NOW(), NOW()),
+('mgr-002', '李经理', 'limanager', 'limanager@igreen.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'MANAGER', 'ACTIVE', 'group-002', 'US', NOW(), NOW());
 
 -- 密码说明: 所有测试用户密码均为 'password123'
 -- BCrypt 加密后的密码: $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi
+-- country 字段说明:
+--   - ADMIN: 支持多国家登录，格式为 "CN,US,JP" (逗号分隔)
+--   - MANAGER/ENGINEER: 仅支持单个国家登录
 
 -- ============================================
 -- 11. 示例工单 (Sample Tickets) - 适配现有表结构

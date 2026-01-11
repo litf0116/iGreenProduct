@@ -2,6 +2,7 @@ package com.igreen.domain.controller;
 
 import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
+import com.igreen.domain.dto.UserCountryRequest;
 import com.igreen.domain.dto.UserCreateRequest;
 import com.igreen.domain.dto.UserResponse;
 import com.igreen.domain.dto.UserUpdateRequest;
@@ -70,5 +71,14 @@ public class UserController {
     @GetMapping("/engineers")
     public ResponseEntity<Result<List<UserResponse>>> getEngineers() {
         return ResponseEntity.ok(Result.success(userService.getEngineers()));
+    }
+
+    @Operation(summary = "设置用户登录国家范围")
+    @PatchMapping("/{id}/countries")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Result<UserResponse>> updateUserCountries(
+            @PathVariable String id,
+            @Valid @RequestBody UserCountryRequest request) {
+        return ResponseEntity.ok(Result.success(userService.updateUserCountry(id, request.country())));
     }
 }

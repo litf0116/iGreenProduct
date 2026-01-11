@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,8 +57,15 @@ public class UserService {
 
     @Transactional
     public TokenResponse login(LoginRequest request) {
-        User user = userRepository.findByUsernameAndCountry(request.username(), request.country())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+        if (request.country() == null || request.country().isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        User user = userRepository.findByUsernameAndCountry(request.username(), request.country()).orElse(null);
+
+        if (user == null) {
+            user = userRepository.findByUsernameAndCountryLike(request.username(), "%" + request.country() + "%").orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+        }
 
         if (!passwordEncoder.matches(request.password(), user.getHashedPassword())) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
@@ -68,9 +76,14 @@ public class UserService {
         }
 
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
-        return new TokenResponse(token);
+        return new TokenResponse(token, null, 0);
     }
 
+
+    public static void main(String[] args) {
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        System.out.println(bCryptPasswordEncoder.encode("password123"));
+    }
     @Transactional
     public TokenResponse register(RegisterRequest request) {
         if (request.country() == null || request.country().isBlank()) {
@@ -108,7 +121,7 @@ public class UserService {
 
         user = userRepository.save(user);
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
-        return new TokenResponse(token);
+        return new TokenResponse(token, null, 0);
     }
 
     @Transactional(readOnly = true)
@@ -166,6 +179,15 @@ public class UserService {
         return userRepository.findByRole(UserRole.ENGINEER).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserResponse updateUserCountry(String id, String country) {
+        User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        user.setCountry(country);
+        user = userRepository.save(user);
+        return toResponse(user);
     }
 
     @Transactional(readOnly = true)

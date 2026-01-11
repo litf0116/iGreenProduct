@@ -34,7 +34,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(unique = true, length = 255)
     private String email;
 
     @Column(name = "hashed_password", nullable = false, length = 255)
@@ -50,6 +50,9 @@ public class User {
 
     @Column(name = "group_id", length = 36)
     private String groupId;
+
+    @Column(name = "country", length = 100)
+    private String country;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
