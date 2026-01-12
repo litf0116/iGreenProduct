@@ -558,11 +558,11 @@ public class TicketService {
         for (TicketStatusCount count : statusCounts) {
             total += count.getCount();
             switch (count.getStatus()) {
-                case "open" -> open += count.getCount();
-                case "accepted", "inProgress" -> inProgress += count.getCount();
-                case "submitted" -> submitted += count.getCount();
-                case "completed" -> completed += count.getCount();
-                case "onHold" -> onHold += count.getCount();
+                case "OPEN" -> open += count.getCount();
+                case "ACCEPTED", "IN_PROGRESS" -> inProgress += count.getCount();
+                case "SUBMITTED" -> submitted += count.getCount();
+                case "COMPLETED" -> completed += count.getCount();
+                case "ON_HOLD" -> onHold += count.getCount();
             }
         }
 
