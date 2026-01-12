@@ -18,6 +18,7 @@ import type {
   TokenResponse,
   PageParams,
   PageResult,
+  TicketStatsResponse,
 } from "./types";
 import { DEFAULT_PAGE_SIZE } from "./types";
 

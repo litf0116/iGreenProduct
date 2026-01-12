@@ -544,9 +544,7 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public TicketStatsResponse getTicketStats(String type) {
-        String ticketType = type;
-
-        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(ticketType);
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(type);
 
         long total = 0;
         long open = 0;
@@ -559,7 +557,7 @@ public class TicketService {
             total += count.getCount();
             switch (count.getStatus()) {
                 case "OPEN" -> open += count.getCount();
-                case "ACCEPTED", "IN_PROGRESS" -> inProgress += count.getCount();
+                case "ASSIGNED", "ACCEPTED", "IN_PROGRESS" -> inProgress += count.getCount();
                 case "SUBMITTED" -> submitted += count.getCount();
                 case "COMPLETED" -> completed += count.getCount();
                 case "ON_HOLD" -> onHold += count.getCount();
