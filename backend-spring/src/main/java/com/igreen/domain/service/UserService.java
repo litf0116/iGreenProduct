@@ -9,6 +9,7 @@ import com.igreen.common.result.PageResult;
 import com.igreen.common.utils.JwtUtils;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.User;
+import com.igreen.domain.enums.CountryCode;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
 import com.igreen.domain.mapper.UserMapper;
@@ -225,11 +226,14 @@ public class UserService {
 
         if (user.getRole() == UserRole.ADMIN) {
             if (country != null && !country.isBlank()) {
-                String[] countries = country.split(",");
-                for (String c : countries) {
-                    if (c.trim().isEmpty()) {
-                        throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
-                    }
+                try {
+                    List<CountryCode> countries = CountryCode.parseCountries(country);
+                    String validCountryStr = CountryCode.getAllCodes().stream()
+                            .filter(code -> countries.stream().anyMatch(c -> c.getCode().equals(code)))
+                            .collect(Collectors.joining(","));
+                    country = validCountryStr;
+                } catch (IllegalArgumentException e) {
+                    throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
                 }
             }
         } else {
@@ -239,6 +243,10 @@ public class UserService {
             if (country.contains(",")) {
                 throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
             }
+            if (!CountryCode.isValidCountry(country)) {
+                throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
+            }
+            country = CountryCode.fromNameOrCode(country).getCode();
         }
 
         user.setCountry(country);

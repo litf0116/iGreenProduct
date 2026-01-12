@@ -1,5 +1,6 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.igreen.domain.enums.Priority;
 import com.igreen.domain.enums.TicketType;
 
@@ -20,15 +21,21 @@ public record TicketResponse(
     String assignedToName,
     String createdBy,
     String createdByName,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime updatedAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime dueDate,
     List<String> completedSteps,
     StepData stepData,
     Boolean accepted,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime acceptedAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime departureAt,
     String departurePhoto,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime arrivalAt,
     String arrivalPhoto,
     String completionPhoto,

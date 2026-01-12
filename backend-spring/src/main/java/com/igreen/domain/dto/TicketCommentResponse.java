@@ -1,5 +1,7 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public record TicketCommentResponse(
@@ -9,5 +11,6 @@ public record TicketCommentResponse(
     String userId,
     String userName,
     String ticketId,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdAt
 ) {}
