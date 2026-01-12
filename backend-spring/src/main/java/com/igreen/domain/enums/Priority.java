@@ -17,8 +17,11 @@ public enum Priority {
     }
 
     public static Priority fromValue(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Priority cannot be null");
+        }
         for (Priority priority : values()) {
-            if (priority.value.equals(value)) {
+            if (priority.value.equalsIgnoreCase(value)) {
                 return priority;
             }
         }

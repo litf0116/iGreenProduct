@@ -66,22 +66,32 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
+        TicketType ticketType = TicketType.fromValue(request.type());
+        Priority ticketPriority = request.priority() != null ? Priority.fromValue(request.priority()) : null;
+
+        String relatedTicketIdsJson = null;
+        if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
+            try {
+                relatedTicketIdsJson = objectMapper.writeValueAsString(request.relatedTicketIds());
+            } catch (JsonProcessingException e) {
+                throw new BusinessException(ErrorCode.INVALID_REQUEST);
+            }
+        }
+
         Ticket ticket = Ticket.builder()
                 .id(UUID.randomUUID().toString())
                 .title(request.title())
                 .description(request.description())
-                .type(request.type())
+                .type(ticketType)
                 .site(request.site())
-                .priority(request.priority())
+                .priority(ticketPriority)
                 .templateId(request.templateId())
                 .assignedTo(request.assignedTo())
                 .createdBy(currentUserId)
                 .dueDate(request.dueDate())
                 .status(TicketStatus.OPEN)
                 .problemType(request.problemType())
-                .relatedTicketIds(request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()
-                        ? String.join(",", request.relatedTicketIds())
-                        : null)
+                .relatedTicketIds(relatedTicketIdsJson)
                 .build();
 
         ticketMapper.insert(ticket);
@@ -105,8 +115,8 @@ public class TicketService {
         PageHelper.startPage(page, size);
         try {
             TicketType ticketType = type != null ? TicketType.fromValue(type) : null;
-            TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
-            Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
+            TicketStatus ticketStatus = status != null ? TicketStatus.fromValue(status) : null;
+            Priority ticketPriority = priority != null ? Priority.fromValue(priority) : null;
 
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
             if (ticketType != null) {
@@ -548,7 +558,8 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public TicketStatsResponse getTicketStats(String type) {
-        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(type);
+        String queryType = "all".equalsIgnoreCase(type) ? null : type;
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(queryType);
 
         long total = 0;
         long open = 0;
@@ -612,9 +623,9 @@ public class TicketService {
                 ticket.getId(),
                 ticket.getTitle(),
                 ticket.getDescription(),
-                ticket.getType().name(),
-                ticket.getStatus().name(),
-                ticket.getPriority() != null ? ticket.getPriority().name() : null,
+                ticket.getType().getValue(),
+                ticket.getStatus().getValue(),
+                ticket.getPriority() != null ? ticket.getPriority().getValue() : null,
                 ticket.getSite(),
                 ticket.getTemplateId(),
                 null,
@@ -637,7 +648,8 @@ public class TicketService {
                 ticket.getCause(),
                 ticket.getSolution(),
                 comments,
-                relatedTicketIds
+                relatedTicketIds,
+                ticket.getProblemType()
         );
     }
 }

@@ -42,5 +42,6 @@ public record TicketResponse(
     String cause,
     String solution,
     List<TicketCommentResponse> comments,
-    List<String> relatedTicketIds
+    List<String> relatedTicketIds,
+    String problemType
 ) {}

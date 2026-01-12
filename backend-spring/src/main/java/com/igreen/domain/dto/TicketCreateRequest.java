@@ -11,9 +11,9 @@ import java.util.List;
 public record TicketCreateRequest(
     @NotBlank @NotNull String title,
     String description,
-    @NotNull TicketType type,
+    @NotNull String type,
     String site,
-    Priority priority,
+    String priority,
     @NotBlank String templateId,
     @NotBlank String assignedTo,
     @NotNull LocalDateTime dueDate,

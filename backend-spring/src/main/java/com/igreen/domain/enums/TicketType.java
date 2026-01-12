@@ -17,8 +17,11 @@ public enum TicketType {
     }
 
     public static TicketType fromValue(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+        }
         for (TicketType type : values()) {
-            if (type.value.equals(value)) {
+            if (type.value.equalsIgnoreCase(value)) {
                 return type;
             }
         }

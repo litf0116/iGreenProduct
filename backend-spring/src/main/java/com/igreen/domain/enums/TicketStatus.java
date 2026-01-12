@@ -20,8 +20,11 @@ public enum TicketStatus {
     }
 
     public static TicketStatus fromValue(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
         for (TicketStatus status : values()) {
-            if (status.value.equals(value)) {
+            if (status.value.equalsIgnoreCase(value)) {
                 return status;
             }
         }
