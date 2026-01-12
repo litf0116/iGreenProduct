@@ -16,7 +16,10 @@ import type {
   TemplateStep,
   TemplateField,
   TokenResponse,
+  PageParams,
+  PageResult,
 } from "./types";
+import { DEFAULT_PAGE_SIZE } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -262,21 +265,15 @@ export const api = {
   },
 
   // ========== Users ==========
-  getUsers: async (params?: {
-    page?: number;
-    size?: number;
+  getUsers: async (params?: PageParams & {
     keyword?: string;
   }): Promise<PageResult<User>> => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append('page', String(params.page));
-    if (params?.size !== undefined) queryParams.append('size', String(params.size));
+    queryParams.append('page', String(params?.page ?? 0));
+    queryParams.append('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.keyword) queryParams.append('keyword', params.keyword);
 
-    const url = queryParams.toString()
-      ? `/api/users?${queryParams}`
-      : '/api/users';
-
-    return fetchWithAuth(url);
+    return fetchWithAuth(`/api/users?${queryParams}`);
   },
 
   getUser: async (id: string): Promise<User> => {
@@ -341,21 +338,15 @@ export const api = {
   },
 
   // ========== Sites ==========
-  getSites: async (params?: {
-    page?: number;
-    size?: number;
+  getSites: async (params?: PageParams & {
     keyword?: string;
   }): Promise<PageResult<Site>> => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append('page', String(params.page));
-    if (params?.size !== undefined) queryParams.append('size', String(params.size));
+    queryParams.append('page', String(params?.page ?? 0));
+    queryParams.append('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.keyword) queryParams.append('keyword', params.keyword);
 
-    const url = queryParams.toString()
-      ? `/api/sites?${queryParams}`
-      : '/api/sites';
-
-    return fetchWithAuth(url);
+    return fetchWithAuth(`/api/sites?${queryParams}`);
   },
 
   getSite: async (id: string): Promise<Site> => {
@@ -489,27 +480,21 @@ export const api = {
   },
 
   // ========== Tickets ==========
-  getTickets: async (params?: {
-    page?: number;
-    size?: number;
+  getTickets: async (params?: PageParams & {
     status?: string;
     priority?: string;
     assignedTo?: string;
     keyword?: string;
   }): Promise<PageResult<Ticket>> => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append('page', String(params.page));
-    if (params?.size !== undefined) queryParams.append('size', String(params.size));
+    queryParams.append('page', String(params?.page ?? 0));
+    queryParams.append('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.status) queryParams.append('status', params.status);
     if (params?.priority) queryParams.append('priority', params.priority);
     if (params?.assignedTo) queryParams.append('assignedTo', params.assignedTo);
     if (params?.keyword) queryParams.append('keyword', params.keyword);
 
-    const url = queryParams.toString()
-      ? `/api/tickets?${queryParams}`
-      : '/api/tickets';
-
-    return fetchWithAuth(url);
+    return fetchWithAuth(`/api/tickets?${queryParams}`);
   },
 
   getTicket: async (id: string): Promise<Ticket> => {
@@ -613,15 +598,11 @@ export const api = {
     status?: string;
   }): Promise<PageResult<Ticket>> => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append('page', String(params.page));
-    if (params?.size !== undefined) queryParams.append('size', String(params.size));
+    queryParams.append('page', String(params?.page ?? 0));
+    queryParams.append('size', String(params?.size ?? 20));
     if (params?.status) queryParams.append('status', params.status);
 
-    const url = queryParams.toString()
-      ? `/api/tickets/my?${queryParams}`
-      : '/api/tickets/my';
-
-    return fetchWithAuth(url);
+    return fetchWithAuth(`/api/tickets/my?${queryParams}`);
   },
 
   getPendingTickets: async (): Promise<Ticket[]> => {
@@ -633,14 +614,10 @@ export const api = {
     size?: number;
   }): Promise<PageResult<Ticket>> => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append('page', String(params.page));
-    if (params?.size !== undefined) queryParams.append('size', String(params.size));
+    queryParams.append('page', String(params?.page ?? 0));
+    queryParams.append('size', String(params?.size ?? 20));
 
-    const url = queryParams.toString()
-      ? `/api/tickets/completed?${queryParams}`
-      : '/api/tickets/completed';
-
-    return fetchWithAuth(url);
+    return fetchWithAuth(`/api/tickets/completed?${queryParams}`);
   },
 
   // ========== File Upload ==========

@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { 
+import { Skeleton } from "./ui/skeleton";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -21,35 +23,54 @@ import {
 } from "./ui/table";
 import { Ticket, TicketStatus, TicketType } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
-import { 
-  ClipboardList, 
-  AlertCircle, 
-  Clock, 
-  CheckCircle2, 
+import { useDataStore, useUIStore } from "../store";
+import api from "../lib/api";
+import { toast } from "sonner";
+import {
+  ClipboardList,
+  AlertCircle,
+  Clock,
+  CheckCircle2,
   Plus,
   Search,
   Calendar,
   Filter,
-  ArrowUpDown,
 } from "lucide-react";
-
-interface DashboardProps {
-  tickets: Ticket[];
-  stats?: {
-    total: number;
-    pending: number;
-    inProgress: number;
-    completed: number;
-  };
-  language: Language;
-  onCreateTicket: () => void;
-  onViewTicket: (ticket: Ticket) => void;
-}
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
-export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket, onViewTicket }: DashboardProps) {
+export function Dashboard() {
+  const navigate = useNavigate();
+
+  // 从 store 获取数据和状态
+  const tickets = useDataStore((state) => state.tickets);
+  const setTickets = useDataStore((state) => state.setTickets);
+  const language = useUIStore((state) => state.language);
+  const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
+  const openModal = useUIStore((state) => state.openModal);
+
   const t = (key: TranslationKey) => translations[language][key];
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 组件挂载时从 API 加载数据
+  const loadTickets = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.getTickets({ page: 0, size: 100 });
+      setTickets(response.records || response || []);
+    } catch (error) {
+      console.error("Failed to load tickets:", error);
+      toast.error(t("errorOccurred") || "Failed to load tickets");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setTickets, t]);
+
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets]);
 
   const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
@@ -114,15 +135,6 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
 
   // Calculate stats based on current filters (excluding status filter to show distribution)
   const stats = useMemo(() => {
-    if (propsStats) {
-      return {
-        ...propsStats,
-        open: propsStats.pending,
-        submitted: 0,
-        onHold: 0,
-      };
-    }
-
     const relevantTickets = tickets.filter((ticket) => {
       const ticketType = ticket.type.toUpperCase();
       if (ticketType !== activeTab.toUpperCase()) return false;
@@ -150,7 +162,7 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
       completed: relevantTickets.filter((t) => s(t.status) === "COMPLETED").length,
       onHold: relevantTickets.filter((t) => s(t.status) === "ON_HOLD").length,
     };
-  }, [tickets, activeTab, timeFilter, priorityFilter, searchQuery, propsStats]);
+  }, [tickets, activeTab, timeFilter, priorityFilter, searchQuery]);
 
   const getStatusColor = (status: TicketStatus) => {
     const s = status.toUpperCase();
@@ -198,6 +210,25 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
     }
   };
 
+  const getPriorityBadge = (priority: string): "default" | "secondary" | "outline" | "destructive" => {
+    switch (priority) {
+      case "P1":
+      case "urgent":
+        return "destructive";
+      case "P2":
+      case "high":
+        return "default";
+      case "P3":
+      case "medium":
+        return "secondary";
+      case "P4":
+      case "low":
+        return "outline";
+      default:
+        return "default";
+    }
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : language === "pt" ? "pt-BR" : "en-US", {
       year: "numeric",
@@ -214,7 +245,7 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
           <h1 className="text-primary">{t("welcomeBack")}</h1>
           <p className="text-muted-foreground">{t("ticketOverview")}</p>
         </div>
-        <Button onClick={onCreateTicket} className="gap-2 bg-[#0ea5e9] hover:bg-[#0284c7]">
+        <Button onClick={() => navigate("/tickets")} className="gap-2 bg-[#0ea5e9] hover:bg-[#0284c7]">
           <Plus className="h-4 w-4" />
           {t("createTicket")}
         </Button>
@@ -324,7 +355,23 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="p-6 border-l-4 border-l-[#0ea5e9]">
+            {isLoading ? (
+              <>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Card key={i} className="p-6 border-l-4 border-l-gray-300">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                  </Card>
+                ))}
+              </>
+            ) : (
+              <>
+                <Card className="p-6 border-l-4 border-l-[#0ea5e9]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground">{t("totalTickets")}</p>
@@ -383,6 +430,8 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
                 <CheckCircle2 className="h-8 w-8 text-green-500" />
               </div>
             </Card>
+              </>
+            )}
           </div>
 
           {/* Tickets Table */}
@@ -404,7 +453,24 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTickets.length === 0 ? (
+                  {isLoading ? (
+                    <>
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                          <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                          <TableCell className="text-right"><Skeleton className="h-8 w-12 ml-auto" /></TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  ) : filteredTickets.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         {t("noTicketsFound")}
@@ -415,7 +481,10 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
                       <TableRow
                         key={ticket.id}
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => onViewTicket(ticket)}
+                        onClick={() => {
+                          setSelectedTicket(ticket);
+                          openModal("ticketDetail");
+                        }}
                       >
                         <TableCell className="font-medium">{ticket.id}</TableCell>
                         <TableCell>
@@ -467,7 +536,8 @@ export function Dashboard({ tickets, stats: propsStats, language, onCreateTicket
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onViewTicket(ticket);
+                              setSelectedTicket(ticket);
+                              openModal("ticketDetail");
                             }}
                           >
                             {t("view")}

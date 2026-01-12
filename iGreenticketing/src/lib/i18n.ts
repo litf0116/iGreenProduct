@@ -5,16 +5,14 @@ export const translations = {
     templates: "Templates",
     createTicket: "Create Ticket",
     myTasks: "My Tasks",
-    
+
     // Dashboard
     welcomeBack: "Welcome Back",
     ticketOverview: "Ticket Overview",
     totalTickets: "Total Tickets",
     pending: "Pending",
-    inProgress: "In Progress",
     completed: "Completed",
-    closed: "Closed",
-    
+
     // Ticket Status
     open: "Open",
     accepted: "Accepted",
@@ -23,7 +21,7 @@ export const translations = {
     closed: "Closed",
     onHold: "On Hold",
     cancelled: "Cancelled",
-    
+
     // Actions
     accept: "Accept",
     decline: "Decline",
@@ -42,7 +40,7 @@ export const translations = {
     comment: "Comment",
     reason: "Reason",
     comments: "Comments",
-    
+
     // Engineer Status
     departure: "Departure",
     arrival: "Arrival",
@@ -65,7 +63,7 @@ export const translations = {
     departureTime: "Departure Time",
     arrivalTime: "Arrival Time",
     completionTime: "Completion Time",
-    
+
     // Templates
     templateManagement: "Template Management",
     createTemplate: "Create Template",
@@ -74,18 +72,18 @@ export const translations = {
     addStep: "Add Step",
     stepName: "Step Name",
     stepDescription: "Step Description",
-    description: "Description",
+    templateDescription: "Description",
     requiredField: "Required Field",
     fieldType: "Field Type",
     saveTemplate: "Save Template",
     workProgress: "Work Progress",
-    steps: "steps",
-    assignTo: "Assigned To",
+    stepSteps: "Steps",
+    assignedToLabel: "Assigned To",
     overdueDays: "Overdue by {days} days",
     dueDays: "Due in {days} days",
     editTemplate: "Edit Template",
     deleteTemplate: "Delete Template",
-    
+
     // Field Types
     text: "Text",
     number: "Number",
@@ -94,24 +92,24 @@ export const translations = {
     photo: "Photo",
     signature: "Signature",
     faceRecognition: "Face Recognition",
-    
+
     // Create Ticket
     createNewTicket: "Create New Ticket",
     selectTemplate: "Select Template",
     ticketTitle: "Ticket Title",
-    description: "Description",
+    ticketDescription: "Description",
     assignTo: "Assign To",
     priority: "Priority",
     dueDate: "Due Date",
     submit: "Submit",
     cancel: "Cancel",
-    
+
     // Priority
     P1: "P1 - Critical",
     P2: "P2 - High",
     P3: "P3 - Medium",
     P4: "P4 - Low",
-    
+
     // My Tasks
     assignedToMe: "Assigned to Me",
     taskDetails: "Task Details",
@@ -119,7 +117,7 @@ export const translations = {
     completeStep: "Complete Step",
     markAsComplete: "Mark as Complete",
     viewDetails: "View Details",
-    
+
     // Common
     save: "Save",
     edit: "Edit",
@@ -133,10 +131,10 @@ export const translations = {
     next: "Next",
     previous: "Previous",
     confirm: "Confirm",
-    
+
     // System Settings
     systemSettings: "System Settings",
-    
+
     // Account Settings
     accountSettings: "Account Settings",
     manageProfilePreferences: "Manage your profile and preferences",
@@ -155,7 +153,7 @@ export const translations = {
     logOut: "Log Out",
     confirmLogout: "Confirm Logout",
     confirmLogoutMessage: "Are you sure you want to log out? You will need to sign in again to access your account.",
-    
+
     // Template Manager
     noTemplatesYet: "No templates yet",
     createFirstTemplate: "Create your first template to get started",
@@ -169,19 +167,14 @@ export const translations = {
     required: "Required",
     removeField: "Remove Field",
     removeStep: "Remove Step",
-    
+
     // Create Ticket
     pleaseSelectTemplate: "Please select a template",
-    
+
     // Ticket Detail
-    workProgress: "Work Progress",
     done: "Done",
     createdBy: "Created By",
-    template: "Template",
-    overdueDays: "Overdue by {days} days",
-    dueDays: "Due in {days} days",
-    accepted: "Accepted",
-    
+
     // Dashboard
     recentTickets: "Recent Tickets",
     viewAll: "View All",
@@ -190,16 +183,16 @@ export const translations = {
     overdueTickets: "Overdue Tickets",
     noTicketsYet: "No tickets yet",
     createFirstTicket: "Create your first ticket to get started",
-    
+
     // My Tasks
     noTasksAssigned: "No tasks assigned",
     youHaveNoTasks: "You have no tasks assigned at this time",
     taskStatus: "Task Status",
-    
+
     // Navigation
     tickets: "Tickets",
     ticketTemplates: "Ticket Templates",
-    
+
     // Status messages
     ticketCreated: "Ticket created successfully",
     ticketUpdated: "Ticket updated successfully",
@@ -208,11 +201,11 @@ export const translations = {
     templateUpdated: "Template updated successfully",
     templateDeleted: "Template deleted successfully",
     profileUpdated: "Profile updated successfully",
-    
+
     // Validation
     fieldRequired: "This field is required",
     invalidEmail: "Invalid email address",
-    
+
     // Time
     today: "Today",
     yesterday: "Yesterday",
@@ -220,7 +213,7 @@ export const translations = {
     thisWeek: "This Week",
     lastWeek: "Last Week",
     thisMonth: "This Month",
-    
+
     // Authentication
     signIn: "Sign In",
     signUp: "Sign Up",
@@ -249,7 +242,7 @@ export const translations = {
     signUpSuccess: "Account created successfully",
     invalidCredentials: "Invalid email or password",
     emailAlreadyExists: "Email already exists",
-    
+
     // Countries
     country: "Country",
     selectCountry: "Select Country",
@@ -257,7 +250,7 @@ export const translations = {
     indonesia: "Indonesia",
     brazil: "Brazil",
     mexico: "Mexico",
-    
+
     // Ticket Types
     ticketType: "Ticket Type",
     planned: "Planned",
@@ -268,35 +261,35 @@ export const translations = {
     correctiveTickets: "Corrective Tickets",
     problemTickets: "Problem Tickets",
     problem: "Problem Management",
-    
+
     // Filters
     filters: "Filters",
     timeRange: "Time Range",
     allTime: "All Time",
     within8Hours: "Within 8 Hours",
     within3Months: "Within 3 Months",
-    status: "Status",
+    ticketStatus: "Status",
     allStatus: "All Status",
     allPriorities: "All Priorities",
     searchTickets: "Search tickets...",
     clearFilters: "Clear Filters",
-    
+
     // Table
     ticketId: "Ticket ID",
     title: "Title",
     site: "Site",
     selectSite: "Select Site",
-    assignedTo: "Assigned To",
+    assignedToName: "Assigned To",
     createdDate: "Created Date",
     progress: "Progress",
     actions: "Actions",
     view: "View",
     noTicketsFound: "No tickets found",
-    
+
     // Site Management
     siteManagement: "Site Management",
     sites: "Sites",
-    
+
     // Group Management
     groupManagement: "Group Management",
     groups: "Groups",
@@ -308,7 +301,7 @@ export const translations = {
     tags: "Tags",
     addTag: "Add Tag",
     username: "Username",
-    status: "Status",
+    userStatus: "Status",
     active: "Active",
     inactive: "Inactive",
     assignGroup: "Assign Group",
@@ -324,14 +317,14 @@ export const translations = {
     enterGroupDescription: "Enter group description",
     enterUsername: "Enter username",
     selectGroup: "Select Group",
-    
+
     addSite: "Add Site",
     editSite: "Edit Site",
     deleteSite: "Delete Site",
     siteName: "Site Name",
     address: "Address",
     level: "Level",
-    status: "Status",
+    siteLevel: "Level",
     normal: "Normal",
     vip: "VIP",
     online: "Online",
@@ -352,6 +345,7 @@ export const translations = {
     vipSites: "VIP Sites",
     onlineSites: "Online Sites",
     offlineSites: "Offline Sites",
+    errorOccurred: "An error occurred",
   },
   th: {
     // Navigation
@@ -359,25 +353,23 @@ export const translations = {
     templates: "เทมเพลต",
     createTicket: "สร้างตั๋ว",
     myTasks: "งานของฉัน",
-    
+
     // Dashboard
     welcomeBack: "ยินดีต้อนรับกลับ",
     ticketOverview: "ภาพรวมตั๋ว",
     totalTickets: "ตั๋วทั้งหมด",
     pending: "รอดำเนินการ",
-    inProgress: "กำลังดำเนินการ",
     completed: "เสร็จสิ้น",
-    closed: "ปิด",
-    
+
     // Ticket Status
     open: "เปิด",
     accepted: "รับแล้ว",
     inProgress: "กำลังดำเนินการ",
     submitted: "ส่งแล้ว",
     closed: "ปิด",
-    onHold: "พักไ้",
+    onHold: "พักไว้",
     cancelled: "ยกเลิก",
-    
+
     // Actions
     accept: "รับงาน",
     decline: "ปฏิเสธ",
@@ -396,7 +388,7 @@ export const translations = {
     comment: "ความคิดเห็น",
     reason: "เหตุผล",
     comments: "ความคิดเห็น",
-    
+
     // Engineer Status
     departure: "ออกเดินทาง",
     arrival: "ถึงจุดหมาย",
@@ -419,7 +411,7 @@ export const translations = {
     departureTime: "เวลาออกเดินทาง",
     arrivalTime: "เวลามาถึง",
     completionTime: "เวลาเสร็จสิ้น",
-    
+
     // Templates
     templateManagement: "การจัดการเทมเพลต",
     createTemplate: "สร้างเทมเพลต",
@@ -428,18 +420,18 @@ export const translations = {
     addStep: "เพิ่มขั้นตอน",
     stepName: "ชื่อขั้นตอน",
     stepDescription: "รายละเอียดขั้นตอน",
-    description: "รายละเอียด",
+    templateDescription: "รายละเอียด",
     requiredField: "ฟิลด์ที่จำเป็น",
     fieldType: "ประเภทฟิลด์",
     saveTemplate: "บันทึกเทมเพลต",
     workProgress: "ความคืบหน้าการทำงาน",
-    steps: "ขั้นตอน",
-    assignTo: "มอบหมายให้",
+    stepSteps: "ขั้นตอน",
+    assignedToLabel: "มอบหมายให้",
     overdueDays: "เกินกำหนด {days} วัน",
     dueDays: "ครบกำหนดใน {days} วัน",
     editTemplate: "แก้ไขเทมเพลต",
     deleteTemplate: "ลบเทมเพลต",
-    
+
     // Field Types
     text: "ข้อความ",
     number: "ตัวเลข",
@@ -448,24 +440,24 @@ export const translations = {
     photo: "รูปภาพ",
     signature: "ลายเซ็น",
     faceRecognition: "การจดจำใบหน้า",
-    
+
     // Create Ticket
     createNewTicket: "สร้างตั๋วใหม่",
-    selectTemplate: "เลือ���เทมเพลต",
+    selectTemplate: "เลือกเทมเพลต",
     ticketTitle: "ชื่อตั๋ว",
-    description: "รายละเอียด",
+    ticketDescription: "รายละเอียด",
     assignTo: "มอบหมายให้",
     priority: "ความสำคัญ",
     dueDate: "วันครบกำหนด",
     submit: "ส่ง",
     cancel: "ยกเลิก",
-    
+
     // Priority
     P1: "P1 - วิกฤต",
     P2: "P2 - สูง",
     P3: "P3 - ปานกลาง",
     P4: "P4 - ต่ำ",
-    
+
     // My Tasks
     assignedToMe: "มอบหมายให้ฉัน",
     taskDetails: "รายละอียดงาน",
@@ -473,7 +465,7 @@ export const translations = {
     completeStep: "ขั้นตอนที่สำเร็จ",
     markAsComplete: "ทำเครื่องหมายว่าเสร็จสิ้น",
     viewDetails: "ดูรายละเอียด",
-    
+
     // Common
     save: "บันทึก",
     edit: "แก้ไข",
@@ -487,10 +479,10 @@ export const translations = {
     next: "ถัดไป",
     previous: "ก่อนหน้า",
     confirm: "ยืนยัน",
-    
+
     // System Settings
     systemSettings: "การตั้งค่าระบบ",
-    
+
     // Account Settings
     accountSettings: "การตั้งค่าบัญชี",
     manageProfilePreferences: "จัดการโปรไฟล์และการตั้งค่าของคุณ",
@@ -498,7 +490,7 @@ export const translations = {
     name: "ชื่อ",
     email: "อีเมล",
     role: "บทบาท",
-    preferences: "กรตั้งค่า",
+    preferences: "การตั้งค่า",
     language: "ภาษา",
     security: "ความปลอดภัย",
     password: "รหัสผ่าน",
@@ -509,7 +501,7 @@ export const translations = {
     logOut: "ออกจากระบบ",
     confirmLogout: "ยืนยันการออกจากระบบ",
     confirmLogoutMessage: "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ? คุณจะต้องเข้าสู่ระบบอีกครั้งเพื่อเข้าถึงบัญชีของคุณ",
-    
+
     // Template Manager
     noTemplatesYet: "ยังไม่มีเทมเพลต",
     createFirstTemplate: "สร้างเทมเพลตแรกของคุณเพื่อเริ่มต้น",
@@ -523,19 +515,14 @@ export const translations = {
     required: "จำเป็น",
     removeField: "ลบฟิลด์",
     removeStep: "ลบขั้นตอน",
-    
+
     // Create Ticket
     pleaseSelectTemplate: "กรุณาเลือกเทมเพลต",
-    
+
     // Ticket Detail
-    workProgress: "ความคืบหน้าการทำงาน",
     done: "เสร็จสิ้น",
     createdBy: "สร้างโดย",
-    template: "เทมเพลต",
-    overdueDays: "เลยกำหนด {days} วัน",
-    dueDays: "ครบกำหนดใน {days} วัน",
-    accepted: "ยอมรับแล้ว",
-    
+
     // Dashboard
     recentTickets: "ตั๋วล่าสุด",
     viewAll: "ดูทั้งหมด",
@@ -543,17 +530,17 @@ export const translations = {
     ticketsAssigned: "ตั๋วที่มอบหมาย",
     overdueTickets: "ตั๋วที่เลยกำหนด",
     noTicketsYet: "ยังไม่มีตั๋ว",
-    createFirstTicket: "ร้างตั๋วแรกของคุณเพื่อเริ่มต้น",
-    
+    createFirstTicket: "สร้างตั๋วแรกของคุณเพื่อเริ่มต้น",
+
     // My Tasks
     noTasksAssigned: "ไม่มีงานที่มอบหมาย",
     youHaveNoTasks: "คุณไม่มีงานที่มอบหมายในขณะนี้",
     taskStatus: "สถานะงาน",
-    
+
     // Navigation
     tickets: "ตั๋ว",
     ticketTemplates: "เทมเพลตตั๋ว",
-    
+
     // Status messages
     ticketCreated: "สร้างตั๋วสำเร็จแล้ว",
     ticketUpdated: "อัปเดตตั๋วสำเร็จแล้ว",
@@ -562,11 +549,11 @@ export const translations = {
     templateUpdated: "อัปเดตเทมเพลตสำเร็จแล้ว",
     templateDeleted: "ลบเทมเพลตสำเร็จแล้ว",
     profileUpdated: "อัปเดตโปรไฟล์สำเร็จแล้ว",
-    
+
     // Validation
-    fieldRequired: "ฟิลด์นี้จำเ็นต้องกรอก",
+    fieldRequired: "ฟิลด์นี้จำเป็นต้องกรอก",
     invalidEmail: "อีเมลไม่ถูกต้อง",
-    
+
     // Time
     today: "วันนี้",
     yesterday: "เมื่อวาน",
@@ -574,7 +561,7 @@ export const translations = {
     thisWeek: "สัปดาห์นี้",
     lastWeek: "สัปดาห์ที่แล้ว",
     thisMonth: "เดือนนี้",
-    
+
     // Authentication
     signIn: "เข้าสู่ระบบ",
     signUp: "สมัครสมาชิก",
@@ -603,7 +590,7 @@ export const translations = {
     signUpSuccess: "สร้างบัญชีสำเร็จ",
     invalidCredentials: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
     emailAlreadyExists: "อีเมลนี้มีอยู่ในระบบแล้ว",
-    
+
     // Countries
     country: "ประเทศ",
     selectCountry: "เลือกประเทศ",
@@ -611,7 +598,7 @@ export const translations = {
     indonesia: "อินโดนีเซีย",
     brazil: "บราซิล",
     mexico: "เม็กซิโก",
-    
+
     // Ticket Types
     ticketType: "ประเภทตั๋ว",
     planned: "วางแผน",
@@ -622,35 +609,35 @@ export const translations = {
     correctiveTickets: "ตั๋วแก้ไข",
     problemTickets: "ตั๋วปัญหา",
     problem: "การจัดการปัญหา",
-    
+
     // Filters
     filters: "ตัวกรอง",
     timeRange: "ช่วงเวลา",
     allTime: "ทุกช่วงเวลา",
     within8Hours: "ภายใน 8 ชั่วโมง",
     within3Months: "ภายใน 3 เดือน",
-    status: "สถานะ",
+    ticketStatus: "สถานะ",
     allStatus: "ทุกสถานะ",
     allPriorities: "ทุกระดับความสำคัญ",
     searchTickets: "ค้นหาตั๋ว...",
     clearFilters: "ล้างตัวกรอง",
-    
+
     // Table
     ticketId: "รหัสตั๋ว",
     title: "หัวข้อ",
     site: "สถานที่",
     selectSite: "เลือกสถานที่",
-    assignedTo: "มอบหมายให้",
+    assignedToName: "มอบหมายให้",
     createdDate: "วันที่สร้าง",
     progress: "ความคืบหน้า",
     actions: "การดำเนินการ",
     view: "ดู",
     noTicketsFound: "ไม่พบตั๋ว",
-    
+
     // Site Management
     siteManagement: "การจัดการสถานที่",
     sites: "สถานที่",
- 
+
     // Group Management
     groupManagement: "การจัดการกลุ่ม",
     groups: "กลุ่ม",
@@ -662,7 +649,7 @@ export const translations = {
     tags: "แท็ก",
     addTag: "เพิ่มแท็ก",
     username: "ชื่อผู้ใช้",
-    status: "สถานะ",
+    userStatus: "สถานะ",
     active: "ใช้งานอยู่",
     inactive: "ไม่ใช้งาน",
     assignGroup: "มอบหมายกลุ่ม",
@@ -678,14 +665,14 @@ export const translations = {
     enterGroupDescription: "กรอกรายละเอียดกลุ่ม",
     enterUsername: "กรอกชื่อผู้ใช้",
     selectGroup: "เลือกกลุ่ม",
-    
+
     addSite: "เพิ่มสถานที่",
     editSite: "แก้ไขสถานที่",
     deleteSite: "ลบสถานที่",
     siteName: "ชื่อสถานที่",
     address: "ที่อยู่",
     level: "ระดับ",
-    status: "สถานะ",
+    siteLevel: "ระดับ",
     normal: "ปกติ",
     vip: "วีไอพี",
     online: "ออนไลน์",
@@ -706,6 +693,7 @@ export const translations = {
     vipSites: "สถานที่วีไอพี",
     onlineSites: "สถานที่ออนไลน์",
     offlineSites: "สถานที่ออฟไลน์",
+    errorOccurred: "เกิดข้อผิดพลาด",
   },
 };
 

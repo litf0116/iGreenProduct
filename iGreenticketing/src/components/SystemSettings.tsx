@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SLAConfig, ProblemType, SiteLevelConfig, Priority } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
+import { useDataStore, useUIStore } from "../store";
+import api from "../lib/api";
+import { toast } from "sonner";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Skeleton } from "./ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
   Table,
@@ -33,34 +37,50 @@ import {
 } from "./ui/alert-dialog";
 import { Edit, Plus, Trash2, Settings, Clock, AlertTriangle, MapPin } from "lucide-react";
 
-interface SystemSettingsProps {
-  language: Language;
-  slaConfigs: SLAConfig[];
-  problemTypes: ProblemType[];
-  siteLevelConfigs: SiteLevelConfig[];
-  onUpdateSLA: (config: SLAConfig) => void;
-  onAddProblemType: (type: ProblemType) => void;
-  onUpdateProblemType: (type: ProblemType) => void;
-  onDeleteProblemType: (id: string) => void;
-  onAddSiteLevel: (level: SiteLevelConfig) => void;
-  onUpdateSiteLevel: (level: SiteLevelConfig) => void;
-  onDeleteSiteLevel: (id: string) => void;
-}
+export function SystemSettings() {
+  // 从 store 获取数据和状态
+  const slaConfigs = useDataStore((state) => state.slaConfigs);
+  const problemTypes = useDataStore((state) => state.problemTypes);
+  const siteLevelConfigs = useDataStore((state) => state.siteLevelConfigs);
+  const setSLAConfigs = useDataStore((state) => state.setSLAConfigs);
+  const setProblemTypes = useDataStore((state) => state.setProblemTypes);
+  const setSiteLevelConfigs = useDataStore((state) => state.setSiteLevelConfigs);
+  const updateSLAConfig = useDataStore((state) => state.updateSLAConfig);
+  const createProblemType = useDataStore((state) => state.createProblemType);
+  const updateProblemType = useDataStore((state) => state.updateProblemType);
+  const deleteProblemType = useDataStore((state) => state.deleteProblemType);
+  const createSiteLevelConfig = useDataStore((state) => state.createSiteLevelConfig);
+  const updateSiteLevelConfig = useDataStore((state) => state.updateSiteLevelConfig);
+  const deleteSiteLevelConfig = useDataStore((state) => state.deleteSiteLevelConfig);
+  const language = useUIStore((state) => state.language);
 
-export function SystemSettings({
-  language,
-  slaConfigs,
-  problemTypes,
-  siteLevelConfigs,
-  onUpdateSLA,
-  onAddProblemType,
-  onUpdateProblemType,
-  onDeleteProblemType,
-  onAddSiteLevel,
-  onUpdateSiteLevel,
-  onDeleteSiteLevel,
-}: SystemSettingsProps) {
   const t = (key: TranslationKey) => translations[language][key];
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 组件挂载时从 API 加载数据
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const [slaRes, problemsRes, levelsRes] = await Promise.all([
+          api.getSLAConfigs().catch(() => []),
+          api.getProblemTypes().catch(() => []),
+          api.getSiteLevelConfigs().catch(() => []),
+        ]);
+        setSLAConfigs(slaRes || []);
+        setProblemTypes(problemsRes || []);
+        setSiteLevelConfigs(levelsRes || []);
+      } catch (error) {
+        console.error("Failed to load config data:", error);
+        toast.error(t("errorOccurred") || "Failed to load configuration");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [setSLAConfigs, setProblemTypes, setSiteLevelConfigs, language]);
   const [activeTab, setActiveTab] = useState("sla");
 
   // Delete Confirmation State
@@ -93,17 +113,21 @@ export function SystemSettings({
     setShowProblemDialog(true);
   };
 
-  const handleSaveProblem = () => {
+  const handleSaveProblem = async () => {
     if (!problemForm.name) return;
-    
-    // Backend Integration: Create or Update Problem Type
-    // API: POST /api/problem-types (Create) or PUT /api/problem-types/:id (Update)
-    if (editingProblem) {
-      onUpdateProblemType({ ...editingProblem, ...problemForm });
-    } else {
-      onAddProblemType({ id: `PT${Date.now()}`, ...problemForm });
+
+    try {
+      if (editingProblem) {
+        await updateProblemType({ ...editingProblem, ...problemForm });
+        toast.success("Problem type updated successfully");
+      } else {
+        await createProblemType({ id: `PT${Date.now()}`, ...problemForm });
+        toast.success("Problem type created successfully");
+      }
+      setShowProblemDialog(false);
+    } catch (error) {
+      toast.error("An error occurred");
     }
-    setShowProblemDialog(false);
   };
 
   const handleOpenLevelDialog = (level?: SiteLevelConfig) => {
@@ -117,17 +141,21 @@ export function SystemSettings({
     setShowLevelDialog(true);
   };
 
-  const handleSaveLevel = () => {
+  const handleSaveLevel = async () => {
     if (!levelForm.name) return;
-    
-    // Backend Integration: Create or Update Site Level
-    // API: POST /api/site-levels (Create) or PUT /api/site-levels/:id (Update)
-    if (editingLevel) {
-      onUpdateSiteLevel({ ...editingLevel, ...levelForm });
-    } else {
-      onAddSiteLevel({ id: `SL${Date.now()}`, ...levelForm });
+
+    try {
+      if (editingLevel) {
+        await updateSiteLevelConfig({ ...editingLevel, ...levelForm });
+        toast.success("Site level updated successfully");
+      } else {
+        await createSiteLevelConfig({ id: `SL${Date.now()}`, ...levelForm });
+        toast.success("Site level created successfully");
+      }
+      setShowLevelDialog(false);
+    } catch (error) {
+      toast.error("An error occurred");
     }
-    setShowLevelDialog(false);
   };
 
   const handleOpenSLADialog = (config: SLAConfig) => {
@@ -136,13 +164,16 @@ export function SystemSettings({
     setShowSLADialog(true);
   };
 
-  const handleSaveSLA = () => {
+  const handleSaveSLA = async () => {
     if (editingSLA) {
-      // Backend Integration: Update SLA Configuration
-      // API: PUT /api/sla-configs/:priority
-      onUpdateSLA({ ...editingSLA, ...slaForm });
+      try {
+        await updateSLAConfig({ ...editingSLA, ...slaForm });
+        toast.success("SLA updated successfully");
+        setShowSLADialog(false);
+      } catch (error) {
+        toast.error("An error occurred");
+      }
     }
-    setShowSLADialog(false);
   };
 
   const handleDeleteProblemClick = (id: string) => {
@@ -157,19 +188,21 @@ export function SystemSettings({
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteType === "problem" && deleteId) {
-      // Backend Integration: Delete Problem Type
-      // API: DELETE /api/problem-types/:id
-      onDeleteProblemType(deleteId);
-    } else if (deleteType === "level" && deleteId) {
-      // Backend Integration: Delete Site Level
-      // API: DELETE /api/site-levels/:id
-      onDeleteSiteLevel(deleteId);
+  const handleConfirmDelete = async () => {
+    try {
+      if (deleteType === "problem" && deleteId) {
+        await deleteProblemType(deleteId);
+        toast.success("Problem type deleted successfully");
+      } else if (deleteType === "level" && deleteId) {
+        await deleteSiteLevelConfig(deleteId);
+        toast.success("Site level deleted successfully");
+      }
+      setDeleteDialogOpen(false);
+      setDeleteType(null);
+      setDeleteId(null);
+    } catch (error) {
+      toast.error("An error occurred");
     }
-    setDeleteDialogOpen(false);
-    setDeleteType(null);
-    setDeleteId(null);
   };
 
   return (
@@ -229,26 +262,41 @@ export function SystemSettings({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {slaConfigs.map((config) => (
-                  <TableRow key={config.priority}>
-                    <TableCell className="font-medium">
-                      <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-                        config.priority === "P1" || config.priority === "P2" ? "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80" : 
-                        config.priority === "P3" ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/80" :
-                        "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      }`}>
-                        {config.priority}
-                      </div>
-                    </TableCell>
-                    <TableCell>{config.responseTime}h</TableCell>
-                    <TableCell>{config.resolutionTime}h</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleOpenSLADialog(config)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoading ? (
+                  <>
+                    {[1, 2, 3, 4].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-6 w-12" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {slaConfigs.map((config) => (
+                      <TableRow key={config.priority}>
+                        <TableCell className="font-medium">
+                          <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                            config.priority === "P1" || config.priority === "P2" ? "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80" :
+                            config.priority === "P3" ? "border-transparent bg-primary text-primary-foreground hover:bg-primary/80" :
+                            "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                          }`}>
+                            {config.priority}
+                          </div>
+                        </TableCell>
+                        <TableCell>{config.responseTime}h</TableCell>
+                        <TableCell>{config.resolutionTime}h</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleOpenSLADialog(config)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                )}
               </TableBody>
             </Table>
           </Card>
@@ -278,28 +326,42 @@ export function SystemSettings({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {problemTypes.map((type) => (
-                  <TableRow key={type.id}>
-                    <TableCell className="font-medium">{type.name}</TableCell>
-                    <TableCell>{type.description}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenProblemDialog(type)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteProblemClick(type.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {problemTypes.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                      No problem types defined.
-                    </TableCell>
-                  </TableRow>
+                {isLoading ? (
+                  <>
+                    {[1, 2, 3].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {problemTypes.map((type) => (
+                      <TableRow key={type.id}>
+                        <TableCell className="font-medium">{type.name}</TableCell>
+                        <TableCell>{type.description}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenProblemDialog(type)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteProblemClick(type.id)} className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {problemTypes.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                          No problem types defined.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 )}
               </TableBody>
             </Table>
@@ -331,23 +393,38 @@ export function SystemSettings({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {siteLevelConfigs.map((level) => (
-                  <TableRow key={level.id}>
-                    <TableCell className="font-medium">{level.name}</TableCell>
-                    <TableCell>{level.description}</TableCell>
-                    <TableCell>x{level.slaMultiplier}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenLevelDialog(level)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteLevelClick(level.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isLoading ? (
+                  <>
+                    {[1, 2, 3].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {siteLevelConfigs.map((level) => (
+                      <TableRow key={level.id}>
+                        <TableCell className="font-medium">{level.name}</TableCell>
+                        <TableCell>{level.description}</TableCell>
+                        <TableCell>x{level.slaMultiplier}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenLevelDialog(level)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteLevelClick(level.id)} className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                )}
               </TableBody>
             </Table>
           </Card>

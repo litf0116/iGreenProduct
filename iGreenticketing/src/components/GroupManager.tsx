@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Group, User } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
+import { useDataStore, useUIStore } from "../store";
+import api from "../lib/api";
+import { toast } from "sonner";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { Skeleton } from "./ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import {
   Dialog,
@@ -28,26 +32,45 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Badge } from "./ui/badge";
 import { Plus, Edit, Trash2, Search, User as UserIcon, Users, Tag, X } from "lucide-react";
 
-interface GroupManagerProps {
-  groups: Group[];
-  users: User[];
-  language: Language;
-  onSaveGroup: (group: Partial<Group>) => void;
-  onSaveUser: (user: Partial<User> & { password?: string }) => void;
-  onDeleteGroup: (id: string) => void;
-  onDeleteUser: (id: string) => void;
-}
+export function GroupManager() {
+  // 从 store 获取数据和状态
+  const groups = useDataStore((state) => state.groups);
+  const users = useDataStore((state) => state.users);
+  const setGroups = useDataStore((state) => state.setGroups);
+  const setUsers = useDataStore((state) => state.setUsers);
+  const createGroup = useDataStore((state) => state.createGroup);
+  const updateGroup = useDataStore((state) => state.updateGroup);
+  const deleteGroup = useDataStore((state) => state.deleteGroup);
+  const createUser = useDataStore((state) => state.createUser);
+  const updateUser = useDataStore((state) => state.updateUser);
+  const deleteUser = useDataStore((state) => state.deleteUser);
+  const language = useUIStore((state) => state.language);
 
-export function GroupManager({
-  groups,
-  users,
-  language,
-  onSaveGroup,
-  onSaveUser,
-  onDeleteGroup,
-  onDeleteUser,
-}: GroupManagerProps) {
   const t = (key: TranslationKey) => translations[language][key];
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [groupsRes, usersRes] = await Promise.all([
+        api.getGroups().catch(() => []),
+        api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] })),
+      ]);
+      setGroups(groupsRes || []);
+      setUsers(usersRes.records || usersRes || []);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      toast.error(t("errorOccurred") || "Failed to load data");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setGroups, setUsers, t]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
   const [activeTab, setActiveTab] = useState("groups");
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
@@ -124,36 +147,62 @@ export function GroupManager({
     setGroupTags(groupTags.filter((t) => t !== tag));
   };
 
-  const handleSaveGroup = () => {
+  const handleSaveGroup = async () => {
     if (!groupName.trim()) return;
-    
-    // Backend Integration: Create or Update Group
-    // API: POST /api/groups (Create) or PUT /api/groups/:id (Update)
-    onSaveGroup({
-      id: editingGroup?.id,
-      name: groupName,
-      description: groupDescription,
-      tags: groupTags,
-      status: groupStatus,
-    });
-    setIsGroupDialogOpen(false);
+
+    try {
+      if (editingGroup) {
+        await updateGroup(editingGroup.id, {
+          name: groupName,
+          description: groupDescription,
+          tags: groupTags,
+          status: groupStatus,
+        });
+        toast.success(t("groupUpdated") || "Group updated successfully");
+      } else {
+        await createGroup({
+          name: groupName,
+          description: groupDescription,
+          tags: groupTags,
+          status: groupStatus,
+        });
+        toast.success(t("groupCreated") || "Group created successfully");
+      }
+      setIsGroupDialogOpen(false);
+    } catch (error) {
+      toast.error(t("errorOccurred") || "An error occurred");
+    }
   };
 
-  const handleSaveUser = () => {
+  const handleSaveUser = async () => {
     if (!userName.trim() || !userUsername.trim() || (!editingUser && !userPassword)) return;
 
-    // Backend Integration: Create or Update User
-    // API: POST /api/users (Create) or PUT /api/users/:id (Update)
-    onSaveUser({
-      id: editingUser?.id,
-      name: userName,
-      username: userUsername,
-      role: userRole,
-      groupId: userGroup,
-      status: userStatus,
-      password: userPassword,
-    });
-    setIsUserDialogOpen(false);
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, {
+          name: userName,
+          username: userUsername,
+          role: userRole,
+          groupId: userGroup,
+          status: userStatus,
+          password: userPassword,
+        });
+        toast.success(t("userUpdated") || "User updated successfully");
+      } else {
+        await createUser({
+          name: userName,
+          username: userUsername,
+          role: userRole,
+          groupId: userGroup,
+          status: userStatus,
+          password: userPassword,
+        });
+        toast.success(t("userCreated") || "User created successfully");
+      }
+      setIsUserDialogOpen(false);
+    } catch (error) {
+      toast.error(t("errorOccurred") || "An error occurred");
+    }
   };
 
   const handleDeleteGroupClick = (id: string) => {
@@ -168,19 +217,21 @@ export function GroupManager({
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteType === "group" && deleteId) {
-      // Backend Integration: Delete Group
-      // API: DELETE /api/groups/:id
-      onDeleteGroup(deleteId);
-    } else if (deleteType === "user" && deleteId) {
-      // Backend Integration: Delete User
-      // API: DELETE /api/users/:id
-      onDeleteUser(deleteId);
+  const handleConfirmDelete = async () => {
+    try {
+      if (deleteType === "group" && deleteId) {
+        await deleteGroup(deleteId);
+        toast.success(t("groupDeleted") || "Group deleted successfully");
+      } else if (deleteType === "user" && deleteId) {
+        await deleteUser(deleteId);
+        toast.success(t("userDeleted") || "User deleted successfully");
+      }
+      setDeleteDialogOpen(false);
+      setDeleteType(null);
+      setDeleteId(null);
+    } catch (error) {
+      toast.error(t("errorOccurred") || "An error occurred");
     }
-    setDeleteDialogOpen(false);
-    setDeleteType(null);
-    setDeleteId(null);
   };
 
   return (
@@ -231,43 +282,69 @@ export function GroupManager({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {groups.map((group) => (
-              <Card key={group.id} className="p-6 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg flex items-center gap-2">
-                      {group.name}
-                      <Badge variant={group.status === "active" ? "default" : "secondary"} className={group.status === "active" ? "bg-green-500 hover:bg-green-600" : ""}>
-                        {t(group.status as TranslationKey)}
-                      </Badge>
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">{group.description}</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenGroupDialog(group)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteGroupClick(group.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  {group.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="bg-secondary/50">
-                      <Tag className="h-3 w-3 mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+            {isLoading ? (
+              <>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Card key={i} className="p-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-4 w-48" />
+                      </div>
+                      <div className="flex gap-1">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                    <Skeleton className="h-4 w-24" />
+                  </Card>
+                ))}
+              </>
+            ) : (
+              <>
+                {groups.map((group) => (
+                  <Card key={group.id} className="p-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          {group.name}
+                          <Badge variant={group.status === "active" ? "default" : "secondary"} className={group.status === "active" ? "bg-green-500 hover:bg-green-600" : ""}>
+                            {t(group.status as TranslationKey)}
+                          </Badge>
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">{group.description}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenGroupDialog(group)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteGroupClick(group.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
 
-                <div className="pt-4 border-t text-sm text-muted-foreground flex justify-between">
-                  <span>{users.filter(u => u.groupId === group.id).length} {t("users")}</span>
-                  <span>{users.filter(u => u.groupId === group.id).length} {t("users")}</span>
-                </div>
-              </Card>
-            ))}
+                    <div className="flex flex-wrap gap-2">
+                      {group.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="bg-secondary/50">
+                          <Tag className="h-3 w-3 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <div className="pt-4 border-t text-sm text-muted-foreground flex justify-between">
+                      <span>{users.filter(u => u.groupId === group.id).length} {t("users")}</span>
+                      <span>{users.filter(u => u.groupId === group.id).length} {t("users")}</span>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
           </div>
         </TabsContent>
 
@@ -302,7 +379,22 @@ export function GroupManager({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {isLoading ? (
+                  <>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.username}</TableCell>
@@ -327,6 +419,8 @@ export function GroupManager({
                     </TableCell>
                   </TableRow>
                 ))}
+                  </>
+                )}
               </TableBody>
             </Table>
           </Card>

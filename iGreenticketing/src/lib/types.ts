@@ -171,6 +171,19 @@ export interface PageResult<T> {
   hasNext: boolean;
 }
 
+export interface PageParams {
+  page?: number;
+  size?: number;
+}
+
+export const DEFAULT_PAGE_SIZE = 50;
+export const MAX_PAGE_SIZE = 100;
+
+export const DEFAULT_PAGE_PARAMS: PageParams = {
+  page: 0,
+  size: DEFAULT_PAGE_SIZE,
+};
+
 export interface LoginRequest {
   email: string;
   password: string;

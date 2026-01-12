@@ -52,6 +52,23 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // React and related
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            // UI components
+            'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+            // State management
+            'state-vendor': ['zustand'],
+            // Charts
+            'charts-vendor': ['recharts'],
+            // Forms
+            'forms-vendor': ['react-hook-form'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 600,
     },
     server: {
       port: 3000,

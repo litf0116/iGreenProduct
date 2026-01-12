@@ -1,11 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Site, SiteLevel, SiteStatus } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
+import { useDataStore, useUIStore } from "../store";
+import api from "../lib/api";
+import { toast } from "sonner";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import { Skeleton } from "./ui/skeleton";
 import {
   Table,
   TableBody,
@@ -55,24 +59,36 @@ import {
 } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 
-interface SiteManagementProps {
-  sites: Site[];
-  language: Language;
-  onAddSite: (site: Omit<Site, "id" | "createdAt" | "updatedAt">) => void;
-  onUpdateSite: (id: string, site: Omit<Site, "id" | "createdAt" | "updatedAt">) => void;
-  onDeleteSite: (id: string) => void;
-  onImportSites: (sites: Site[]) => void;
-}
+export function SiteManagement() {
+  // 从 store 获取数据和状态
+  const sites = useDataStore((state) => state.sites);
+  const setSites = useDataStore((state) => state.setSites);
+  const createSite = useDataStore((state) => state.createSite);
+  const updateSite = useDataStore((state) => state.updateSite);
+  const deleteSite = useDataStore((state) => state.deleteSite);
+  const language = useUIStore((state) => state.language);
 
-export function SiteManagement({
-  sites,
-  language,
-  onAddSite,
-  onUpdateSite,
-  onDeleteSite,
-  onImportSites,
-}: SiteManagementProps) {
   const t = (key: TranslationKey) => translations[language][key];
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 组件挂载时从 API 加载数据
+  useEffect(() => {
+    const loadSites = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.getSites({ page: 0, size: 100 });
+        setSites(response.records || response || []);
+      } catch (error) {
+        console.error("Failed to load sites:", error);
+        toast.error(t("errorOccurred") || "Failed to load sites");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSites();
+  }, [setSites, language]);
 
   const [showDialog, setShowDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -111,22 +127,33 @@ export function SiteManagement({
     setShowDialog(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.address) return;
 
-    if (editingSite) {
-      onUpdateSite(editingSite.id, formData);
-    } else {
-      onAddSite(formData);
+    try {
+      if (editingSite) {
+        await updateSite(editingSite.id, formData);
+        toast.success(t("siteUpdated") || "Site updated successfully");
+      } else {
+        await createSite(formData);
+        toast.success(t("siteCreated") || "Site created successfully");
+      }
+      setShowDialog(false);
+    } catch (error) {
+      toast.error(t("errorOccurred") || "An error occurred");
     }
-    setShowDialog(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deletingSiteId) {
-      onDeleteSite(deletingSiteId);
-      setShowDeleteDialog(false);
-      setDeletingSiteId(null);
+      try {
+        await deleteSite(deletingSiteId);
+        toast.success(t("siteDeleted") || "Site deleted successfully");
+        setShowDeleteDialog(false);
+        setDeletingSiteId(null);
+      } catch (error) {
+        toast.error(t("errorOccurred") || "An error occurred");
+      }
     }
   };
 
@@ -160,29 +187,28 @@ export function SiteManagement({
     URL.revokeObjectURL(url);
   };
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = JSON.parse(e.target?.result as string);
         if (Array.isArray(data)) {
-          const importedSites: Site[] = data.map((item, index) => ({
-            id: `S${Date.now()}_${index}`,
-            name: item.name || "",
-            address: item.address || "",
-            level: item.level || "normal",
-            status: item.status || "online",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }));
-          onImportSites(importedSites);
+          for (const item of data) {
+            await createSite({
+              name: item.name || "",
+              address: item.address || "",
+              level: item.level || "normal",
+              status: item.status || "online",
+            });
+          }
+          toast.success(`${data.length} sites imported successfully`);
         }
       } catch (error) {
         console.error("Error parsing JSON:", error);
-        alert("Invalid file format");
+        toast.error("Invalid file format");
       }
     };
     reader.readAsText(file);
@@ -348,7 +374,23 @@ export function SiteManagement({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4 border-l-4 border-l-[#0ea5e9]">
+        {isLoading ? (
+          <>
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="p-4 border-l-4 border-l-gray-300">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-6 w-8" />
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+              </Card>
+            ))}
+          </>
+        ) : (
+          <>
+            <Card className="p-4 border-l-4 border-l-[#0ea5e9]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-muted-foreground">{t("totalSites")}</p>
@@ -387,6 +429,8 @@ export function SiteManagement({
             <XCircle className="h-8 w-8 text-red-500" />
           </div>
         </Card>
+          </>
+        )}
       </div>
 
       {/* Sites Table */}
@@ -404,7 +448,20 @@ export function SiteManagement({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSites.length === 0 ? (
+              {isLoading ? (
+                <>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              ) : filteredSites.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No sites found
