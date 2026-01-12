@@ -71,10 +71,11 @@ export function Dashboard() {
       setStats(data);
     } catch (error) {
       console.error("Failed to load stats:", error);
+      toast.error(t("errorOccurred") || "Failed to load statistics");
     } finally {
       setStatsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, t]);
 
   // 组件挂载时从 API 加载数据
   const loadTickets = useCallback(async () => {
