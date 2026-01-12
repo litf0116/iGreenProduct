@@ -481,6 +481,7 @@ export const api = {
 
   // ========== Tickets ==========
   getTickets: async (params?: PageParams & {
+    type?: string;
     status?: string;
     priority?: string;
     assignedTo?: string;
@@ -489,6 +490,7 @@ export const api = {
     const queryParams = new URLSearchParams();
     queryParams.append('page', String(params?.page ?? 0));
     queryParams.append('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
+    if (params?.type) queryParams.append('type', params.type);
     if (params?.status) queryParams.append('status', params.status);
     if (params?.priority) queryParams.append('priority', params.priority);
     if (params?.assignedTo) queryParams.append('assignedTo', params.assignedTo);
@@ -618,6 +620,13 @@ export const api = {
     queryParams.append('size', String(params?.size ?? 20));
 
     return fetchWithAuth(`/api/tickets/completed?${queryParams}`);
+  },
+
+  // ========== Ticket Stats ==========
+  getTicketStats: async (type?: string): Promise<TicketStatsResponse> => {
+    const queryParams = new URLSearchParams();
+    if (type) queryParams.append('type', type);
+    return fetchWithAuth(`/api/tickets/stats?${queryParams}`);
   },
 
   // ========== File Upload ==========

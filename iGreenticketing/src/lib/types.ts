@@ -407,3 +407,12 @@ export interface HealthResponse {
   status: string;
   version: string;
 }
+
+export interface TicketStatsResponse {
+  total: number;
+  open: number;
+  inProgress: number;
+  submitted: number;
+  completed: number;
+  onHold: number;
+}

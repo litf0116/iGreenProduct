@@ -53,12 +53,38 @@ export function Dashboard() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    open: 0,
+    inProgress: 0,
+    submitted: 0,
+    completed: 0,
+    onHold: 0,
+  });
+
+  // 加载统计数据
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const data = await api.getTicketStats(activeTab);
+      setStats(data);
+    } catch (error) {
+      console.error("Failed to load stats:", error);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [activeTab]);
 
   // 组件挂载时从 API 加载数据
   const loadTickets = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await api.getTickets({ page: 0, size: 100 });
+      const response = await api.getTickets({ 
+        page: 0, 
+        size: 100,
+        type: activeTab 
+      });
       setTickets(response.records || response || []);
     } catch (error) {
       console.error("Failed to load tickets:", error);
@@ -66,11 +92,12 @@ export function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [setTickets, t]);
+  }, [setTickets, t, activeTab]);
 
   useEffect(() => {
     loadTickets();
-  }, [loadTickets]);
+    loadStats();
+  }, [loadTickets, loadStats]);
 
   const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
@@ -125,7 +152,7 @@ export function Dashboard() {
           ticket.title.toLowerCase().includes(query) ||
           ticket.description.toLowerCase().includes(query) ||
           ticket.id.toLowerCase().includes(query) ||
-          ticket.assignedToName.toLowerCase().includes(query)
+          (ticket.assignedToName && ticket.assignedToName.toLowerCase().includes(query))
         );
       }
       
@@ -133,40 +160,8 @@ export function Dashboard() {
     });
   }, [tickets, activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
 
-  // Calculate stats based on current filters (excluding status filter to show distribution)
-  const stats = useMemo(() => {
-    const relevantTickets = tickets.filter((ticket) => {
-      const ticketType = ticket.type.toUpperCase();
-      if (ticketType !== activeTab.toUpperCase()) return false;
-      if (!filterByTime(ticket)) return false;
-      if (priorityFilter !== "all" && ticket.priority !== priorityFilter) return false;
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          ticket.title.toLowerCase().includes(query) ||
-          ticket.description.toLowerCase().includes(query) ||
-          ticket.id.toLowerCase().includes(query) ||
-          ticket.assignedToName.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    });
-
-    const s = (status: string) => status.toUpperCase();
-
-    return {
-      total: relevantTickets.length,
-      open: relevantTickets.filter((t) => s(t.status) === "OPEN").length,
-      inProgress: relevantTickets.filter((t) => s(t.status) === "IN_PROGRESS" || s(t.status) === "ACCEPTED").length,
-      submitted: relevantTickets.filter((t) => s(t.status) === "SUBMITTED").length,
-      completed: relevantTickets.filter((t) => s(t.status) === "COMPLETED").length,
-      onHold: relevantTickets.filter((t) => s(t.status) === "ON_HOLD").length,
-    };
-  }, [tickets, activeTab, timeFilter, priorityFilter, searchQuery]);
-
   const getStatusColor = (status: TicketStatus) => {
-    const s = status.toUpperCase();
-    switch (s) {
+    switch (status) {
       case "OPEN":
         return "bg-blue-500";
       case "ASSIGNED":
@@ -189,8 +184,7 @@ export function Dashboard() {
   };
 
   const getStatusBadgeVariant = (status: TicketStatus) => {
-    const s = status.toUpperCase();
-    switch (s) {
+    switch (status) {
       case "OPEN":
         return "default";
       case "ASSIGNED":
@@ -355,7 +349,7 @@ export function Dashboard() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {isLoading ? (
+            {isLoading || statsLoading ? (
               <>
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <Card key={i} className="p-6 border-l-4 border-l-gray-300">

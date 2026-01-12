@@ -176,4 +176,15 @@
         </if>
     </select>
 
+    <select id="countByStatusGroup" resultType="com.igreen.domain.mapper.TicketStatusCount">
+        SELECT status, COUNT(*) as count
+        FROM tickets
+        <where>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+        GROUP BY status
+    </select>
+
 </mapper>

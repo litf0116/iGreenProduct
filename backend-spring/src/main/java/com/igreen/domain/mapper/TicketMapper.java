@@ -42,4 +42,6 @@ public interface TicketMapper extends com.baomidou.mybatisplus.core.mapper.BaseM
             @Param("assignedTo") String assignedTo,
             @Param("createdAfter") LocalDateTime createdAfter
     );
+
+    List<TicketStatusCount> countByStatusGroup(@Param("type") String type);
 }

@@ -201,6 +201,13 @@ public class TicketController {
         return ResponseEntity.ok(Result.success(ticketService.getCompletedTickets(page, size)));
     }
 
+    @Operation(summary = "获取工单统计")
+    @GetMapping("/stats")
+    public ResponseEntity<Result<TicketStatsResponse>> getTicketStats(
+            @RequestParam(required = false) String type) {
+        return ResponseEntity.ok(Result.success(ticketService.getTicketStats(type)));
+    }
+
     private String getCurrentUserId(HttpServletRequest httpRequest) {
         String bearerToken = httpRequest.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {

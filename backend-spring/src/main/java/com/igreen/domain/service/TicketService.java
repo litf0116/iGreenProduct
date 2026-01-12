@@ -14,6 +14,7 @@ import com.igreen.domain.dto.TicketCommentResponse;
 import com.igreen.domain.dto.TicketCreateRequest;
 import com.igreen.domain.dto.TicketDeclineRequest;
 import com.igreen.domain.dto.TicketResponse;
+import com.igreen.domain.dto.TicketStatsResponse;
 import com.igreen.domain.dto.TicketUpdateRequest;
 import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
@@ -24,6 +25,7 @@ import com.igreen.domain.enums.TicketStatus;
 import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.mapper.TicketCommentMapper;
 import com.igreen.domain.mapper.TicketMapper;
+import com.igreen.domain.mapper.TicketStatusCount;
 import com.igreen.domain.mapper.UserMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -538,6 +540,40 @@ public class TicketService {
         } finally {
             PageHelper.clearPage();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public TicketStatsResponse getTicketStats(String type) {
+        String ticketType = type;
+
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(ticketType);
+
+        long total = 0;
+        long open = 0;
+        long inProgress = 0;
+        long submitted = 0;
+        long completed = 0;
+        long onHold = 0;
+
+        for (TicketStatusCount count : statusCounts) {
+            total += count.getCount();
+            switch (count.getStatus()) {
+                case "open" -> open += count.getCount();
+                case "accepted", "inProgress" -> inProgress += count.getCount();
+                case "submitted" -> submitted += count.getCount();
+                case "completed" -> completed += count.getCount();
+                case "onHold" -> onHold += count.getCount();
+            }
+        }
+
+        return new TicketStatsResponse(
+                (int) total,
+                (int) open,
+                (int) inProgress,
+                (int) submitted,
+                (int) completed,
+                (int) onHold
+        );
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, User assignee) {

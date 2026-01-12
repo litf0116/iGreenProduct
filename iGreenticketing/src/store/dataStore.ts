@@ -41,6 +41,12 @@ interface DataState {
   deleteTicket: (id: string) => Promise<void>;
   acceptTicket: (id: string, comment?: string) => Promise<void>;
   declineTicket: (id: string, reason: string) => Promise<void>;
+  cancelTicket: (id: string, reason: string) => Promise<void>;
+  departTicket: (id: string, departurePhoto?: string) => Promise<void>;
+  arriveTicket: (id: string, arrivalPhoto?: string) => Promise<void>;
+  submitTicket: (id: string, stepData: Record<string, any>) => Promise<void>;
+  completeTicket: (id: string, completionPhoto?: string) => Promise<void>;
+  reviewTicket: (id: string, cause?: string) => Promise<void>;
 
   // Site
   createSite: (site: Partial<Site>) => Promise<void>;
@@ -148,6 +154,78 @@ export const useDataStore = create<DataState>((set) => ({
       toast.success("Ticket declined");
     } catch (error) {
       toast.error("Failed to decline ticket");
+      throw error;
+    }
+  },
+  cancelTicket: async (id, reason) => {
+    try {
+      const updated = await api.cancelTicket(id, reason);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success("Ticket cancelled");
+    } catch (error) {
+      toast.error("Failed to cancel ticket");
+      throw error;
+    }
+  },
+  departTicket: async (id, departurePhoto) => {
+    try {
+      const updated = await api.departTicket(id, departurePhoto);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success("Engineer departed");
+    } catch (error) {
+      toast.error("Failed to depart ticket");
+      throw error;
+    }
+  },
+  arriveTicket: async (id, arrivalPhoto) => {
+    try {
+      const updated = await api.arriveTicket(id, arrivalPhoto);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success("Engineer arrived");
+    } catch (error) {
+      toast.error("Failed to arrive ticket");
+      throw error;
+    }
+  },
+  submitTicket: async (id, stepData) => {
+    try {
+      const updated = await api.submitTicket(id, stepData);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success("Step submitted");
+    } catch (error) {
+      toast.error("Failed to submit ticket");
+      throw error;
+    }
+  },
+  completeTicket: async (id, completionPhoto) => {
+    try {
+      const updated = await api.completeTicket(id, completionPhoto);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success("Ticket completed");
+    } catch (error) {
+      toast.error("Failed to complete ticket");
+      throw error;
+    }
+  },
+  reviewTicket: async (id, cause) => {
+    try {
+      const updated = await api.reviewTicket(id, cause);
+      set((state) => ({
+        tickets: state.tickets.map((t) => (t.id === id ? updated : t)),
+      }));
+      toast.success(cause ? "Ticket returned for revision" : "Ticket approved");
+    } catch (error) {
+      toast.error("Failed to review ticket");
       throw error;
     }
   },
