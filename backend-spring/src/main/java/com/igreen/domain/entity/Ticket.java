@@ -40,6 +40,7 @@ public class Ticket {
     private String cause;
     private String solution;
     private String relatedTicketIds;
+    private String problemType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime dueDate;

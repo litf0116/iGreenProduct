@@ -15,5 +15,7 @@ public record TicketCreateRequest(
     Priority priority,
     @NotBlank String templateId,
     @NotBlank String assignedTo,
-    @NotNull LocalDateTime dueDate
+    @NotNull LocalDateTime dueDate,
+    String problemType,
+    List<String> relatedTicketIds
 ) {}

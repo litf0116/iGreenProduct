@@ -78,6 +78,10 @@ public class TicketService {
                 .createdBy(currentUserId)
                 .dueDate(request.dueDate())
                 .status(TicketStatus.OPEN)
+                .problemType(request.problemType())
+                .relatedTicketIds(request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()
+                        ? String.join(",", request.relatedTicketIds())
+                        : null)
                 .build();
 
         ticketMapper.insert(ticket);

@@ -285,9 +285,11 @@ function AppLayout() {
       const created = await api.createTicket({
         ...ticketData,
         dueDate: ticketData.dueDate.toISOString(),
+        relatedTicketIds: ticketData.relatedTicketIds,
       });
       setTickets((prev) => [created, ...(prev.records || prev)]);
       toast.success(t("ticketCreated"));
+      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Failed to create ticket");
     }
