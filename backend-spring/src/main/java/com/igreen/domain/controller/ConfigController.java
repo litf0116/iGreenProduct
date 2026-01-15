@@ -96,7 +96,7 @@ public class ConfigController {
     }
 
     @Operation(summary = "更新站点级别配置")
-    @PutMapping("/site-level-configs/{id}")
+    @PostMapping("/site-level-configs/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<SiteLevelConfigResponse>> updateSiteLevelConfig(
             @PathVariable String id,

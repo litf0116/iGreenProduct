@@ -65,9 +65,14 @@ export interface ProblemType {
 export interface SiteLevelConfig {
   id: string;
   levelName: string;
-  description: string;
-  maxConcurrentTickets: number;
-  escalationTimeHours: number;
+  description?: string;
+  slaMultiplier: number;
+}
+
+export interface SiteLevelConfigRequest {
+  levelName: string;
+  description?: string;
+  slaMultiplier: number;
 }
 
 export interface TicketComment {

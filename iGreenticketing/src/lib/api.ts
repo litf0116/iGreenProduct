@@ -666,7 +666,7 @@ export const api = {
   },
 
   createSiteLevelConfig: async (
-    config: Partial<SiteLevelConfig>
+    config: SiteLevelConfigRequest
   ): Promise<SiteLevelConfig> => {
     return fetchWithAuth('/api/configs/site-level-configs', {
       method: 'POST',
@@ -676,10 +676,10 @@ export const api = {
 
   updateSiteLevelConfig: async (
     id: string,
-    updates: Partial<SiteLevelConfig>
+    updates: SiteLevelConfigRequest
   ): Promise<SiteLevelConfig> => {
     return fetchWithAuth(`/api/configs/site-level-configs/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(updates),
     });
   },

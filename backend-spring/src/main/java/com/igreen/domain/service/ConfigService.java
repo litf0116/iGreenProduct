@@ -160,8 +160,7 @@ public class ConfigService {
                 .id(UUID.randomUUID().toString())
                 .levelName(request.levelName())
                 .description(request.description())
-                .maxConcurrentTickets(request.maxConcurrentTickets())
-                .escalationTimeHours(request.escalationTimeHours())
+                .slaMultiplier(request.slaMultiplier())
                 .build();
 
         siteLevelConfigMapper.insert(config);
@@ -186,12 +185,8 @@ public class ConfigService {
             config.setDescription(request.description());
         }
 
-        if (request.maxConcurrentTickets() != null) {
-            config.setMaxConcurrentTickets(request.maxConcurrentTickets());
-        }
-
-        if (request.escalationTimeHours() != null) {
-            config.setEscalationTimeHours(request.escalationTimeHours());
+        if (request.slaMultiplier() != null) {
+            config.setSlaMultiplier(request.slaMultiplier());
         }
 
         siteLevelConfigMapper.updateById(config);
@@ -228,8 +223,7 @@ public class ConfigService {
                 config.getId(),
                 config.getLevelName(),
                 config.getDescription(),
-                config.getMaxConcurrentTickets(),
-                config.getEscalationTimeHours()
+                config.getSlaMultiplier()
         );
     }
 }
