@@ -281,16 +281,16 @@ export const api = {
     return fetchWithAuth(`/api/users/${id}`);
   },
 
-  createUser: async (user: Partial<User> & { password?: string }): Promise<User> => {
+  createUser: async (user: UserCreateRequest): Promise<User> => {
     return fetchWithAuth('/api/users', {
       method: 'POST',
       body: JSON.stringify(user),
     });
   },
 
-  updateUser: async (id: string, updates: Partial<User>): Promise<User> => {
+  updateUser: async (id: string, updates: UserUpdateRequest): Promise<User> => {
     return fetchWithAuth(`/api/users/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(updates),
     });
   },

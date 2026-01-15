@@ -53,7 +53,7 @@ public class UserService {
                 .hashedPassword(passwordEncoder.encode(request.password()))
                 .role(request.role() != null ? request.role() : UserRole.ENGINEER)
                 .groupId(request.groupId())
-                .status(UserStatus.ACTIVE)
+                .status(request.status() != null ? request.status() : UserStatus.ACTIVE)
                 .country(request.country())
                 .build();
 
@@ -194,6 +194,15 @@ public class UserService {
         }
         if (request.status() != null) {
             user.setStatus(request.status());
+        }
+        if (request.role() != null) {
+            user.setRole(request.role());
+        }
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setHashedPassword(passwordEncoder.encode(request.password()));
+        }
+        if (request.country() != null) {
+            user.setCountry(request.country());
         }
 
         userMapper.updateById(user);

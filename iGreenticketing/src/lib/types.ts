@@ -162,6 +162,7 @@ export interface User {
   groupId?: string;
   groupName?: string;
   status: UserStatus;
+  country?: string;
   createdAt: string;
 }
 
@@ -342,8 +343,10 @@ export interface UserCreateRequest {
   username: string;
   email: string;
   password: string;
-  role: UserRole;
+  role?: UserRole;
+  status?: UserStatus;
   groupId?: string;
+  country?: string;
 }
 
 export interface UserUpdateRequest {
@@ -351,6 +354,9 @@ export interface UserUpdateRequest {
   username?: string;
   groupId?: string;
   status?: UserStatus;
+  role?: UserRole;
+  password?: string;
+  country?: string;
 }
 
 export interface TemplateCreateRequest {
