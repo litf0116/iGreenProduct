@@ -59,7 +59,7 @@ export interface SLAConfigRequest {
 export interface ProblemType {
   id: string;
   name: string;
-  description: string;
+  description?: string;
 }
 
 export interface SiteLevelConfig {
@@ -385,9 +385,10 @@ export interface TemplateFieldUpdateRequest {
 }
 
 export interface SLAConfigRequest {
+  id?: string;
   priority: Priority;
-  responseTimeMinutes: number;
-  completionTimeHours: number;
+  responseTimeHours: number;
+  resolutionTimeHours: number;
 }
 
 export interface ProblemTypeRequest {

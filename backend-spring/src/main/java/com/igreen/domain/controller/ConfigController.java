@@ -65,7 +65,7 @@ public class ConfigController {
     }
 
     @Operation(summary = "更新问题类型")
-    @PutMapping("/problem-types/{id}")
+    @PostMapping("/problem-types/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<ProblemTypeResponse>> updateProblemType(
             @PathVariable String id,

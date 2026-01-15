@@ -638,7 +638,7 @@ export const api = {
     return fetchWithAuth('/api/configs/problem-types');
   },
 
-  createProblemType: async (type: Partial<ProblemType>): Promise<ProblemType> => {
+  createProblemType: async (type: ProblemTypeRequest): Promise<ProblemType> => {
     return fetchWithAuth('/api/configs/problem-types', {
       method: 'POST',
       body: JSON.stringify(type),
@@ -647,10 +647,10 @@ export const api = {
 
   updateProblemType: async (
     id: string,
-    updates: Partial<ProblemType>
+    updates: ProblemTypeRequest
   ): Promise<ProblemType> => {
     return fetchWithAuth(`/api/configs/problem-types/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(updates),
     });
   },
