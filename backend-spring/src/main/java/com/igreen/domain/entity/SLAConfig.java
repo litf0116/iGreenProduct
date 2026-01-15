@@ -15,12 +15,9 @@ import java.time.LocalDateTime;
 public class SLAConfig {
 
     private String id;
-    private String name;
+    private Priority priority;
     private Integer responseTimeHours;
     private Integer resolutionTimeHours;
-    private Priority priority;
-    private Integer responseTimeMinutes;
-    private Integer completionTimeHours;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

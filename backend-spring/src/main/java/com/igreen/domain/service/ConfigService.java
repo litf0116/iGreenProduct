@@ -35,30 +35,59 @@ public class ConfigService {
     }
 
     @Transactional(readOnly = true)
-    public SLAConfigResponse getSLAConfigByPriority(Priority priority) {
-        SLAConfig config = slaConfigMapper.selectByPriority(priority.name())
+    public SLAConfigResponse getSLAConfigById(String id) {
+        SLAConfig config = slaConfigMapper.selectById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND));
         return toSLAConfigResponse(config);
     }
 
     @Transactional
     public SLAConfigResponse createOrUpdateSLAConfig(SLAConfigRequest request) {
-        SLAConfig config = slaConfigMapper.selectByPriority(request.priority().name())
-                .orElseGet(() -> {
-                    SLAConfig newConfig = new SLAConfig();
-                    newConfig.setId(UUID.randomUUID().toString());
-                    newConfig.setPriority(request.priority());
-                    return newConfig;
-                });
+        SLAConfig config;
 
-        config.setResponseTimeMinutes(request.responseTimeMinutes());
-        config.setCompletionTimeHours(request.completionTimeHours());
-
-        if (config.getId() == null) {
-            config.setId(UUID.randomUUID().toString());
+        if (request.id() != null) {
+            config = slaConfigMapper.selectById(request.id());
+            if (config == null && request.priority() != null) {
+                config = slaConfigMapper.selectByPriority(request.priority().name())
+                        .orElse(null);
+            }
+        } else if (request.priority() != null) {
+            config = slaConfigMapper.selectByPriority(request.priority().name())
+                    .orElse(null);
+        } else {
+            config = null;
         }
-        slaConfigMapper.insert(config);
+
+        if (config == null) {
+            config = new SLAConfig();
+            config.setId(request.id() != null ? request.id() : UUID.randomUUID().toString());
+        }
+
+        if (request.priority() != null) {
+            config.setPriority(request.priority());
+        }
+        if (request.responseTimeHours() != null) {
+            config.setResponseTimeHours(request.responseTimeHours());
+        }
+        if (request.resolutionTimeHours() != null) {
+            config.setResolutionTimeHours(request.resolutionTimeHours());
+        }
+
+        if (slaConfigMapper.selectById(config.getId()) == null) {
+            slaConfigMapper.insert(config);
+        } else {
+            slaConfigMapper.updateById(config);
+        }
+
         return toSLAConfigResponse(config);
+    }
+
+    @Transactional
+    public void deleteSLAConfig(String id) {
+        if (slaConfigMapper.selectById(id) == null) {
+            throw new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND);
+        }
+        slaConfigMapper.deleteById(id);
     }
 
     @Transactional(readOnly = true)
@@ -181,8 +210,8 @@ public class ConfigService {
         return new SLAConfigResponse(
                 config.getId(),
                 config.getPriority(),
-                config.getResponseTimeMinutes(),
-                config.getCompletionTimeHours()
+                config.getResponseTimeHours(),
+                config.getResolutionTimeHours()
         );
     }
 

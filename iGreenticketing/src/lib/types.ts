@@ -45,8 +45,15 @@ export type SiteLevel = 'A' | 'B' | 'C' | string;
 export interface SLAConfig {
   id: string;
   priority: Priority;
-  responseTimeMinutes: number;
-  completionTimeHours: number;
+  responseTimeHours: number;
+  resolutionTimeHours: number;
+}
+
+export interface SLAConfigRequest {
+  id?: string;
+  priority: Priority;
+  responseTimeHours: number;
+  resolutionTimeHours: number;
 }
 
 export interface ProblemType {

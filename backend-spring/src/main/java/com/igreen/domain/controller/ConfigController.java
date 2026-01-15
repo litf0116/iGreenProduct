@@ -28,10 +28,10 @@ public class ConfigController {
         return ResponseEntity.ok(Result.success(configService.getAllSLAConfigs()));
     }
 
-    @Operation(summary = "获取指定优先级的SLA配置")
-    @GetMapping("/sla-configs/{priority}")
-    public ResponseEntity<Result<SLAConfigResponse>> getSLAConfig(@PathVariable Priority priority) {
-        return ResponseEntity.ok(Result.success(configService.getSLAConfigByPriority(priority)));
+    @Operation(summary = "获取SLA配置")
+    @GetMapping("/sla-configs/{id}")
+    public ResponseEntity<Result<SLAConfigResponse>> getSLAConfig(@PathVariable String id) {
+        return ResponseEntity.ok(Result.success(configService.getSLAConfigById(id)));
     }
 
     @Operation(summary = "创建或更新SLA配置")
@@ -40,6 +40,14 @@ public class ConfigController {
     public ResponseEntity<Result<SLAConfigResponse>> createOrUpdateSLAConfig(
             @Valid @RequestBody SLAConfigRequest request) {
         return ResponseEntity.ok(Result.success(configService.createOrUpdateSLAConfig(request)));
+    }
+
+    @Operation(summary = "删除SLA配置")
+    @DeleteMapping("/sla-configs/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Result<Void>> deleteSLAConfig(@PathVariable String id) {
+        configService.deleteSLAConfig(id);
+        return ResponseEntity.ok(Result.successResult());
     }
 
     @Operation(summary = "获取所有问题类型")

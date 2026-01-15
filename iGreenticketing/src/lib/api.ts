@@ -621,10 +621,16 @@ export const api = {
     return fetchWithAuth('/api/configs/sla-configs');
   },
 
-  createSLAConfig: async (config: Partial<SLAConfig>): Promise<SLAConfig> => {
+  createSLAConfig: async (config: SLAConfigRequest): Promise<SLAConfig> => {
     return fetchWithAuth('/api/configs/sla-configs', {
       method: 'POST',
       body: JSON.stringify(config),
+    });
+  },
+
+  deleteSLAConfig: async (id: string): Promise<void> => {
+    return fetchWithAuth(`/api/configs/sla-configs/${id}`, {
+      method: 'DELETE',
     });
   },
 
