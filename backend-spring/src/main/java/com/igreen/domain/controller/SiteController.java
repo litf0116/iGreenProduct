@@ -2,6 +2,8 @@ package com.igreen.domain.controller;
 
 import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
+import com.igreen.domain.dto.SiteCreateRequest;
+import com.igreen.domain.dto.SiteUpdateRequest;
 import com.igreen.domain.entity.Site;
 import com.igreen.domain.service.SiteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,17 +42,17 @@ public class SiteController {
     @Operation(summary = "创建站点")
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<Result<Site>> createSite(@Valid @RequestBody Site site) {
-        return ResponseEntity.ok(Result.success(siteService.createSite(site)));
+    public ResponseEntity<Result<Site>> createSite(@Valid @RequestBody SiteCreateRequest request) {
+        return ResponseEntity.ok(Result.success(siteService.createSite(request)));
     }
 
     @Operation(summary = "更新站点")
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Site>> updateSite(
             @PathVariable String id,
-            @Valid @RequestBody Site site) {
-        return ResponseEntity.ok(Result.success(siteService.updateSite(id, site)));
+            @Valid @RequestBody SiteUpdateRequest request) {
+        return ResponseEntity.ok(Result.success(siteService.updateSite(id, request)));
     }
 
     @Operation(summary = "删除站点")

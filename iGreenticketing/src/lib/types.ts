@@ -27,7 +27,7 @@ export type CommentType =
   | 'CANCEL'
   | 'SYSTEM';
 
-export type SiteStatus = 'ACTIVE' | 'INACTIVE';
+export type SiteStatus = 'ONLINE' | 'OFFLINE' | 'UNDER_CONSTRUCTION';
 
 export type GroupStatus = 'ACTIVE' | 'INACTIVE';
 
@@ -172,7 +172,7 @@ export interface Site {
   id: string;
   name: string;
   address: string;
-  level: SiteLevel;
+  level: string;
   status: SiteStatus;
   createdAt: string;
   updatedAt: string;
@@ -319,13 +319,14 @@ export interface StepData {
 export interface SiteCreateRequest {
   name: string;
   address: string;
-  level: SiteLevel;
+  level?: string;
+  status?: SiteStatus;
 }
 
 export interface SiteUpdateRequest {
   name?: string;
   address?: string;
-  level?: SiteLevel;
+  level?: string;
   status?: SiteStatus;
 }
 

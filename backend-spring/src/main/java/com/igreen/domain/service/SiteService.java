@@ -6,6 +6,8 @@ import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
+import com.igreen.domain.dto.SiteCreateRequest;
+import com.igreen.domain.dto.SiteUpdateRequest;
 import com.igreen.domain.entity.Site;
 import com.igreen.domain.enums.SiteStatus;
 import com.igreen.domain.mapper.SiteMapper;
@@ -19,24 +21,24 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SiteService {
-
 
     private final SiteMapper siteMapper;
 
     @Transactional
-    public Site createSite(Site site) {
-        if (siteMapper.countByName(site.getName()) > 0) {
+    public Site createSite(SiteCreateRequest request) {
+        if (siteMapper.countByName(request.name()) > 0) {
             throw new BusinessException(ErrorCode.SITE_EXISTS);
         }
 
-        site.setId(UUID.randomUUID().toString());
-        if (site.getStatus() == null) {
-            site.setStatus(SiteStatus.ONLINE);
-        }
-        if (site.getLevel() == null) {
-            site.setLevel("normal");
-        }
+        Site site = Site.builder()
+                .id(UUID.randomUUID().toString())
+                .name(request.name())
+                .address(request.address())
+                .level(request.level() != null ? request.level() : "normal")
+                .status(request.status() != null ? request.status() : SiteStatus.ONLINE)
+                .build();
 
         siteMapper.insert(site);
         return site;
@@ -75,26 +77,26 @@ public class SiteService {
     }
 
     @Transactional
-    public Site updateSite(String id, Site site) {
+    public Site updateSite(String id, SiteUpdateRequest request) {
         Site existingSite = siteMapper.selectById(id);
         if (existingSite == null) {
             throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
         }
 
-        if (site.getName() != null && !site.getName().equals(existingSite.getName())) {
-            if (siteMapper.countByName(site.getName()) > 0) {
+        if (request.name() != null && !request.name().equals(existingSite.getName())) {
+            if (siteMapper.countByName(request.name()) > 0) {
                 throw new BusinessException(ErrorCode.SITE_EXISTS);
             }
-            existingSite.setName(site.getName());
+            existingSite.setName(request.name());
         }
-        if (site.getAddress() != null) {
-            existingSite.setAddress(site.getAddress());
+        if (request.address() != null) {
+            existingSite.setAddress(request.address());
         }
-        if (site.getLevel() != null) {
-            existingSite.setLevel(site.getLevel());
+        if (request.level() != null) {
+            existingSite.setLevel(request.level());
         }
-        if (site.getStatus() != null) {
-            existingSite.setStatus(site.getStatus());
+        if (request.status() != null) {
+            existingSite.setStatus(request.status());
         }
 
         siteMapper.updateById(existingSite);

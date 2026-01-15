@@ -354,16 +354,16 @@ export const api = {
     return fetchWithAuth(`/api/sites/${id}`);
   },
 
-  createSite: async (site: Partial<Site>): Promise<Site> => {
+  createSite: async (site: SiteCreateRequest): Promise<Site> => {
     return fetchWithAuth('/api/sites', {
       method: 'POST',
       body: JSON.stringify(site),
     });
   },
 
-  updateSite: async (id: string, updates: Partial<Site>): Promise<Site> => {
+  updateSite: async (id: string, updates: SiteUpdateRequest): Promise<Site> => {
     return fetchWithAuth(`/api/sites/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(updates),
     });
   },
