@@ -3,6 +3,7 @@ package com.igreen.domain.controller;
 import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
 import com.igreen.domain.dto.SiteCreateRequest;
+import com.igreen.domain.dto.SiteStats;
 import com.igreen.domain.dto.SiteUpdateRequest;
 import com.igreen.domain.entity.Site;
 import com.igreen.domain.service.SiteService;

@@ -12,7 +12,7 @@ import com.igreen.domain.dto.TokenResponse;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
-import com.igreen.domain.repository.UserRepository;
+import com.igreen.domain.mapper.UserMapper;
 import com.igreen.domain.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,7 +50,7 @@ class AuthControllerTest {
     private JwtUtils jwtUtils;
 
     @MockBean
-    private UserRepository userRepository;
+    private UserMapper userMapper;
 
     private User testUser;
 
@@ -74,8 +74,8 @@ class AuthControllerTest {
     void login_Success_ReturnsDualTokens() throws Exception {
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(userMapper.selectByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userMapper.selectByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(userService.login(any(LoginRequest.class))).thenReturn(new TokenResponse("access-token", null, 0));
         when(jwtUtils.generateRefreshToken(anyString(), anyString())).thenReturn("refresh-token");
         when(jwtUtils.getExpirationMs()).thenReturn(7200000L);
@@ -96,8 +96,8 @@ class AuthControllerTest {
     void login_Success_TokenTypeIsBearer() throws Exception {
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(userMapper.selectByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
+        when(userMapper.selectByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(userService.login(any(LoginRequest.class))).thenReturn(new TokenResponse("access-token", null, 0));
         when(jwtUtils.generateRefreshToken(anyString(), anyString())).thenReturn("refresh-token");
         when(jwtUtils.getExpirationMs()).thenReturn(3600000L);
@@ -145,7 +145,7 @@ class AuthControllerTest {
         when(jwtUtils.validateToken("valid-refresh-token")).thenReturn(true);
         when(jwtUtils.extractUsername("valid-refresh-token")).thenReturn("testuser");
         when(jwtUtils.extractUserId("valid-refresh-token")).thenReturn("test-user-id");
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(userMapper.selectByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("new-access-token");
         when(jwtUtils.generateRefreshToken(anyString(), anyString())).thenReturn("new-refresh-token");
         when(jwtUtils.getExpirationMs()).thenReturn(7200000L);
@@ -193,7 +193,7 @@ class AuthControllerTest {
         when(jwtUtils.validateToken("valid-refresh-token")).thenReturn(true);
         when(jwtUtils.extractUsername("valid-refresh-token")).thenReturn("nonexistent");
         when(jwtUtils.extractUserId("valid-refresh-token")).thenReturn("nonexistent-id");
-        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+        when(userMapper.selectByUsername("nonexistent")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)

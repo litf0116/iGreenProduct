@@ -12,7 +12,7 @@ import com.igreen.domain.dto.UserUpdateRequest;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
-import com.igreen.domain.repository.UserRepository;
+import com.igreen.domain.mapper.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserMapper userMapper;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -75,10 +75,10 @@ class UserServiceTest {
                 "CN"
         );
 
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
-        when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
+        when(userMapper.existsByUsername("testuser")).thenReturn(false);
+        when(userMapper.existsByEmail("test@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("$2a$10$encodedpassword");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(userMapper.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId("new-user-id");
             return user;
@@ -93,7 +93,7 @@ class UserServiceTest {
         assertEquals("ENGINEER", response.role());
         assertEquals("ACTIVE", response.status());
         assertEquals("CN", response.country());
-        verify(userRepository).save(any(User.class));
+        verify(userMapper).save(any(User.class));
     }
 
     @Test
@@ -109,7 +109,7 @@ class UserServiceTest {
                 "CN"
         );
 
-        when(userRepository.existsByUsername("existinguser")).thenReturn(true);
+        when(userMapper.existsByUsername("existinguser")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.createUser(request));
@@ -130,8 +130,8 @@ class UserServiceTest {
                 "CN"
         );
 
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
-        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
+        when(userMapper.existsByUsername("testuser")).thenReturn(false);
+        when(userMapper.existsByEmail("existing@example.com")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.createUser(request));
@@ -144,7 +144,7 @@ class UserServiceTest {
     void login_Success() {
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -159,7 +159,7 @@ class UserServiceTest {
     void login_UserNotFound() {
         LoginRequest request = new LoginRequest("nonexistent", "password123", "CN");
 
-        when(userRepository.findAllByUsername("nonexistent")).thenReturn(Collections.emptyList());
+        when(userMapper.findAllByUsername("nonexistent")).thenReturn(Collections.emptyList());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
@@ -172,7 +172,7 @@ class UserServiceTest {
     void login_WrongPassword() {
         LoginRequest request = new LoginRequest("testuser", "wrongpassword", "CN");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("wrongpassword", "$2a$10$encodedpassword")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -187,7 +187,7 @@ class UserServiceTest {
         testUser.setStatus(UserStatus.INACTIVE);
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -201,7 +201,7 @@ class UserServiceTest {
     void login_UsernameRequired() {
         LoginRequest request = new LoginRequest("", "password123", "CN");
 
-        when(userRepository.findAllByUsername("")).thenReturn(Collections.emptyList());
+        when(userMapper.findAllByUsername("")).thenReturn(Collections.emptyList());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.login(request));
@@ -214,7 +214,7 @@ class UserServiceTest {
     void login_PasswordRequired() {
         LoginRequest request = new LoginRequest("testuser", "", "CN");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("", "$2a$10$encodedpassword")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -228,7 +228,7 @@ class UserServiceTest {
     void login_EngineerCountryMatch() {
         LoginRequest request = new LoginRequest("testuser", "password123", "CN");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -243,7 +243,7 @@ class UserServiceTest {
     void login_EngineerCountryMismatch() {
         LoginRequest request = new LoginRequest("testuser", "password123", "US");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -259,7 +259,7 @@ class UserServiceTest {
         testUser.setCountry("CN,US,JP");
         LoginRequest request = new LoginRequest("testuser", "password123", "DE");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -275,7 +275,7 @@ class UserServiceTest {
         testUser.setRole(UserRole.MANAGER);
         LoginRequest request = new LoginRequest("testuser", "password123", "US");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
@@ -291,7 +291,7 @@ class UserServiceTest {
         testUser.setCountry("US");
         LoginRequest request = new LoginRequest("testuser", "password123", "US");
 
-        when(userRepository.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
+        when(userMapper.findAllByUsername("testuser")).thenReturn(Collections.singletonList(testUser));
         when(passwordEncoder.matches("password123", "$2a$10$encodedpassword")).thenReturn(true);
         when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("jwt-token");
 
@@ -313,10 +313,10 @@ class UserServiceTest {
                 "engineer"
         );
 
-        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
-        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+        when(userMapper.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userMapper.existsByNameAndCountry("New User", "CN")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$newencoded");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(userMapper.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId("new-user-id");
             return user;
@@ -377,7 +377,7 @@ class UserServiceTest {
                 "engineer"
         );
 
-        when(userRepository.existsByUsernameAndCountry("existinguser", "CN")).thenReturn(true);
+        when(userMapper.existsByUsernameAndCountry("existinguser", "CN")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.register(request));
@@ -397,8 +397,8 @@ class UserServiceTest {
                 "engineer"
         );
 
-        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
-        when(userRepository.existsByNameAndCountry("Existing User", "CN")).thenReturn(true);
+        when(userMapper.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userMapper.existsByNameAndCountry("Existing User", "CN")).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.register(request));
@@ -418,8 +418,8 @@ class UserServiceTest {
                 "invalid_role"
         );
 
-        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
-        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+        when(userMapper.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userMapper.existsByNameAndCountry("New User", "CN")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.register(request));
@@ -439,10 +439,10 @@ class UserServiceTest {
                 null
         );
 
-        when(userRepository.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
-        when(userRepository.existsByNameAndCountry("New User", "CN")).thenReturn(false);
+        when(userMapper.existsByUsernameAndCountry("newuser", "CN")).thenReturn(false);
+        when(userMapper.existsByNameAndCountry("New User", "CN")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$newencoded");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(userMapper.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId("new-user-id");
             return user;
@@ -453,13 +453,13 @@ class UserServiceTest {
 
         assertNotNull(response);
         assertEquals("jwt-token", response.accessToken());
-        verify(userRepository).save(argThat(user -> user.getRole() == UserRole.ENGINEER));
+        verify(userMapper).save(argThat(user -> user.getRole() == UserRole.ENGINEER));
     }
 
     @Test
     @DisplayName("Should get user by ID successfully")
     void getUserById_Success() {
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
         UserResponse response = userService.getUserById("test-user-id");
 
@@ -471,7 +471,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Should throw exception when user not found")
     void getUserById_NotFound() {
-        when(userRepository.findById("nonexistent")).thenReturn(Optional.empty());
+        when(userMapper.findById("nonexistent")).thenReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.getUserById("nonexistent"));
@@ -489,30 +489,30 @@ class UserServiceTest {
                 null
         );
 
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
-        when(userRepository.existsByUsername("updateduser")).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.existsByUsername("updateduser")).thenReturn(false);
+        when(userMapper.save(any(User.class))).thenReturn(testUser);
 
         UserResponse response = userService.updateUser("test-user-id", request);
 
         assertNotNull(response);
-        verify(userRepository).save(any(User.class));
+        verify(userMapper).save(any(User.class));
     }
 
     @Test
     @DisplayName("Should delete user successfully")
     void deleteUser_Success() {
-        when(userRepository.existsById("test-user-id")).thenReturn(true);
-        doNothing().when(userRepository).deleteById("test-user-id");
+        when(userMapper.existsById("test-user-id")).thenReturn(true);
+        doNothing().when(userMapper).deleteById("test-user-id");
 
         assertDoesNotThrow(() -> userService.deleteUser("test-user-id"));
-        verify(userRepository).deleteById("test-user-id");
+        verify(userMapper).deleteById("test-user-id");
     }
 
     @Test
     @DisplayName("Should throw exception when deleting non-existent user")
     void deleteUser_NotFound() {
-        when(userRepository.existsById("nonexistent")).thenReturn(false);
+        when(userMapper.existsById("nonexistent")).thenReturn(false);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.deleteUser("nonexistent"));
@@ -523,19 +523,19 @@ class UserServiceTest {
     @Test
     @DisplayName("Should update engineer country successfully")
     void updateUserCountry_EngineerSuccess() {
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.save(any(User.class))).thenReturn(testUser);
 
         UserResponse response = userService.updateUserCountry("test-user-id", "US");
 
         assertNotNull(response);
-        verify(userRepository).save(argThat(user -> "US".equals(user.getCountry())));
+        verify(userMapper).save(argThat(user -> "US".equals(user.getCountry())));
     }
 
     @Test
     @DisplayName("Should throw exception when engineer country is empty")
     void updateUserCountry_EngineerEmptyCountry() {
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.updateUserCountry("test-user-id", ""));
@@ -546,7 +546,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Should throw exception when engineer country contains comma")
     void updateUserCountry_EngineerMultipleCountries() {
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.updateUserCountry("test-user-id", "CN,US"));
@@ -558,20 +558,20 @@ class UserServiceTest {
     @DisplayName("Should update admin country with multiple countries successfully")
     void updateUserCountry_AdminMultipleCountries() {
         testUser.setRole(UserRole.ADMIN);
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.save(any(User.class))).thenReturn(testUser);
 
         UserResponse response = userService.updateUserCountry("test-user-id", "CN,US,JP");
 
         assertNotNull(response);
-        verify(userRepository).save(argThat(user -> "CN,US,JP".equals(user.getCountry())));
+        verify(userMapper).save(argThat(user -> "CN,US,JP".equals(user.getCountry())));
     }
 
     @Test
     @DisplayName("Should throw exception when admin country has empty segment")
     void updateUserCountry_AdminEmptySegment() {
         testUser.setRole(UserRole.ADMIN);
-        when(userRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(userMapper.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.updateUserCountry("test-user-id", "CN,,US"));
@@ -582,7 +582,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Should throw exception when user not found for country update")
     void updateUserCountry_UserNotFound() {
-        when(userRepository.findById("nonexistent")).thenReturn(Optional.empty());
+        when(userMapper.findById("nonexistent")).thenReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> userService.updateUserCountry("nonexistent", "CN"));

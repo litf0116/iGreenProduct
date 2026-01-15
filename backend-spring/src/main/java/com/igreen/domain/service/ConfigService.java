@@ -36,8 +36,10 @@ public class ConfigService {
 
     @Transactional(readOnly = true)
     public SLAConfigResponse getSLAConfigById(String id) {
-        SLAConfig config = slaConfigMapper.selectById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+        SLAConfig config = slaConfigMapper.selectById(id);
+        if (config == null) {
+            throw new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND);
+        }
         return toSLAConfigResponse(config);
     }
 
