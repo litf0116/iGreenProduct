@@ -314,16 +314,16 @@ export const api = {
     return fetchWithAuth(`/api/groups/${id}`);
   },
 
-  createGroup: async (group: Partial<Group>): Promise<Group> => {
+  createGroup: async (group: GroupCreateRequest): Promise<Group> => {
     return fetchWithAuth('/api/groups', {
       method: 'POST',
       body: JSON.stringify(group),
     });
   },
 
-  updateGroup: async (id: string, updates: Partial<Group>): Promise<Group> => {
+  updateGroup: async (id: string, updates: GroupUpdateRequest): Promise<Group> => {
     return fetchWithAuth(`/api/groups/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(updates),
     });
   },

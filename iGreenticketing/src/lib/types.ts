@@ -116,7 +116,9 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
+  tags?: string;
   status: GroupStatus;
+  memberCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -330,11 +332,14 @@ export interface SiteUpdateRequest {
 export interface GroupCreateRequest {
   name: string;
   description?: string;
+  tags?: string;
+  status?: GroupStatus;
 }
 
 export interface GroupUpdateRequest {
   name?: string;
   description?: string;
+  tags?: string;
   status?: GroupStatus;
 }
 

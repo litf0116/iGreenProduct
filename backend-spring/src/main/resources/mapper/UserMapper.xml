@@ -64,4 +64,10 @@
         WHERE username = #{username} AND country = #{country}
     </select>
 
+    <select id="countByGroupId" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE group_id = #{groupId}
+    </select>
+
 </mapper>

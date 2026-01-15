@@ -1,7 +1,10 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
+import com.igreen.domain.dto.GroupCreateRequest;
+import com.igreen.domain.dto.GroupUpdateRequest;
 import com.igreen.domain.entity.Group;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.GroupStatus;
@@ -17,22 +20,26 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GroupService {
-
 
     private final GroupMapper groupMapper;
     private final UserMapper userMapper;
 
     @Transactional
-    public Group createGroup(Group group) {
-        if (groupMapper.countByName(group.getName()) > 0) {
+    public Group createGroup(GroupCreateRequest request) {
+        if (groupMapper.countByName(request.name()) > 0) {
             throw new BusinessException(ErrorCode.GROUP_EXISTS);
         }
 
-        group.setId(UUID.randomUUID().toString());
-        if (group.getStatus() == null) {
-            group.setStatus(GroupStatus.ACTIVE);
-        }
+        Group group = Group.builder()
+                .id(UUID.randomUUID().toString())
+                .name(request.name())
+                .description(request.description())
+                .tags(request.tags())
+                .status(request.status() != null ? request.status() : GroupStatus.ACTIVE)
+                .memberCount(0)
+                .build();
 
         groupMapper.insert(group);
         return group;
@@ -44,36 +51,45 @@ public class GroupService {
         if (group == null) {
             throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
+        group.setMemberCount(userMapper.countByGroupId(id));
         return group;
     }
 
     @Transactional(readOnly = true)
     public List<Group> getAllGroups() {
-        return groupMapper.selectList(null);
+        List<Group> groups = groupMapper.selectList(new LambdaQueryWrapper<>());
+        for (Group group : groups) {
+            Integer memberCount = userMapper.countByGroupId(group.getId());
+            group.setMemberCount(memberCount != null ? memberCount : 0);
+        }
+        return groups;
     }
 
     @Transactional
-    public Group updateGroup(String id, Group group) {
+    public Group updateGroup(String id, GroupUpdateRequest request) {
         Group existingGroup = groupMapper.selectById(id);
         if (existingGroup == null) {
             throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
 
-        if (group.getName() != null && !group.getName().equals(existingGroup.getName())) {
-            if (groupMapper.countByName(group.getName()) > 0) {
+        if (request.name() != null && !request.name().equals(existingGroup.getName())) {
+            if (groupMapper.countByName(request.name()) > 0) {
                 throw new BusinessException(ErrorCode.GROUP_EXISTS);
             }
-            existingGroup.setName(group.getName());
+            existingGroup.setName(request.name());
         }
-        if (group.getDescription() != null) {
-            existingGroup.setDescription(group.getDescription());
+        if (request.description() != null) {
+            existingGroup.setDescription(request.description());
         }
-        if (group.getStatus() != null) {
-            existingGroup.setStatus(group.getStatus());
+        if (request.tags() != null) {
+            existingGroup.setTags(request.tags());
+        }
+        if (request.status() != null) {
+            existingGroup.setStatus(request.status());
         }
 
         groupMapper.updateById(existingGroup);
-        return existingGroup;
+        return getGroupById(id);
     }
 
     @Transactional

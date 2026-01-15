@@ -1,7 +1,8 @@
 package com.igreen.domain.controller;
 
-import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
+import com.igreen.domain.dto.GroupCreateRequest;
+import com.igreen.domain.dto.GroupUpdateRequest;
 import com.igreen.domain.entity.Group;
 import com.igreen.domain.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,17 +38,17 @@ public class GroupController {
     @Operation(summary = "创建分组")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Result<Group>> createGroup(@Valid @RequestBody Group group) {
-        return ResponseEntity.ok(Result.success(groupService.createGroup(group)));
+    public ResponseEntity<Result<Group>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
+        return ResponseEntity.ok(Result.success(groupService.createGroup(request)));
     }
 
     @Operation(summary = "更新分组")
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<Group>> updateGroup(
             @PathVariable String id,
-            @Valid @RequestBody Group group) {
-        return ResponseEntity.ok(Result.success(groupService.updateGroup(id, group)));
+            @Valid @RequestBody GroupUpdateRequest request) {
+        return ResponseEntity.ok(Result.success(groupService.updateGroup(id, request)));
     }
 
     @Operation(summary = "删除分组")
@@ -55,7 +56,7 @@ public class GroupController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<Void>> deleteGroup(@PathVariable String id) {
         groupService.deleteGroup(id);
-        return ResponseEntity.ok(Result.success(null));
+        return ResponseEntity.ok(Result.successResult());
     }
 
     @Operation(summary = "获取分组下的工程师")

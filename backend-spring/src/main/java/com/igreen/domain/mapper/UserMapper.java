@@ -24,4 +24,6 @@ public interface UserMapper extends com.baomidou.mybatisplus.core.mapper.BaseMap
     Optional<User> selectByUsername(@Param("username") String username);
 
     Optional<User> selectByUsernameAndCountry(@Param("username") String username, @Param("country") String country);
+
+    Integer countByGroupId(@Param("groupId") String groupId);
 }
