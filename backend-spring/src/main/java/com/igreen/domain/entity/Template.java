@@ -1,5 +1,6 @@
 package com.igreen.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
@@ -21,5 +22,6 @@ public class Template {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default
+    @TableField(exist = false)
     private List<TemplateStep> steps = new ArrayList<>();
 }

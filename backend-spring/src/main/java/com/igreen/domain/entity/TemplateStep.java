@@ -1,5 +1,6 @@
 package com.igreen.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
@@ -20,7 +21,9 @@ public class TemplateStep {
     private Integer order;
     private String templateId;
     @Builder.Default
+    @TableField(exist = false)
     private List<TemplateField> fields = new ArrayList<>();
     @Builder.Default
+    @TableField(exist = false)
     private Template template = null;
 }

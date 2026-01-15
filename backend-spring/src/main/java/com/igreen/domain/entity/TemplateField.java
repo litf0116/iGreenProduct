@@ -1,5 +1,6 @@
 package com.igreen.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.igreen.domain.enums.FieldType;
 import lombok.*;
@@ -22,5 +23,6 @@ public class TemplateField {
     private String options;
     private String stepId;
     @Builder.Default
+    @TableField(exist = false)
     private TemplateStep step = null;
 }
