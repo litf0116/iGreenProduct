@@ -11,4 +11,6 @@ import java.util.List;
 public interface TemplateFieldMapper extends com.baomidou.mybatisplus.core.mapper.BaseMapper<TemplateField> {
 
     List<TemplateField> selectByStepId(@Param("stepId") String stepId);
+
+    int deleteByTemplateId(@Param("templateId") String templateId);
 }

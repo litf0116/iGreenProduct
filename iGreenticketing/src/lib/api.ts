@@ -383,17 +383,45 @@ export const api = {
     return fetchWithAuth(`/api/templates/${id}`);
   },
 
-  createTemplate: async (template: Partial<Template>): Promise<Template> => {
+  createTemplate: async (template: {
+    name: string;
+    description?: string;
+    steps?: Array<{
+      name: string;
+      description?: string;
+      order?: number;
+      fields?: Array<{
+        name: string;
+        type: string;
+        required?: boolean;
+        options?: string;
+      }>;
+    }>;
+  }): Promise<Template> => {
     return fetchWithAuth('/api/templates', {
       method: 'POST',
       body: JSON.stringify(template),
     });
   },
 
-  updateTemplate: async (id: string, updates: Partial<Template>): Promise<Template> => {
+  updateTemplate: async (id: string, template: {
+    name?: string;
+    description?: string;
+    steps?: Array<{
+      name: string;
+      description?: string;
+      order?: number;
+      fields?: Array<{
+        name: string;
+        type: string;
+        required?: boolean;
+        options?: string;
+      }>;
+    }>;
+  }): Promise<Template> => {
     return fetchWithAuth(`/api/templates/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updates),
+      body: JSON.stringify(template),
     });
   },
 
@@ -401,83 +429,6 @@ export const api = {
     return fetchWithAuth(`/api/templates/${id}`, {
       method: 'DELETE',
     });
-  },
-
-  getTemplateSteps: async (templateId: string): Promise<TemplateStep[]> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps`);
-  },
-
-  createTemplateStep: async (
-    templateId: string,
-    step: Partial<TemplateStep>
-  ): Promise<TemplateStep> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps`, {
-      method: 'POST',
-      body: JSON.stringify(step),
-    });
-  },
-
-  updateTemplateStep: async (
-    templateId: string,
-    stepId: string,
-    updates: Partial<TemplateStep>
-  ): Promise<TemplateStep> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps/${stepId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
-  },
-
-  deleteTemplateStep: async (templateId: string, stepId: string): Promise<void> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps/${stepId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  getTemplateFields: async (
-    templateId: string,
-    stepId: string
-  ): Promise<TemplateField[]> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps/${stepId}/fields`);
-  },
-
-  createTemplateField: async (
-    templateId: string,
-    stepId: string,
-    field: Partial<TemplateField>
-  ): Promise<TemplateField> => {
-    return fetchWithAuth(`/api/templates/${templateId}/steps/${stepId}/fields`, {
-      method: 'POST',
-      body: JSON.stringify(field),
-    });
-  },
-
-  updateTemplateField: async (
-    templateId: string,
-    stepId: string,
-    fieldId: string,
-    updates: Partial<TemplateField>
-  ): Promise<TemplateField> => {
-    return fetchWithAuth(
-      `/api/templates/${templateId}/steps/${stepId}/fields/${fieldId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      }
-    );
-  },
-
-  deleteTemplateField: async (
-    templateId: string,
-    stepId: string,
-    fieldId: string
-  ): Promise<void> => {
-    return fetchWithAuth(
-      `/api/templates/${templateId}/steps/${stepId}/fields/${fieldId}`,
-      {
-        method: 'DELETE',
-      }
-    );
   },
 
   // ========== Tickets ==========

@@ -11,4 +11,6 @@ import java.util.List;
 public interface TemplateStepMapper extends com.baomidou.mybatisplus.core.mapper.BaseMapper<TemplateStep> {
 
     List<TemplateStep> selectByTemplateIdOrderByOrderAsc(@Param("templateId") String templateId);
+
+    int deleteByTemplateId(@Param("templateId") String templateId);
 }

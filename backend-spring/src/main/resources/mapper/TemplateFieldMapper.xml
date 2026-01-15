@@ -21,4 +21,10 @@
         WHERE step_id = #{stepId}
     </select>
 
+    <delete id="deleteByTemplateId">
+        DELETE tf FROM template_fields tf
+        INNER JOIN template_steps ts ON tf.step_id = ts.id
+        WHERE ts.template_id = #{templateId}
+    </delete>
+
 </mapper>

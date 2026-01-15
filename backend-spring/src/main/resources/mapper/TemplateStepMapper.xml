@@ -21,4 +21,9 @@
         ORDER BY `order` ASC
     </select>
 
+    <delete id="deleteByTemplateId">
+        DELETE FROM template_steps
+        WHERE template_id = #{templateId}
+    </delete>
+
 </mapper>
