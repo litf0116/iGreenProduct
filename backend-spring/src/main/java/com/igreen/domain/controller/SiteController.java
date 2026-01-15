@@ -29,8 +29,16 @@ public class SiteController {
     public ResponseEntity<Result<PageResult<Site>>> getAllSites(
             @RequestParam(defaultValue = "1") @Min(1) @Max(100) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(required = false) String keyword) {
-        return ResponseEntity.ok(Result.success(siteService.getAllSites(page, size, keyword)));
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String level,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(Result.success(siteService.getAllSites(page, size, keyword, level, status)));
+    }
+
+    @Operation(summary = "站点统计")
+    @GetMapping("/stats")
+    public ResponseEntity<Result<SiteStats>> getSiteStats() {
+        return ResponseEntity.ok(Result.success(siteService.getSiteStats()));
     }
 
     @Operation(summary = "获取站点详情")

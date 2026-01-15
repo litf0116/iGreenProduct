@@ -7,6 +7,7 @@ import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.domain.dto.SiteCreateRequest;
+import com.igreen.domain.dto.SiteStats;
 import com.igreen.domain.dto.SiteUpdateRequest;
 import com.igreen.domain.entity.Site;
 import com.igreen.domain.enums.SiteStatus;
@@ -54,16 +55,27 @@ public class SiteService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<Site> getAllSites(int page, int size, String keyword) {
+    public PageResult<Site> getAllSites(int page, int size, String keyword, String level, String status) {
         PageHelper.startPage(page, size);
         try {
-            List<Site> sites;
+            LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();
+            
             if (keyword != null && !keyword.isEmpty()) {
-                sites = siteMapper.selectByNameContaining(keyword);
-            } else {
-                sites = siteMapper.selectList(new LambdaQueryWrapper<>());
+                wrapper.and(w -> w.like(Site::getName, keyword).or().like(Site::getAddress, keyword));
             }
-
+            if (level != null && !level.isEmpty()) {
+                wrapper.eq(Site::getLevel, level);
+            }
+            if (status != null && !status.isEmpty()) {
+                try {
+                    wrapper.eq(Site::getStatus, SiteStatus.valueOf(status));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status: {}", status);
+                }
+            }
+            
+            wrapper.orderByDesc(Site::getCreatedAt);
+            List<Site> sites = siteMapper.selectList(wrapper);
             PageInfo<Site> pageInfo = new PageInfo<>(sites);
             return PageResult.of(pageInfo, sites);
         } finally {
@@ -74,6 +86,27 @@ public class SiteService {
     @Transactional(readOnly = true)
     public List<Site> getSitesByStatus(SiteStatus status) {
         return siteMapper.selectByStatus(status.name());
+    }
+
+    @Transactional(readOnly = true)
+    public SiteStats getSiteStats() {
+        LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();
+        
+        long totalSites = siteMapper.selectCount(wrapper);
+        
+        long onlineSites = siteMapper.selectCount(
+            new LambdaQueryWrapper<Site>().eq(Site::getStatus, SiteStatus.ONLINE)
+        );
+        
+        long offlineSites = siteMapper.selectCount(
+            new LambdaQueryWrapper<Site>().eq(Site::getStatus, SiteStatus.OFFLINE)
+        );
+        
+        long vipSites = siteMapper.selectCount(
+            new LambdaQueryWrapper<Site>().like(Site::getLevel, "vip")
+        );
+        
+        return new SiteStats(totalSites, onlineSites, offlineSites, vipSites);
     }
 
     @Transactional

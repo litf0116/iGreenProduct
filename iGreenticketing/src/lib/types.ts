@@ -330,6 +330,13 @@ export interface SiteUpdateRequest {
   status?: SiteStatus;
 }
 
+export interface SiteStats {
+  totalSites: number;
+  onlineSites: number;
+  offlineSites: number;
+  vipSites: number;
+}
+
 export interface GroupCreateRequest {
   name: string;
   description?: string;

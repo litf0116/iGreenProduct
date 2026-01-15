@@ -341,11 +341,15 @@ export const api = {
   // ========== Sites ==========
   getSites: async (params?: PageParams & {
     keyword?: string;
+    level?: string;
+    status?: string;
   }): Promise<PageResult<Site>> => {
     const queryParams = new URLSearchParams();
     queryParams.append('page', String(params?.page ?? 0));
     queryParams.append('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.keyword) queryParams.append('keyword', params.keyword);
+    if (params?.level) queryParams.append('level', params.level);
+    if (params?.status) queryParams.append('status', params.status);
 
     return fetchWithAuth(`/api/sites?${queryParams}`);
   },
@@ -372,6 +376,10 @@ export const api = {
     return fetchWithAuth(`/api/sites/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  getSiteStats: async (): Promise<SiteStats> => {
+    return fetchWithAuth('/api/sites/stats');
   },
 
   // ========== Templates ==========
