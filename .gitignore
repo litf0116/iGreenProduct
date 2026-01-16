@@ -1,5 +1,5 @@
 # Build artifacts
-backend-spring/target/
+igreen-backend/target/
 *.jar
 *.class
 
@@ -57,11 +57,15 @@ iGreenApp/dist/
 iGreenApp/.vite/
 iGreenApp/coverage/
 
-# Frontend iGreenticketing
-iGreenticketing/.env.local
-iGreenticketing/dist/
-iGreenticketing/.vite/
-iGreenticketing/coverage/
+# Frontend igreen-front
+igreen-front/.env.local
+igreen-front/dist/
+igreen-front/.vite/
+igreen-front/coverage/
+
+# Backend igreen-backend
+igreen-backend/.env
+igreen-backend/logs/
 
 # OpenSpec
 openspec/.cache/

@@ -10,7 +10,7 @@ iGreen+ EV Charging Station Maintenance System - A monorepo containing a Spring 
 
 ### Backend (Spring Boot)
 ```bash
-cd /Users/mac/workspace/iGreenProduct/backend-spring
+cd igreen-backend
 make help                # Show all available commands
 make start               # Start Spring Boot app on port 8000
 make build               # Build JAR file
@@ -26,12 +26,12 @@ All frontends use pnpm as the package manager.
 
 ```bash
 # Admin Ticketing System
-cd /Users/mac/workspace/iGreenProduct/iGreenticketing
+cd igreen-front
 pnpm install && pnpm dev   # Start dev server on port 3000
 pnpm build                 # Production build to build/
 
 # Engineer App
-cd /Users/mac/workspace/iGreenProduct/iGreenApp
+cd iGreenApp
 pnpm install && pnpm dev   # Start dev server
 pnpm build                 # Production build
 
@@ -42,7 +42,7 @@ pnpm build
 
 ### Docker
 ```bash
-cd /Users/mac/workspace/iGreenProduct/backend-spring
+cd igreen-backend
 docker-compose up        # Start MySQL, Redis, and Backend
 ```
 
@@ -50,13 +50,13 @@ docker-compose up        # Start MySQL, Redis, and Backend
 
 ### Monorepo Structure
 ```
-backend-spring/           # Spring Boot Backend (Java 21)
+igreen-backend/           # Spring Boot Backend (Java 21)
 ├── src/main/java/com/igreen/
 │   ├── common/          # Cross-cutting (config, exception handling, JWT utils)
 │   └── domain/          # Business logic (controller, service, repository, entity, dto)
 └── Makefile             # Build automation
 
-iGreenticketing/         # React Admin Dashboard (port 3000)
+igreen-front/            # React Admin Dashboard (port 3000)
 iGreenApp/              # React Engineer Mobile App
 receive_app/            # Additional frontend
 sned_app/               # Additional frontend
@@ -112,23 +112,23 @@ sned_app/               # Additional frontend
 ## Critical Files
 
 ### Configuration
-- `/Users/mac/workspace/iGreenProduct/backend-spring/pom.xml` - Maven dependencies
-- `/Users/mac/workspace/iGreenProduct/backend-spring/src/main/resources/application.yml` - Spring config
-- `/Users/mac/workspace/iGreenProduct/iGreenticketing/vite.config.ts` - Vite config with path aliases
+- `igreen-backend/pom.xml` - Maven dependencies
+- `igreen-backend/src/main/resources/application.yml` - Spring config
+- `igreen-front/vite.config.ts` - Vite config with path aliases
 
 ### Key Source Files
-- `/Users/mac/workspace/iGreenProduct/iGreenticketing/src/lib/api.ts` - Central API client
-- `/Users/mac/workspace/iGreenProduct/iGreenticketing/src/lib/types.ts` - Type definitions
-- `/Users/mac/workspace/iGreenProduct/backend-spring/src/main/java/com/igreen/common/config/SecurityConfig.java` - Security config
+- `igreen-front/src/lib/api.ts` - Central API client
+- `igreen-front/src/lib/types.ts` - Type definitions
+- `igreen-backend/src/main/java/com/igreen/common/config/SecurityConfig.java` - Security config
 
 ## Common Tasks
 
 ### Adding New API Endpoint
-1. Create DTO in `backend-spring/src/main/java/com/igreen/domain/dto/`
-2. Add entity in `backend-spring/src/main/java/com/igreen/domain/entity/` if needed
-3. Create repository in `backend-spring/src/main/java/com/igreen/domain/repository/`
-4. Implement service in `backend-spring/src/main/java/com/igreen/domain/service/`
-5. Add controller in `backend-spring/src/main/java/com/igreen/domain/controller/`
+1. Create DTO in `igreen-backend/src/main/java/com/igreen/domain/dto/`
+2. Add entity in `igreen-backend/src/main/java/com/igreen/domain/entity/` if needed
+3. Create repository in `igreen-backend/src/main/java/com/igreen/domain/repository/`
+4. Implement service in `igreen-backend/src/main/java/com/igreen/domain/service/`
+5. Add controller in `igreen-backend/src/main/java/com/igreen/domain/controller/`
 6. Add TypeScript types in frontend `src/lib/types.ts`
 7. Add API methods in frontend `src/lib/api.ts`
 
@@ -166,4 +166,4 @@ sned_app/               # Additional frontend
 - `/Users/mac/workspace/iGreenProduct/README.md` - Project overview and setup
 - `/Users/mac/workspace/iGreenProduct/DEPLOYMENT_GUIDE.md` - Production deployment guide
 - `/Users/mac/workspace/iGreenProduct/AGENTS.md` - Code style guidelines and patterns
-- `/Users/mac/workspace/iGreenProduct/iGreenticketing/CLAUDE.md` - Frontend-specific guidance
+- `/Users/mac/workspace/iGreenProduct/igreen-front/CLAUDE.md` - Frontend-specific guidance
