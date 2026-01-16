@@ -19,6 +19,16 @@ import type {
   PageParams,
   PageResult,
   TicketStatsResponse,
+  UserCreateRequest,
+  UserUpdateRequest,
+  GroupCreateRequest,
+  GroupUpdateRequest,
+  SiteCreateRequest,
+  SiteUpdateRequest,
+  SiteStats,
+  SLAConfigRequest,
+  ProblemTypeRequest,
+  SiteLevelConfigRequest,
 } from "./types";
 import { DEFAULT_PAGE_SIZE } from "./types";
 
@@ -298,6 +308,13 @@ export const api = {
   deleteUser: async (id: string): Promise<void> => {
     return fetchWithAuth(`/api/users/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  updateUserCountries: async (id: string, country: string): Promise<User> => {
+    return fetchWithAuth(`/api/users/${id}/countries`, {
+      method: 'PATCH',
+      body: JSON.stringify({ country }),
     });
   },
 
@@ -629,7 +646,11 @@ export const api = {
     return fetchWithAuth('/api/configs/sla-configs');
   },
 
-  createSLAConfig: async (config: SLAConfigRequest): Promise<SLAConfig> => {
+  getSLAConfig: async (id: string): Promise<SLAConfig> => {
+    return fetchWithAuth(`/api/configs/sla-configs/${id}`);
+  },
+
+  saveSLAConfig: async (config: SLAConfigRequest): Promise<SLAConfig> => {
     return fetchWithAuth('/api/configs/sla-configs', {
       method: 'POST',
       body: JSON.stringify(config),

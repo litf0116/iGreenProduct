@@ -69,6 +69,7 @@ interface DataState {
   deleteTemplate: (id: string) => Promise<void>;
 
   // Config
+  getSLAConfig: (id: string) => Promise<SLAConfig>;
   updateSLAConfig: (config: SLAConfig) => Promise<void>;
   createProblemType: (type: ProblemType) => Promise<void>;
   updateProblemType: (type: ProblemType) => Promise<void>;
@@ -367,9 +368,17 @@ export const useDataStore = create<DataState>((set) => ({
   },
 
   // Config
+  getSLAConfig: async (id) => {
+    try {
+      return await api.getSLAConfig(id);
+    } catch (error) {
+      toast.error("Failed to get SLA config");
+      throw error;
+    }
+  },
   updateSLAConfig: async (config) => {
     try {
-      const updated = await api.createSLAConfig(config);
+      const updated = await api.saveSLAConfig(config);
       set((state) => {
         const existing = state.slaConfigs.findIndex((c) => c.priority === config.priority);
         if (existing >= 0) {

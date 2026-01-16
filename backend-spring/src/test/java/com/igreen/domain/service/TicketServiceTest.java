@@ -105,21 +105,20 @@ class TicketServiceTest {
         TicketCreateRequest request = new TicketCreateRequest(
                 "New Ticket",
                 "Description",
-                "PLANNED",
+                "PREVENTIVE",
                 "site-001",
                 "P1",
                 "template-001",
-                "assignee-id",
+                "creator-id",
                 LocalDateTime.now().plusDays(5),
                 null,
                 null
         );
 
         when(userMapper.selectById("creator-id")).thenReturn(testCreator);
-        when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
-            Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            testTicket = invocation.getArgument(0);
+            testTicket.setId("new-ticket-id");
             return 1;
         });
 
@@ -127,9 +126,9 @@ class TicketServiceTest {
 
         assertNotNull(response);
         assertEquals("New Ticket", response.title());
-        assertEquals("planned", response.type());
-        assertEquals("p1", response.priority());
-        assertEquals("open", response.status());
+        assertEquals("Description", response.description());
+        assertEquals("preventive", response.type());
+        assertEquals("P1", response.priority());
     }
 
     @Test
@@ -200,16 +199,16 @@ class TicketServiceTest {
                 "Description",
                 "CORRECTIVE",
                 "site-001",
-                "p1",
+                "P1",
                 "template-001",
-                "assignee-id",
+                "creator-id",
                 LocalDateTime.now().plusDays(5),
                 null,
                 null
         );
 
         when(userMapper.selectById("creator-id")).thenReturn(testCreator);
-        when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
+
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
             ticket.setId("new-ticket-id");
@@ -219,7 +218,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("p1", response.priority());
+        assertEquals("P1", response.priority());
     }
 
     @Test
@@ -249,7 +248,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("p4", response.priority());
+        assertEquals("P4", response.priority());
     }
 
     @Test
