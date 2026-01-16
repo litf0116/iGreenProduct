@@ -20,7 +20,7 @@
           <view class="info-row">
             <text class="info-label">Priority</text>
             <view class="priority-badge" :class="getPriorityClass(ticket.priority)">
-              <text class="priority-text">{{ ticket.priority }}</text>
+              <text class="priority-text">{{ getPriorityLabel(ticket.priority) }}</text>
             </view>
           </view>
           <view class="info-row">
@@ -35,11 +35,15 @@
           </view>
           <view class="info-row">
             <text class="info-label">Reported By</text>
-            <text class="info-value">{{ ticket.requester }}</text>
+            <text class="info-value">{{ ticket.requesterName || '-' }}</text>
           </view>
           <view class="info-row">
             <text class="info-label">Reported At</text>
             <text class="info-value">{{ formatDateTime(ticket.createdAt) }}</text>
+          </view>
+          <view class="info-row" v-if="ticket.assigneeName">
+            <text class="info-label">Assigned To</text>
+            <text class="info-value">{{ ticket.assigneeName }}</text>
           </view>
         </view>
 
@@ -49,7 +53,48 @@
           <text class="description-detail">{{ ticket.description }}</text>
         </view>
 
-        <view class="action-card" v-if="ticket.status === 'open'">
+        <view class="steps-card" v-if="ticket.steps && ticket.steps.length > 0">
+          <text class="card-title">Maintenance Steps</text>
+          <view class="steps-list">
+            <view 
+              class="step-item" 
+              v-for="(step, index) in ticket.steps" 
+              :key="step.id"
+            >
+              <view class="step-checkbox" :class="{ completed: step.completed }" @click="toggleStep(index)">
+                <text class="check-icon">{{ step.completed ? '✓' : '' }}</text>
+              </view>
+              <text class="step-label">{{ step.label }}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="photos-card" v-if="showPhotoSection">
+          <text class="card-title">Photos</text>
+          <view class="photos-grid">
+            <view 
+              class="photo-item" 
+              v-for="(photo, index) in photos" 
+              :key="index"
+            >
+              <image 
+                class="photo-image" 
+                :src="photo" 
+                mode="aspectFill"
+                @click="previewPhoto(photo)"
+              />
+              <view class="photo-remove" @click="removePhoto(index)">
+                <text class="remove-icon">×</text>
+              </view>
+            </view>
+            <view class="photo-add" @click="addPhoto" v-if="photos.length < 5">
+              <text class="add-icon">+</text>
+              <text class="add-text">Add Photo</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="action-card" v-if="ticket.status === 'OPEN'">
           <view class="action-content">
             <view class="action-icon bg-blue">
               <text class="icon">⚡</text>
@@ -64,7 +109,7 @@
           </view>
         </view>
 
-        <view class="action-card" v-else-if="ticket.status === 'assigned'">
+        <view class="action-card" v-else-if="ticket.status === 'ASSIGNED' || ticket.status === 'ACCEPTED'">
           <view class="action-content">
             <view class="action-icon bg-indigo">
               <text class="icon">🚗</text>
@@ -75,11 +120,11 @@
             </view>
           </view>
           <view class="depart-btn" @click="handleDepart">
-            <text class="btn-text">Departure Now</text>
+            <text class="btn-text">Depart Now</text>
           </view>
         </view>
 
-        <view class="action-card" v-else-if="ticket.status === 'departed'">
+        <view class="action-card" v-else-if="ticket.status === 'DEPARTED'">
           <view class="action-content">
             <view class="action-icon bg-orange">
               <text class="icon">📍</text>
@@ -94,22 +139,22 @@
           </view>
         </view>
 
-        <view class="action-card" v-else-if="ticket.status === 'arrived'">
+        <view class="action-card" v-else-if="ticket.status === 'IN_PROGRESS' || ticket.status === 'ARRIVED'">
           <view class="action-content">
             <view class="action-icon bg-green">
               <text class="icon">🔧</text>
             </view>
             <view class="action-text">
               <text class="action-title">On Site - Work in Progress</text>
-              <text class="action-subtitle">Arrived at {{ formatTime(ticket.history?.arrivedAt) }}</text>
+              <text class="action-subtitle">Complete the steps and finish the work</text>
             </view>
           </view>
-          <view class="finish-btn" @click="handleFinish">
-            <text class="btn-text">Finish Work</text>
+          <view class="finish-btn" @click="handleComplete">
+            <text class="btn-text">Complete Work</text>
           </view>
         </view>
 
-        <view class="action-card" v-else-if="ticket.status === 'review'">
+        <view class="action-card" v-else-if="ticket.status === 'REVIEW'">
           <view class="action-content">
             <view class="action-icon bg-purple">
               <text class="icon">👁</text>
@@ -121,107 +166,166 @@
           </view>
         </view>
 
-        <view class="action-card" v-else-if="ticket.status === 'completed'">
+        <view class="action-card" v-else-if="ticket.status === 'COMPLETED'">
           <view class="action-content">
             <view class="action-icon bg-green">
               <text class="icon">✔</text>
             </view>
             <view class="action-text">
               <text class="action-title">Work Order Completed</text>
-              <text class="action-subtitle">Completed at {{ formatDateTime(ticket.history?.completedAt) }}</text>
+              <text class="action-subtitle">Completed at {{ formatDateTime(ticket.completedAt) }}</text>
             </view>
           </view>
         </view>
       </view>
     </scroll-view>
+
+    <view class="loading-overlay" v-if="loading">
+      <view class="loading-spinner"></view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { Ticket, TicketStatus, TicketPriority, TicketType } from '@/types/ticket';
-import { getTicketTypeLabel, formatDateTime, formatTime } from '@/utils/helpers';
+import { ref, computed, onMounted } from 'vue';
+import { useTicketStore } from '@/store/modules/tickets';
+import { getStatusLabel, getStatusClass, getPriorityLabel, getPriorityClass, getTypeClass, formatDateTime } from '@/utils/helpers';
+import { getTypeLabel } from '@/types/ticket';
+import { api } from '@/utils/api';
 
 const props = defineProps<{
-  ticket: Ticket | null;
+  id: string;
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'update', id: string, updates: Partial<Ticket>): void;
 }>();
 
-function getStatusClass(status: TicketStatus): string {
-  switch (status) {
-    case 'open': return 'bg-blue';
-    case 'assigned': return 'bg-indigo';
-    case 'departed': return 'bg-orange';
-    case 'arrived': return 'bg-yellow';
-    case 'review': return 'bg-purple';
-    case 'completed': return 'bg-green';
-    default: return 'bg-gray';
+const ticketStore = useTicketStore();
+const loading = ref(false);
+const photos = ref<string[]>([]);
+
+const ticket = computed(() => ticketStore.currentTicket);
+
+const showPhotoSection = computed(() => {
+  const status = ticket.value?.status;
+  return ['DEPARTED', 'IN_PROGRESS', 'ARRIVED', 'REVIEW'].includes(status || '');
+});
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    await ticketStore.loadTicket(props.id);
+  } finally {
+    loading.value = false;
   }
-}
-
-function getStatusLabel(status: TicketStatus): string {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function getPriorityClass(priority: TicketPriority): string {
-  return `priority-${priority}`;
-}
-
-function getTypeClass(type: TicketType): string {
-  return `type-${type}`;
-}
-
-function getTypeLabel(type: TicketType): string {
-  return getTicketTypeLabel(type);
-}
+});
 
 function handleClose() {
   emit('close');
 }
 
-function handleAccept() {
-  if (props.ticket) {
-    emit('update', props.ticket.id, {
-      status: 'assigned',
-      assignee: 'Mike Technician',
-    });
+async function handleAccept() {
+  if (!ticket.value) return;
+  loading.value = true;
+  try {
+    await ticketStore.acceptTicket(ticket.value.id);
+    await ticketStore.loadTicket(props.id);
+  } catch (error) {
+    console.error('Failed to accept ticket:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
-function handleDepart() {
-  if (props.ticket) {
-    emit('update', props.ticket.id, {
-      status: 'departed',
-      history: {
-        ...props.ticket.history,
-        departedAt: new Date().toISOString(),
-      },
-    });
+async function handleDepart() {
+  if (!ticket.value) return;
+  loading.value = true;
+  try {
+    const photo = photos.value.length > 0 ? photos.value[0] : undefined;
+    await ticketStore.departTicket(ticket.value.id, photo);
+    await ticketStore.loadTicket(props.id);
+  } catch (error) {
+    console.error('Failed to depart:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
-function handleArrive() {
-  if (props.ticket) {
-    emit('update', props.ticket.id, {
-      status: 'arrived',
-      history: {
-        ...props.ticket.history,
-        arrivedAt: new Date().toISOString(),
-      },
-    });
+async function handleArrive() {
+  if (!ticket.value) return;
+  loading.value = true;
+  try {
+    const photo = photos.value.length > 0 ? photos.value[0] : undefined;
+    await ticketStore.arriveTicket(ticket.value.id, photo);
+    await ticketStore.loadTicket(props.id);
+  } catch (error) {
+    console.error('Failed to arrive:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
-function handleFinish() {
-  if (props.ticket) {
-    emit('update', props.ticket.id, {
-      status: 'review',
-    });
+async function handleComplete() {
+  if (!ticket.value) return;
+  loading.value = true;
+  try {
+    const photo = photos.value.length > 0 ? photos.value[0] : undefined;
+    await ticketStore.completeTicket(ticket.value.id, photo);
+    await ticketStore.loadTicket(props.id);
+  } catch (error) {
+    console.error('Failed to complete ticket:', error);
+  } finally {
+    loading.value = false;
   }
+}
+
+function toggleStep(index: number) {
+  if (!ticket.value?.steps) return;
+  const steps = [...ticket.value.steps];
+  steps[index] = { ...steps[index], completed: !steps[index].completed };
+  ticket.value.steps = steps;
+}
+
+function addPhoto() {
+  uni.chooseImage({
+    count: 1,
+    success: (res) => {
+      const tempFilePath = res.tempFilePaths[0];
+      photos.value.push(tempFilePath);
+      uploadPhoto(tempFilePath);
+    },
+  });
+}
+
+async function uploadPhoto(filePath: string) {
+  const token = uni.getStorageSync('auth_token');
+  if (!token) {
+    uni.showToast({ title: 'Please login first', icon: 'none' });
+    return;
+  }
+
+  try {
+    const result = await api.uploadFile({ filePath });
+    const index = photos.value.indexOf(filePath);
+    if (index > -1 && result.url) {
+      photos.value[index] = result.url;
+    }
+  } catch (error) {
+    console.error('Failed to upload photo:', error);
+    uni.showToast({ title: 'Failed to upload photo', icon: 'none' });
+  }
+}
+
+function removePhoto(index: number) {
+  photos.value.splice(index, 1);
+}
+
+function previewPhoto(url: string) {
+  uni.previewImage({
+    urls: photos.value,
+    current: url,
+  });
 }
 </script>
 
@@ -314,6 +418,8 @@ function handleFinish() {
   font-size: $text-sm;
   font-weight: $font-medium;
   color: $gray-900;
+  text-align: right;
+  max-width: 60%;
 }
 
 .status-badge, .priority-badge, .type-badge {
@@ -333,20 +439,20 @@ function handleFinish() {
 }
 
 .priority-badge {
-  &.priority-critical { background: rgba($error-color, 0.1); color: $error-color; }
-  &.priority-high { background: rgba($warning-color, 0.1); color: $warning-color; }
-  &.priority-medium { background: rgba($gray-500, 0.1); color: $gray-600; }
-  &.priority-low { background: rgba($gray-200, 0.5); color: $gray-500; }
+  &.priority-P1 { background: rgba($error-color, 0.1); color: $error-color; }
+  &.priority-P2 { background: rgba($warning-color, 0.1); color: $warning-color; }
+  &.priority-P3 { background: rgba($gray-500, 0.1); color: $gray-600; }
+  &.priority-P4 { background: rgba($gray-200, 0.5); color: $gray-500; }
 }
 
 .type-badge {
-  &.type-corrective { background: rgba($orange-500, 0.1); color: $orange-600; }
-  &.type-planned { background: rgba($blue-500, 0.1); color: $blue-600; }
-  &.type-preventive { background: rgba($green-500, 0.1); color: $green-600; }
-  &.type-problem { background: rgba($rose-500, 0.1); color: $rose-600; }
+  &.type-CORRECTIVE { background: rgba($orange-500, 0.1); color: $orange-600; }
+  &.type-PLANNED { background: rgba($blue-500, 0.1); color: $blue-600; }
+  &.type-PREVENTIVE { background: rgba($green-500, 0.1); color: $green-600; }
+  &.type-PROBLEM { background: rgba($rose-500, 0.1); color: $rose-600; }
 }
 
-.description-card {
+.description-card, .steps-card, .photos-card {
   background: $white;
   border: 1px solid $gray-200;
   border-radius: $radius-xl;
@@ -375,6 +481,109 @@ function handleFinish() {
   font-size: $text-sm;
   color: $gray-600;
   line-height: 1.6;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-2 0;
+}
+
+.step-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid $gray-300;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &.completed {
+    background: $green-500;
+    border-color: $green-500;
+  }
+
+  .check-icon {
+    font-size: 14px;
+    color: $white;
+  }
+}
+
+.step-label {
+  font-size: $text-sm;
+  color: $gray-700;
+  flex: 1;
+
+  &.completed {
+    color: $gray-400;
+    text-decoration: line-through;
+  }
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-2;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: rgba($error-color, 0.8);
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .remove-icon {
+    font-size: 14px;
+    color: $white;
+  }
+}
+
+.photo-add {
+  aspect-ratio: 1;
+  border: 2px dashed $gray-300;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-1;
+  cursor: pointer;
+
+  .add-icon {
+    font-size: 24px;
+    color: $gray-400;
+  }
+
+  .add-text {
+    font-size: 10px;
+    color: $gray-400;
+  }
 }
 
 .action-card {
@@ -454,5 +663,30 @@ function handleFinish() {
   font-size: $text-base;
   font-weight: $font-medium;
   color: $white;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($white, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid $gray-200;
+  border-top-color: $blue-500;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

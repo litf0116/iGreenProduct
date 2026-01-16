@@ -98,10 +98,10 @@ const languageText = 'Language';
 const signOutText = 'Sign Out';
 const versionText = 'Version';
 
-const userName = computed(() => userStore.user?.name || 'Mike Technician');
-const userPhone = computed(() => userStore.user?.phone || '+1 (555) 123-4567');
-const userUsername = computed(() => userStore.user?.username || 'mike.tech');
-const userGroup = computed(() => userStore.user?.group || 'Bangkok Operations (Zone A)');
+const userName = computed(() => userStore.user?.name || 'Guest User');
+const userPhone = computed(() => userStore.user?.phone || '-');
+const userUsername = computed(() => userStore.user?.username || 'guest');
+const userGroup = computed(() => userStore.user?.groupName || '-' );
 const userInitials = computed(() => {
   const name = userName.value;
   return name.split(' ').map(n => n[0]).join('').slice(0, 2);

@@ -5,6 +5,9 @@ public enum TicketStatus {
     ASSIGNED,
     ACCEPTED,
     IN_PROGRESS,
+    DEPARTED,
+    ARRIVED,
+    REVIEW,
     COMPLETED,
     ON_HOLD,
     CANCELLED

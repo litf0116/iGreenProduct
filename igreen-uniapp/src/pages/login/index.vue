@@ -13,7 +13,7 @@
 
       <view class="form-section">
         <text class="form-title">Sign in to your account</text>
-        <text class="form-subtitle">Enter your account and password</text>
+        <text class="form-subtitle">Enter your credentials</text>
 
         <view class="input-group">
           <text class="input-label">Account</text>
@@ -22,7 +22,7 @@
             <input
               class="input-field"
               type="text"
-              placeholder="Username or Account ID"
+              placeholder="Username"
               v-model="account"
             />
           </view>
@@ -64,8 +64,8 @@
 import { ref } from 'vue';
 import { useUserStore } from '@/store/modules/user';
 
-const account = ref('mike.tech');
-const password = ref('password');
+const account = ref('');
+const password = ref('');
 const isLoading = ref(false);
 
 const userStore = useUserStore();
@@ -73,7 +73,7 @@ const userStore = useUserStore();
 async function handleLogin() {
   if (!account.value || !password.value) {
     uni.showToast({
-      title: 'Please enter valid credentials',
+      title: 'Please enter credentials',
       icon: 'none',
     });
     return;
@@ -84,12 +84,15 @@ async function handleLogin() {
   try {
     await userStore.login(account.value, password.value);
     uni.showToast({
-      title: 'Welcome back!',
+      title: 'Welcome!',
       icon: 'success',
     });
-  } catch (error) {
+    setTimeout(() => {
+      uni.reLaunch({ url: '/pages/dashboard/index' });
+    }, 500);
+  } catch (error: any) {
     uni.showToast({
-      title: 'Login failed',
+      title: error.message || 'Login failed',
       icon: 'none',
     });
   } finally {

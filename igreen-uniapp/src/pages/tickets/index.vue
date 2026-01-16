@@ -10,7 +10,7 @@
     </view>
 
     <scroll-view class="ticket-scroll" scroll-y @scrolltoupper="handleRefresh" :upper-threshold="50">
-      <view class="ticket-cards">
+      <view class="ticket-cards" v-if="tickets.length > 0">
         <view
           v-for="ticket in tickets"
           :key="ticket.id"
@@ -34,9 +34,9 @@
 
             <text class="ticket-title">{{ ticket.title }}</text>
 
-            <view class="ticket-location" v-if="ticket.location">
+            <view class="ticket-location" v-if="ticket.location || ticket.site">
               <text class="location-icon">📍</text>
-              <text class="location-text">{{ ticket.location }}</text>
+              <text class="location-text">{{ ticket.location || ticket.site }}</text>
             </view>
 
             <view class="ticket-footer">
@@ -45,31 +45,33 @@
                 <text class="status-text">{{ getStatusLabel(ticket.status) }}</text>
               </view>
 
-              <view class="ticket-action" v-if="ticket.status === 'open'">
+              <view class="ticket-action" v-if="ticket.status === 'OPEN'">
                 <view class="grab-btn">
                   <text class="grab-icon">⚡</text>
-                  <text class="grab-text">{{ grabText }}</text>
+                  <text class="grab-text">Grab</text>
                 </view>
               </view>
 
-              <view class="ticket-assignee" v-else-if="ticket.assignee">
+              <view class="ticket-assignee" v-else-if="ticket.assignedToName || ticket.assignee">
                 <view class="assignee-avatar">
-                  <text class="avatar-text">{{ ticket.assignee.charAt(0) }}</text>
+                  <text class="avatar-text">{{ (ticket.assignedToName || ticket.assignee || '').charAt(0) }}</text>
                 </view>
-                <text class="assignee-name">{{ ticket.assignee }}</text>
+                <text class="assignee-name">{{ ticket.assignedToName || ticket.assignee }}</text>
               </view>
             </view>
           </view>
-        </view>
-
-        <view class="empty-state" v-if="tickets.length === 0">
-          <text class="empty-text">{{ noTicketsText }}</text>
         </view>
 
         <view class="loading-more" v-if="loadingMore">
           <text class="loading-icon">↻</text>
           <text class="loading-text">Loading more...</text>
         </view>
+      </view>
+
+      <view class="empty-state" v-else-if="!loading && !refreshing">
+        <text class="empty-icon">📋</text>
+        <text class="empty-text">No tickets found</text>
+        <text class="empty-subtext">Pull down to refresh</text>
       </view>
     </scroll-view>
   </view>
@@ -78,7 +80,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Ticket, TicketStatus, TicketPriority, TicketType } from '@/types/ticket';
-import { getTicketTypeLabel, formatDate } from '@/utils/helpers';
+import { getStatusLabel, getStatusIcon, getTypeLabel, formatDate } from '@/types/ticket';
+import { getStatusClass, getPriorityClass, getTypeClass } from '@/utils/helpers';
 
 const props = defineProps<{
   title: string;
@@ -94,46 +97,6 @@ const emit = defineEmits<{
   (e: 'loadMore'): void;
 }>();
 
-const grabText = 'Grab';
-const noTicketsText = 'No tickets found in this view.';
-
-function getStatusClass(status: TicketStatus): string {
-  switch (status) {
-    case 'open': return 'bg-blue';
-    case 'completed': return 'bg-green';
-    case 'review': return 'bg-purple';
-    default: return 'bg-yellow';
-  }
-}
-
-function getPriorityClass(priority: TicketPriority): string {
-  return `priority-${priority}`;
-}
-
-function getTypeClass(type: TicketType): string {
-  return `type-${type}`;
-}
-
-function getTypeLabel(type: TicketType): string {
-  return getTicketTypeLabel(type);
-}
-
-function getStatusIcon(status: TicketStatus): string {
-  switch (status) {
-    case 'open': return '⚡';
-    case 'assigned': return '✓';
-    case 'departed': return '⏱';
-    case 'arrived': return '🔧';
-    case 'review': return '👁';
-    case 'completed': return '✔';
-    default: return '•';
-  }
-}
-
-function getStatusLabel(status: TicketStatus): string {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
 function handleTicketClick(ticket: Ticket) {
   emit('ticketClick', ticket);
 }
@@ -141,6 +104,14 @@ function handleTicketClick(ticket: Ticket) {
 function handleRefresh() {
   emit('refresh');
 }
+</script>
+
+<script lang="ts">
+export default {
+  options: {
+    styleIsolation: 'shared',
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -220,6 +191,8 @@ function handleRefresh() {
   &.bg-green { background: $green-500; }
   &.bg-purple { background: $purple-500; }
   &.bg-yellow { background: $yellow-500; }
+  &.bg-red { background: $red-500; }
+  &.bg-indigo { background: $indigo-500; }
 }
 
 .ticket-content {
@@ -257,22 +230,22 @@ function handleRefresh() {
   font-weight: $font-medium;
   text-transform: capitalize;
 
-  &.priority-critical {
+  &.priority-p1 {
     background: rgba($error-color, 0.1);
     color: $error-color;
   }
 
-  &.priority-high {
+  &.priority-p2 {
     background: rgba($warning-color, 0.1);
     color: $warning-color;
   }
 
-  &.priority-medium {
+  &.priority-p3 {
     background: rgba($gray-500, 0.1);
     color: $gray-600;
   }
 
-  &.priority-low {
+  &.priority-p4 {
     background: rgba($gray-200, 0.5);
     color: $gray-500;
   }
@@ -417,12 +390,26 @@ function handleRefresh() {
 
 .empty-state {
   text-align: center;
-  padding: $spacing-8;
-  color: $gray-500;
+  padding: $spacing-12 $spacing-4;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: $spacing-4;
+  display: block;
 }
 
 .empty-text {
+  font-size: $text-lg;
+  font-weight: $font-medium;
+  color: $gray-900;
+  display: block;
+  margin-bottom: $spacing-2;
+}
+
+.empty-subtitle {
   font-size: $text-sm;
+  color: $gray-500;
 }
 
 .loading-more {

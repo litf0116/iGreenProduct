@@ -35,7 +35,7 @@
         <TabBar :currentView="currentView" @update:currentView="currentView = $event" />
       </view>
 
-      <TicketDetailPage v-if="ticketStore.currentTicket" :ticket="ticketStore.currentTicket" @close="handleCloseDetail" @update="handleUpdateTicket" />
+      <TicketDetailPage v-if="ticketStore.currentTicket" :id="ticketStore.currentTicket.id" @close="handleCloseDetail" />
     </view>
   </view>
 </template>
@@ -51,15 +51,15 @@ const ticketStore = useTicketStore();
 const currentView = ref('dashboard');
 
 const queueTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => t.status === 'open')
+  ticketStore.tickets.filter((t: any) => t.status === 'OPEN')
 );
 
 const myWorkTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => ['assigned', 'departed', 'arrived', 'review'].includes(t.status))
+  ticketStore.tickets.filter((t: any) => ['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'DEPARTED', 'ARRIVED', 'REVIEW'].includes(t.status))
 );
 
 const historyTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => t.status === 'completed')
+  ticketStore.tickets.filter((t: any) => t.status === 'COMPLETED')
 );
 
 onMounted(() => {

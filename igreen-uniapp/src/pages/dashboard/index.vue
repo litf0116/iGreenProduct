@@ -1,18 +1,36 @@
 <template>
   <view class="dashboard">
     <view class="welcome-section">
-      <text class="welcome-title">Hello, Mike</text>
+      <text class="welcome-title">Hello, {{ userName }}</text>
       <text class="welcome-subtitle">{{ freeToGrabText }}</text>
     </view>
 
     <view class="stats-section">
       <view class="stat-card">
         <view class="stat-content">
-          <text class="stat-value">{{ completedToday }}</text>
-          <text class="stat-label">{{ jobsCompletedText }}</text>
+          <text class="stat-value">{{ stats.completed }}</text>
+          <text class="stat-label">Jobs Completed</text>
+        </view>
+        <view class="stat-icon bg-green">
+          <text class="icon">✓</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-content">
+          <text class="stat-value">{{ stats.open }}</text>
+          <text class="stat-label">Open Tickets</text>
+        </view>
+        <view class="stat-icon bg-blue">
+          <text class="icon">⚡</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-content">
+          <text class="stat-value">{{ stats.inProgress }}</text>
+          <text class="stat-label">In Progress</text>
         </view>
         <view class="stat-icon bg-indigo">
-          <text class="icon">✓</text>
+          <text class="icon">🔧</text>
         </view>
       </view>
     </view>
@@ -30,14 +48,14 @@
         <view class="job-content">
           <view class="job-header">
             <view class="status-badge" :class="statusBadgeClass">
-              <text class="status-text">{{ currentJob.status }}</text>
+              <text class="status-text">{{ getStatusLabel(currentJob.status) }}</text>
             </view>
             <text class="job-id">{{ currentJob.id }}</text>
           </view>
           <text class="job-title">{{ currentJob.title }}</text>
           <view class="job-location">
             <text class="location-icon">📍</text>
-            <text class="location-text">{{ currentJob.location }}</text>
+            <text class="location-text">{{ currentJob.location || currentJob.site }}</text>
           </view>
           <view class="continue-btn">
             <text class="btn-text">{{ continueJobText }}</text>
@@ -47,9 +65,15 @@
     </view>
 
     <view class="active-job-section" v-else>
+      <view class="section-header">
+        <text class="section-title">
+          <text class="title-icon">⚡</text>
+          {{ currentJobText }}
+        </text>
+      </view>
       <view class="no-job-card">
         <view class="no-job-icon">
-          <text class="icon">⚡</text>
+          <text class="icon">✓</text>
         </view>
         <text class="no-job-title">{{ noActiveJobsText }}</text>
         <text class="no-job-subtitle">{{ freeToGrabText }}</text>
@@ -67,9 +91,9 @@
         </view>
       </view>
 
-      <view class="opportunities-list">
+      <view class="opportunities-list" v-if="openTickets.length > 0">
         <view
-          v-for="ticket in nearbyTickets"
+          v-for="ticket in openTickets.slice(0, 3)"
           :key="ticket.id"
           class="opportunity-card"
           @click="handleTicketClick(ticket)"
@@ -81,27 +105,32 @@
             <view class="type-badge" :class="getTypeClass(ticket.type)">
               <text class="type-text">{{ getTypeLabel(ticket.type) }}</text>
             </view>
-            <text class="distance">2.5km</text>
+            <text class="distance">{{ formatDate(ticket.createdAt) }}</text>
           </view>
           <text class="opportunity-title">{{ ticket.title }}</text>
-          <text class="opportunity-location">{{ ticket.location }}</text>
+          <text class="opportunity-location">{{ ticket.location || ticket.site }}</text>
           <view class="opportunity-footer">
             <text class="est-time">
               <text class="est-icon">⏱</text>
-              {{ estTimeText }} 2h
+              Est. 2h
             </text>
           </view>
         </view>
+      </view>
+
+      <view class="empty-state" v-else>
+        <text class="empty-text">No open tickets available</text>
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useTicketStore } from '@/store/modules/tickets';
+import { useUserStore } from '@/store/modules/user';
 import type { Ticket, TicketPriority, TicketType } from '@/types/ticket';
-import { getTicketTypeLabel } from '@/utils/helpers';
+import { getStatusLabel, getTypeLabel, getPriorityClass, getTypeClass } from '@/utils/helpers';
 
 const emit = defineEmits<{
   (e: 'ticketClick', ticket: Ticket): void;
@@ -109,40 +138,30 @@ const emit = defineEmits<{
 }>();
 
 const ticketStore = useTicketStore();
+const userStore = useUserStore();
 
 const tickets = computed(() => ticketStore.tickets);
 const currentJob = computed(() => ticketStore.currentJob);
-const nearbyTickets = computed(() => 
-  tickets.value.filter(t => t.status === 'open').slice(0, 3)
+const stats = computed(() => ticketStore.stats);
+const openTickets = computed(() =>
+  tickets.value.filter(t => t.status === 'OPEN').slice(0, 10)
 );
-const completedToday = computed(() => 
-  tickets.value.filter(t => t.status === 'completed').length
-);
+
+const userName = computed(() => userStore.user?.name || 'Engineer');
 
 const statusColorClass = computed(() => {
   if (!currentJob.value) return '';
   const status = currentJob.value.status;
-  if (status === 'review') return 'bg-purple';
+  if (status === 'REVIEW') return 'bg-purple';
+  if (status === 'ON_HOLD') return 'bg-yellow';
   return 'bg-indigo';
 });
 
 const statusBadgeClass = computed(() => {
   if (!currentJob.value) return '';
-  const status = currentJob.value.status;
+  const status = currentJob.value.status.toLowerCase();
   return `badge-${status}`;
 });
-
-function getPriorityClass(priority: TicketPriority): string {
-  return `priority-${priority}`;
-}
-
-function getTypeClass(type: TicketType): string {
-  return `type-${type}`;
-}
-
-function getTypeLabel(type: TicketType): string {
-  return getTicketTypeLabel(type);
-}
 
 function handleJobClick() {
   if (currentJob.value) {
@@ -158,14 +177,45 @@ function viewAllTickets() {
   emit('viewAll');
 }
 
+function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return date.toLocaleDateString();
+}
+
 const freeToGrabText = 'You are free to grab a new order.';
-const jobsCompletedText = 'Jobs Completed';
 const currentJobText = 'Current Job';
 const continueJobText = 'Continue Job';
 const noActiveJobsText = 'No Active Jobs';
 const nearbyOpportunitiesText = 'Nearby Opportunities';
 const viewAllText = 'View All';
 const estTimeText = 'Est.';
+
+onMounted(async () => {
+  userStore.initFromStorage();
+  if (!userStore.isAuthenticated) {
+    uni.reLaunch({ url: '/pages/login/index' });
+    return;
+  }
+  await ticketStore.loadTickets({ reset: true });
+  await ticketStore.loadStats();
+});
+</script>
+
+<script lang="ts">
+export default {
+  options: {
+    styleIsolation: 'shared',
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -194,6 +244,9 @@ const estTimeText = 'Est.';
 }
 
 .stats-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-3;
   margin-bottom: $spacing-6;
 }
 
@@ -201,7 +254,7 @@ const estTimeText = 'Est.';
   background: $white;
   border: 1px solid $gray-200;
   border-radius: $radius-lg;
-  padding: $spacing-6;
+  padding: $spacing-4;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -213,32 +266,40 @@ const estTimeText = 'Est.';
 }
 
 .stat-value {
-  font-size: $text-2xl;
+  font-size: $text-xl;
   font-weight: $font-bold;
   color: $gray-900;
   display: block;
 }
 
 .stat-label {
-  font-size: $text-xs;
+  font-size: 10px;
   color: $gray-500;
   display: block;
 }
 
 .stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: $radius-lg;
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &.bg-green {
+    background: rgba($green-500, 0.1);
+  }
+
+  &.bg-blue {
+    background: rgba($blue-500, 0.1);
+  }
 
   &.bg-indigo {
     background: rgba($indigo-500, 0.1);
   }
 
   .icon {
-    font-size: 24px;
+    font-size: 16px;
   }
 }
 
@@ -284,8 +345,11 @@ const estTimeText = 'Est.';
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  active: scale(0.98);
   transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .status-stripe {
@@ -301,6 +365,10 @@ const estTimeText = 'Est.';
 
   &.bg-purple {
     background: $purple-500;
+  }
+
+  &.bg-yellow {
+    background: $yellow-500;
   }
 }
 
@@ -322,6 +390,10 @@ const estTimeText = 'Est.';
 
   &.badge-review {
     background: rgba($purple-500, 0.1);
+  }
+
+  &.badge-on_hold {
+    background: rgba($yellow-500, 0.1);
   }
 }
 
@@ -458,22 +530,22 @@ const estTimeText = 'Est.';
   font-weight: $font-medium;
   text-transform: capitalize;
 
-  &.priority-critical {
+  &.priority-p1 {
     background: rgba($error-color, 0.1);
     color: $error-color;
   }
 
-  &.priority-high {
+  &.priority-p2 {
     background: rgba($warning-color, 0.1);
     color: $warning-color;
   }
 
-  &.priority-medium {
+  &.priority-p3 {
     background: rgba($gray-500, 0.1);
     color: $gray-600;
   }
 
-  &.priority-low {
+  &.priority-p4 {
     background: rgba($gray-200, 0.5);
     color: $gray-500;
   }
@@ -555,5 +627,15 @@ const estTimeText = 'Est.';
 
 .est-icon {
   font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: $spacing-6;
+}
+
+.empty-text {
+  font-size: $text-sm;
+  color: $gray-500;
 }
 </style>
