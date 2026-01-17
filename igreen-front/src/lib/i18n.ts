@@ -289,6 +289,12 @@ export const translations = {
     // Site Management
     siteManagement: "Site Management",
     sites: "Sites",
+    A: "Level A",
+    B: "Level B",
+    C: "Level C",
+    ONLINE: "Online",
+    OFFLINE: "Offline",
+    UNDER_CONSTRUCTION: "Under Construction",
 
     // Group Management
     groupManagement: "Group Management",
@@ -639,6 +645,12 @@ export const translations = {
     // Site Management
     siteManagement: "การจัดการสถานที่",
     sites: "สถานที่",
+    A: "ระดับ A",
+    B: "ระดับ B",
+    C: "ระดับ C",
+    ONLINE: "ออนไลน์",
+    OFFLINE: "ออฟไลน์",
+    UNDER_CONSTRUCTION: "กำลังก่อสร้าง",
 
     // Group Management
     groupManagement: "การจัดการกลุ่ม",

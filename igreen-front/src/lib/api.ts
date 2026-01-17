@@ -96,7 +96,73 @@ export const api = {
 
   getUsers: async (params?: PageParams & { keyword?: string }): Promise<{ records: User[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('page', String((params?.page ?? 0) + 1));
+    searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
+    if (params?.keyword) searchParams.set('keyword', params.keyword);
+    return kyInstance.get(`api/users?${searchParams}`).json();
+  },
+
+  getUser: async (id: string): Promise<User> => {
+    return kyInstance.get(`api/users/${id}`).json<User>();
+  },
+
+  createUser: async (user: UserCreateRequest): Promise<User> => {
+    return kyInstance.post('api/users', { json: user }).json<User>();
+  },
+
+  updateUser: async (id: string, updates: UserUpdateRequest): Promise<User> => {
+    return kyInstance.post(`api/users/${id}`, { json: updates }).json<User>();
+  },
+
+  deleteUser: async (id: string): Promise<void> => {
+    await kyInstance.delete(`api/users/${id}`);
+  },
+
+  updateUserCountries: async (id: string, country: string): Promise<User> => {
+    return kyInstance.patch(`api/users/${id}/countries`, { json: { country } }).json<User>();
+  },
+
+  getEngineers: async (): Promise<User[]> => {
+    return kyInstance.get('api/users/engineers').json<User[]>();
+  },
+
+  getGroups: async (): Promise<Group[]> => {
+    return kyInstance.get('api/groups').json<Group[]>();
+  },
+
+  getGroup: async (id: string): Promise<Group> => {
+    return kyInstance.get(`api/groups/${id}`).json<Group>();
+  },
+
+  createGroup: async (group: GroupCreateRequest): Promise<Group> => {
+    return kyInstance.post('api/groups', { json: group }).json<Group>();
+  },
+
+  updateGroup: async (id: string, updates: GroupUpdateRequest): Promise<Group> => {
+    return kyInstance.post(`api/groups/${id}`, { json: updates }).json<Group>();
+  },
+
+  deleteGroup: async (id: string): Promise<void> => {
+    await kyInstance.delete(`api/groups/${id}`);
+  },
+
+  getGroupMembers: async (groupId: string): Promise<User[]> => {
+    return kyInstance.get(`api/groups/${groupId}/members`).json<User[]>();
+  },
+
+  refreshTokenToken: async (): Promise<TokenResponse> => {
+    const newAccessToken = await handleTokenRefresh();
+    return {
+      accessToken: newAccessToken,
+      refreshToken: getRefreshToken()!,
+      expiresIn: 7200000,
+      tokenType: 'Bearer',
+    };
+  },
+
+  getUsers: async (params?: PageParams & { keyword?: string }): Promise<{ records: User[]; total: number; current: number; size: number; hasNext: boolean }> => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.keyword) searchParams.set('keyword', params.keyword);
     return kyInstance.get(`api/users?${searchParams}`).json();
@@ -152,7 +218,7 @@ export const api = {
 
   getSites: async (params?: PageParams & { keyword?: string; level?: string; status?: string }): Promise<{ records: Site[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.keyword) searchParams.set('keyword', params.keyword);
     if (params?.level) searchParams.set('level', params.level);
@@ -228,15 +294,16 @@ export const api = {
     await kyInstance.delete(`api/templates/${id}`);
   },
 
-  getTickets: async (params?: PageParams & { type?: string; status?: string; priority?: string; assignedTo?: string; keyword?: string }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
+  getTickets: async (params?: PageParams & { type?: string; status?: string; priority?: string; assignedTo?: string; keyword?: string; createdAfter?: string }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.type) searchParams.set('type', params.type);
     if (params?.status) searchParams.set('status', params.status);
     if (params?.priority) searchParams.set('priority', params.priority);
     if (params?.assignedTo) searchParams.set('assignedTo', params.assignedTo);
     if (params?.keyword) searchParams.set('keyword', params.keyword);
+    if (params?.createdAfter) searchParams.set('createdAfter', params.createdAfter);
     return kyInstance.get(`api/tickets?${searchParams}`).json();
   },
 
@@ -302,7 +369,7 @@ export const api = {
 
   getMyTickets: async (params?: { page?: number; size?: number; status?: string }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? 20));
     if (params?.status) searchParams.set('status', params.status);
     return kyInstance.get(`api/tickets/my?${searchParams}`).json();
@@ -314,7 +381,7 @@ export const api = {
 
   getCompletedTickets: async (params?: { page?: number; size?: number }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', String(params?.page ?? 0));
+    searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? 20));
     return kyInstance.get(`api/tickets/completed?${searchParams}`).json();
   },

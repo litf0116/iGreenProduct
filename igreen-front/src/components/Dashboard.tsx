@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -39,6 +39,47 @@ import {
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
+const TIME_FILTER_LABELS: Record<TimeFilter, TranslationKey> = {
+  "all": "allTime",
+  "8hours": "within8Hours",
+  "today": "today",
+  "week": "thisWeek",
+  "month": "thisMonth",
+  "3months": "within3Months",
+};
+
+function getCreatedAfter(filter: TimeFilter): string | null {
+  if (filter === "all") return null;
+
+  const now = new Date();
+  let start: Date;
+
+  switch (filter) {
+    case "8hours":
+      start = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+      break;
+    case "today":
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "week":
+      start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case "month":
+      start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case "3months":
+      start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      return null;
+  }
+
+  const format = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+
+  return format(start);
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
 
@@ -69,6 +110,42 @@ export function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("type") as TicketType;
+    const time = searchParams.get("time") as TimeFilter;
+    const status = searchParams.get("status") as TicketStatus | "all";
+    const priority = searchParams.get("priority");
+    const query = searchParams.get("q");
+
+    if (tab && ["CORRECTIVE", "PREVENTIVE", "PLANNED", "PROBLEM"].includes(tab)) {
+      setActiveTab(tab);
+    }
+    if (time && ["8hours", "today", "week", "month", "3months", "all"].includes(time)) {
+      setTimeFilter(time);
+    }
+    if (status && ["OPEN", "ASSIGNED", "ACCEPTED", "IN_PROGRESS", "SUBMITTED", "COMPLETED", "ON_HOLD", "CANCELLED", "all"].includes(status)) {
+      setStatusFilter(status);
+    }
+    if (priority) {
+      setPriorityFilter(priority);
+    }
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, []);
+
+  const updateSearchParams = useCallback(() => {
+    const params: Record<string, string> = {};
+    if (activeTab !== "CORRECTIVE") params.type = activeTab;
+    if (timeFilter !== "all") params.time = timeFilter;
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (priorityFilter !== "all") params.priority = priorityFilter;
+    if (searchQuery) params.q = searchQuery;
+    setSearchParams(params, { replace: true });
+  }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, setSearchParams]);
+
   // 加载统计数据
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
@@ -90,7 +167,11 @@ export function Dashboard() {
       const response = await api.getTickets({ 
         page: 0, 
         size: 100,
-        type: activeTab 
+        type: activeTab,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        priority: priorityFilter !== "all" ? priorityFilter : undefined,
+        keyword: searchQuery || undefined,
+        createdAfter: getCreatedAfter(timeFilter)
       });
       setTickets(response.records || response || []);
     } catch (error) {
@@ -99,7 +180,7 @@ export function Dashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
 
   useEffect(() => {
     loadTickets();
@@ -260,11 +341,11 @@ export function Dashboard() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 flex-1">
               {/* Time Filter */}
-              <Select value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)}>
+              <Select value={timeFilter} onValueChange={(v) => { setTimeFilter(v as TimeFilter); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="truncate">{timeFilter === "all" ? t("allTime") : t("timeRange")}</span>
+                    <span className="truncate">{t(TIME_FILTER_LABELS[timeFilter])}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -278,7 +359,7 @@ export function Dashboard() {
               </Select>
 
               {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as TicketStatus | "all")}>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as TicketStatus | "all"); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -300,7 +381,7 @@ export function Dashboard() {
               </Select>
 
               {/* Priority Filter */}
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -325,7 +406,7 @@ export function Dashboard() {
                   type="text"
                   placeholder={t("searchTickets")}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); updateSearchParams(); }}
                   className="pl-8 bg-white w-full"
                 />
               </div>
@@ -437,8 +518,8 @@ export function Dashboard() {
                   <TableRow>
                     <TableHead>{t("ticketId")}</TableHead>
                     <TableHead>{t("title")}</TableHead>
-                    <TableHead>{t("site")}</TableHead>
                     <TableHead>{t("status")}</TableHead>
+                    <TableHead>{t("site")}</TableHead>
                     <TableHead>{t("priority")}</TableHead>
                     <TableHead>{t("assignedTo")}</TableHead>
                     <TableHead>{t("createdDate")}</TableHead>
@@ -490,18 +571,18 @@ export function Dashboard() {
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>{ticket.site}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusBadgeVariant(ticket.status)}>
                             {t(ticket.status as TranslationKey)}
                           </Badge>
                         </TableCell>
+                        <TableCell>{ticket.site}</TableCell>
                         <TableCell>
                           <Badge variant={getPriorityBadge(ticket.priority)}>
                             {t(ticket.priority as TranslationKey)}
                           </Badge>
                         </TableCell>
-                        <TableCell>{ticket.assignedToName}</TableCell>
+                        <TableCell>{ticket.assignedToName || "-"}</TableCell>
                         <TableCell>{formatDate(ticket.createdAt)}</TableCell>
                         <TableCell>
                           <span className={new Date(ticket.dueDate) < new Date() && ticket.status !== "closed" ? "text-red-500 font-medium" : ""}>

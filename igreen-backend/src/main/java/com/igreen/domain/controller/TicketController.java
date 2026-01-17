@@ -41,7 +41,7 @@ public class TicketController {
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String assignedTo,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter) {
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter) {
         return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter)));
     }
 

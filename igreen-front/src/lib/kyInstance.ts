@@ -57,7 +57,7 @@ async function performTokenRefresh(): Promise<string> {
 }
 
 export const kyInstance = ky.create({
-  prefixUrl: isTest ? undefined : API_BASE_URL,
+  prefixUrl: '/',
   timeout: 30000,
   throwHttpErrors: false,
   retry: {

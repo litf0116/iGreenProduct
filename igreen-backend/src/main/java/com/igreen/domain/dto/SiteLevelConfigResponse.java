@@ -6,6 +6,5 @@ public record SiteLevelConfigResponse(
         String id,
         String levelName,
         String description,
-        Integer maxConcurrentTickets,
-        Integer escalationTimeHours
+        Integer maxConcurrentTickets
 ) {}
