@@ -13,16 +13,13 @@
     </view>
 
     <view class="header-actions">
-      <view class="mobile-avatar">
-        <view class="avatar">
-          <text class="avatar-text">MT</text>
-        </view>
-      </view>
+      <Avatar name="Mike Technician" size="sm" />
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
+import { Avatar } from '@/components/ui';
 </script>
 
 <style lang="scss" scoped>
@@ -104,26 +101,5 @@
   @media (min-width: 768px) {
     display: none;
   }
-}
-
-.mobile-avatar {
-  width: 32px;
-  height: 32px;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  background: $gray-200;
-  border-radius: $radius-full;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-text {
-  font-size: 12px;
-  font-weight: $font-bold;
-  color: $gray-600;
 }
 </style>

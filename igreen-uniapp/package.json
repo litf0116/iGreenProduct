@@ -2,60 +2,43 @@
   "name": "igreen-uniapp",
   "version": "1.0.0",
   "private": true,
+  "description": "iGreen+ Engineer Mobile App - Built with uni-app",
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "dev": "npm run dev:h5",
     "dev:h5": "npx @dcloudio/uni-app-cli -p h5",
-    "dev:app-plus": "npx @dcloudio/uni-app-cli -p app-plus",
+    "dev:app": "npx @dcloudio/uni-app-cli -p app-plus",
     "dev:mp-weixin": "npx @dcloudio/uni-app-cli -p mp-weixin",
+    "build": "npm run build:h5",
     "build:h5": "npx @dcloudio/uni-app-cli build --platform h5",
-    "build:app-plus": "npx @dcloudio/uni-app-cli build --platform app-plus",
-    "build:mp-weixin": "npx @dcloudio/uni-app-cli build --platform mp-weixin"
+    "build:app": "npx @dcloudio/uni-app-cli build --platform app-plus",
+    "build:mp-weixin": "npx @dcloudio/uni-app-cli build --platform mp-weixin",
+    "generate:icons": "python3 scripts/upscale_icon.py",
+    "install:cli": "npm install @dcloudio/uni-app-cli --no-save"
   },
   "dependencies": {
     "@dcloudio/uni-app": "^3.0.0-3090920231225001",
     "@dcloudio/uni-h5": "^3.0.0-3090920231225001",
-    "core-js": "^3.8.3",
     "pinia": "^2.1.7",
-    "vue": "^3.2.13",
-    "vue-template-compiler": "^2.7.16"
+    "vue": "^3.4.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
     "@dcloudio/types": "^3.4.8",
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-eslint": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "@vue/compiler-sfc": "^3.2.13",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3",
     "sass": "^1.32.0",
     "sass-loader": "^8.0.2",
-    "typescript": "^4.9.5",
-    "vue-loader": "^17.0.0"
+    "typescript": "^4.9.5"
   },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser",
-      "requireConfigFile": false
-    },
-    "rules": {
-      "vue/multi-word-component-names": "off",
-      "vue/no-reserved-component-names": "off"
+  "uni-app": {
+    "scripts": {
+      "dev:h5": {
+        "BROWSER": "chrome",
+        "env": "development",
+        "define": {
+          "H5": true
+        }
+      },
+      "dev:app": {
+        "env": "development"
+      }
     }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+  }
 }

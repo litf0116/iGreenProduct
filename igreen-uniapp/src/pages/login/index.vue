@@ -17,38 +17,36 @@
 
         <view class="input-group">
           <text class="input-label">Account</text>
-          <view class="input-wrapper">
-            <text class="input-icon">👤</text>
-            <input
-              class="input-field"
-              type="text"
-              placeholder="Username"
-              v-model="account"
-            />
-          </view>
+          <Input
+            v-model="account"
+            type="text"
+            placeholder="Username"
+          >
+            <template #prefix>👤</template>
+          </Input>
         </view>
 
         <view class="input-group">
-          <view class="input-header">
-            <text class="input-label">Password</text>
-          </view>
-          <view class="input-wrapper">
-            <text class="input-icon">🔒</text>
-            <input
-              class="input-field"
-              type="password"
-              placeholder="Enter your password"
-              v-model="password"
-            />
-          </view>
+          <text class="input-label">Password</text>
+          <Input
+            v-model="password"
+            type="password"
+            placeholder="Enter your password"
+          >
+            <template #prefix>🔒</template>
+          </Input>
         </view>
 
-        <view class="submit-btn" @click="handleLogin" :class="{ loading: isLoading }">
-          <text class="btn-text">
-            {{ isLoading ? 'Signing in...' : 'Sign In' }}
-          </text>
-          <text class="btn-arrow" v-if="!isLoading">→</text>
-        </view>
+        <Button
+          class="submit-btn"
+          variant="primary"
+          size="lg"
+          :loading="isLoading"
+          :disabled="!account || !password"
+          @click="handleLogin"
+        >
+          {{ isLoading ? 'Signing in...' : 'Sign In' }}
+        </Button>
       </view>
 
       <view class="footer-section">
@@ -63,6 +61,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useUserStore } from '@/store/modules/user';
+import { Button, Input } from '@/components/ui';
 
 const account = ref('');
 const password = ref('');
@@ -206,86 +205,17 @@ async function handleLogin() {
   margin-bottom: $spacing-4;
 }
 
-.input-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: $spacing-2;
-}
-
 .input-label {
   font-size: $text-sm;
   font-weight: $font-medium;
   color: $gray-700;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: $spacing-3;
-  font-size: 16px;
-  z-index: 1;
-}
-
-.input-field {
-  width: 100%;
-  height: 44px;
-  padding: $spacing-3 $spacing-4;
-  padding-left: 44px;
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-md;
-  font-size: $text-base;
-  color: $gray-900;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-  }
-
-  &::placeholder {
-    color: $gray-400;
-  }
+  display: block;
+  margin-bottom: $spacing-2;
 }
 
 .submit-btn {
   width: 100%;
-  height: 44px;
-  background: $primary-color;
-  border-radius: $radius-md;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $spacing-2;
-  cursor: pointer;
   margin-top: $spacing-6;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: $primary-dark;
-  }
-
-  &.loading {
-    background: $gray-400;
-    cursor: not-allowed;
-  }
-}
-
-.btn-text {
-  font-size: $text-base;
-  font-weight: $font-medium;
-  color: $white;
-}
-
-.btn-arrow {
-  font-size: $text-base;
-  color: $white;
 }
 
 .footer-section {
@@ -301,14 +231,5 @@ async function handleLogin() {
   color: $gray-500;
   text-align: center;
   display: block;
-
-  a {
-    color: $gray-900;
-    text-decoration: underline;
-
-    &:hover {
-      color: $gray-700;
-    }
-  }
 }
 </style>

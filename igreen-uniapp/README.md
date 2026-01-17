@@ -27,6 +27,35 @@ npm run build:app-plus
 npm run build:mp-weixin
 ```
 
+## APK 打包
+
+本项目使用 **HBuilderX** 进行 APK 打包。
+
+### 方式一：云打包 (推荐)
+
+```bash
+# 查看打包指南
+cat HBUILDERX_GUIDE.md
+
+# 或运行交互式菜单
+./pack-with-hbuilder.sh
+```
+
+**打包步骤**:
+1. 用 HBuilderX 打开项目
+2. 菜单: 发行 → 原生 App-云打包
+3. 配置包名: `com.igreen.app`
+4. 点击打包
+
+### 方式二：本地打包
+
+```bash
+# 生成本地资源
+./pack-with-hbuilder.sh local
+```
+
+详细文档: `HBUILDERX_GUIDE.md` | `LOCAL_APK_BUILD.md`
+
 ## Project Structure
 
 ```
@@ -38,17 +67,20 @@ igreen-uniapp/
 │   ├── manifest.json        # App manifest configuration
 │   ├── uni.scss             # Global SCSS styles
 │   ├── pages/               # Page components
-│   │   └── index/
-│   │       └── index.vue    # Index page
-│   ├── components/          # Reusable components
-│   │   ├── ui/              # UI components
-│   │   └── business/        # Business components
+│   │   ├── login/           # Login page
+│   │   ├── dashboard/       # Dashboard page
+│   │   ├── tickets/         # Ticket list & detail
+│   │   └── profile/         # Profile page
+│   ├── components/          # Reusable components (20 components)
+│   │   ├── ui/              # UI: Button, Card, Badge, etc.
+│   │   ├── tickets/         # Ticket: Card, List, StatusBadge, etc.
+│   │   └── layout/          # Layout: Header, Sidebar, TabBar
 │   ├── utils/               # Utility functions
-│   ├── store/               # Pinia stores
+│   ├── store/               # Pinia stores (user, tickets)
 │   └── static/              # Static assets
 ├── public/                  # Public assets
 ├── package.json
-├── tsconfig.json
+├── tsconfig.json,
 ├── vue.config.js
 └── README.md
 ```
@@ -59,11 +91,21 @@ igreen-uniapp/
 - **Language**: TypeScript
 - **State Management**: Pinia
 - **Styling**: SCSS
-- **UI Components**: uView UI Plus (to be added)
+- **UI Components**: Custom components (20 total)
 
 ## Theme
 
 The app uses a teal-600 (#0d9488) primary color scheme, matching the iGreenApp design.
+
+## Package Info
+
+| Config | Value |
+|--------|-------|
+| Package Name | com.igreen.app |
+| Version | 1.0.0 |
+| Version Code | 100 |
+| Min SDK | 21 (Android 5.0) |
+| Target SDK | 34 (Android 14) |
 
 ## License
 

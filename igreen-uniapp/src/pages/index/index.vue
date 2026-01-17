@@ -5,46 +5,36 @@
         <text class="logo-text">iGreen+</text>
       </view>
     </view>
-    <view class="welcome-card">
+
+    <Card class="welcome-card">
       <text class="welcome-title">Welcome to iGreen+</text>
       <text class="welcome-subtitle">Engineer Mobile App</text>
-      <view class="status-indicator">
+      <Badge variant="success" class="status-badge">
         <view class="status-dot"></view>
-        <text class="status-text">Framework Ready</text>
-      </view>
-    </view>
-    <view class="info-card">
-      <text class="info-title">Project Status</text>
-      <view class="info-row">
-        <text class="info-label">Framework:</text>
-        <text class="info-value">uni-app 3.x</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">Vue Version:</text>
-        <text class="info-value">Vue 3.2.13</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">TypeScript:</text>
-        <text class="info-value">Enabled</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">State Management:</text>
-        <text class="info-value">Pinia</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">Styling:</text>
-        <text class="info-value">SCSS</text>
-      </view>
-    </view>
+        Framework Ready
+      </Badge>
+    </Card>
+
+    <Card class="info-card">
+      <template #header>
+        <text class="info-title">Project Status</text>
+      </template>
+      <InfoRow label="Framework" value="uni-app 3.x" />
+      <InfoRow label="Vue Version" value="Vue 3.2.13" />
+      <InfoRow label="TypeScript" value="Enabled" />
+      <InfoRow label="State Management" value="Pinia" />
+      <InfoRow label="Styling" value="SCSS" />
+    </Card>
   </view>
 </template>
 
 <script setup lang="ts">
-import { onLoad } from '@dcloudio/uni-app'
+import { onMounted } from 'vue';
+import { Card, Badge, InfoRow } from '@/components/ui';
 
-onLoad(() => {
-  console.log('Index page loaded')
-})
+onMounted(() => {
+  console.log('Index page loaded');
+});
 </script>
 
 <style lang="scss" scoped>
@@ -80,12 +70,9 @@ onLoad(() => {
 }
 
 .welcome-card {
-  background: $white;
-  border-radius: $radius-xl;
+  text-align: center;
   padding: $spacing-6;
   margin-bottom: $spacing-4;
-  box-shadow: $shadow-md;
-  text-align: center;
 }
 
 .welcome-title {
@@ -103,13 +90,10 @@ onLoad(() => {
   margin-bottom: $spacing-4;
 }
 
-.status-indicator {
+.status-badge {
   display: inline-flex;
   align-items: center;
   gap: $spacing-2;
-  background: $success-bg;
-  padding: $spacing-2 $spacing-4;
-  border-radius: $radius-full;
 }
 
 .status-dot {
@@ -119,48 +103,19 @@ onLoad(() => {
   border-radius: $radius-full;
 }
 
-.status-text {
-  font-size: $text-xs;
-  color: $success-color;
-  font-weight: $font-medium;
-}
-
 .info-card {
-  background: $white;
-  border-radius: $radius-xl;
-  padding: $spacing-4;
-  box-shadow: $shadow-md;
+  padding: 0;
+
+  :deep(.card-header) {
+    padding-bottom: 0;
+  }
 }
 
 .info-title {
-  display: block;
   font-size: $text-sm;
   font-weight: $font-semibold;
   color: $gray-700;
-  margin-bottom: $spacing-3;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: $spacing-2 0;
-  border-bottom: 1px solid $gray-100;
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  font-size: $text-sm;
-  color: $gray-500;
-}
-
-.info-value {
-  font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-900;
 }
 </style>

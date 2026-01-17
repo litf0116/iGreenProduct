@@ -41,9 +41,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
 import { useUserStore } from '@/store/modules/user';
 import { useTicketStore } from '@/store/modules/tickets';
+import LoginPage from '@/pages/login/index.vue';
+import DashboardPage from '@/pages/dashboard/index.vue';
+import TicketListPage from '@/pages/tickets/index.vue';
+import TicketDetailPage from '@/pages/tickets/detail/index.vue';
+import ProfilePage from '@/pages/profile/index.vue';
+import Sidebar from '@/components/layout/Sidebar.vue';
+import TabBar from '@/components/layout/TabBar.vue';
+import Header from '@/components/layout/Header.vue';
 
 const userStore = useUserStore();
 const ticketStore = useTicketStore();
@@ -96,28 +104,21 @@ function handleRefresh() {
 function handleLoadMore() {
   ticketStore.loadTickets(false);
 }
-
-const Sidebar = defineAsyncComponent(() => import('@/components/layout/Sidebar.vue'));
-const TabBar = defineAsyncComponent(() => import('@/components/layout/TabBar.vue'));
-const Header = defineAsyncComponent(() => import('@/components/layout/Header.vue'));
-const DashboardPage = defineAsyncComponent(() => import('@/pages/dashboard/index.vue'));
-const TicketListPage = defineAsyncComponent(() => import('@/pages/tickets/index.vue'));
-const TicketDetailPage = defineAsyncComponent(() => import('@/pages/tickets/detail/index.vue'));
-const ProfilePage = defineAsyncComponent(() => import('@/pages/profile/index.vue'));
-const LoginPage = defineAsyncComponent(() => import('@/pages/login/index.vue'));
 </script>
 
 <style lang="scss">
+@import '@/uni.scss';
+
 * {
   box-sizing: border-box;
 }
 
 page {
-  background-color: #f8fafc;
+  background-color: $gray-50;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
+  font-size: $text-base;
   line-height: 1.5;
-  color: #0f172a;
+  color: $gray-900;
 }
 
 .app-container {
@@ -126,17 +127,11 @@ page {
 
 .desktop-layout {
   display: none;
-}
 
-@media (min-width: 768px) {
-  .desktop-layout {
+  @media (min-width: 768px) {
     display: flex;
     height: 100vh;
   }
-}
-
-.sidebar-container {
-  flex-shrink: 0;
 }
 
 .main-container {
@@ -149,17 +144,15 @@ page {
 .content-area {
   flex: 1;
   overflow-y: auto;
-  background: #f8fafc;
+  background: $gray-50;
 }
 
 .mobile-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
-}
 
-@media (min-width: 768px) {
-  .mobile-layout {
+  @media (min-width: 768px) {
     display: none;
   }
 }
@@ -168,13 +161,5 @@ page {
   flex: 1;
   overflow-y: auto;
   padding-bottom: 64px;
-}
-
-.mobile-tabbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
 }
 </style>

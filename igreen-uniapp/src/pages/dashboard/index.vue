@@ -6,7 +6,7 @@
     </view>
 
     <view class="stats-section">
-      <view class="stat-card">
+      <Card class="stat-card" :hover="false">
         <view class="stat-content">
           <text class="stat-value">{{ stats.completed }}</text>
           <text class="stat-label">Jobs Completed</text>
@@ -14,8 +14,8 @@
         <view class="stat-icon bg-green">
           <text class="icon">✓</text>
         </view>
-      </view>
-      <view class="stat-card">
+      </Card>
+      <Card class="stat-card" :hover="false">
         <view class="stat-content">
           <text class="stat-value">{{ stats.open }}</text>
           <text class="stat-label">Open Tickets</text>
@@ -23,8 +23,8 @@
         <view class="stat-icon bg-blue">
           <text class="icon">⚡</text>
         </view>
-      </view>
-      <view class="stat-card">
+      </Card>
+      <Card class="stat-card" :hover="false">
         <view class="stat-content">
           <text class="stat-value">{{ stats.inProgress }}</text>
           <text class="stat-label">In Progress</text>
@@ -32,7 +32,7 @@
         <view class="stat-icon bg-indigo">
           <text class="icon">🔧</text>
         </view>
-      </view>
+      </Card>
     </view>
 
     <view class="active-job-section" v-if="currentJob">
@@ -43,13 +43,11 @@
         </text>
       </view>
 
-      <view class="active-job-card" @click="handleJobClick">
+      <Card class="active-job-card" :hover="true" @click="handleJobClick">
         <view class="status-stripe" :class="statusColorClass"></view>
         <view class="job-content">
           <view class="job-header">
-            <view class="status-badge" :class="statusBadgeClass">
-              <text class="status-text">{{ getStatusLabel(currentJob.status) }}</text>
-            </view>
+            <StatusBadge :status="currentJob.status" />
             <text class="job-id">{{ currentJob.id }}</text>
           </view>
           <text class="job-title">{{ currentJob.title }}</text>
@@ -57,11 +55,11 @@
             <text class="location-icon">📍</text>
             <text class="location-text">{{ currentJob.location || currentJob.site }}</text>
           </view>
-          <view class="continue-btn">
-            <text class="btn-text">{{ continueJobText }}</text>
-          </view>
+          <Button variant="primary" size="md" class="continue-btn">
+            {{ continueJobText }}
+          </Button>
         </view>
-      </view>
+      </Card>
     </view>
 
     <view class="active-job-section" v-else>
@@ -71,13 +69,13 @@
           {{ currentJobText }}
         </text>
       </view>
-      <view class="no-job-card">
+      <Card class="no-job-card">
         <view class="no-job-icon">
           <text class="icon">✓</text>
         </view>
         <text class="no-job-title">{{ noActiveJobsText }}</text>
         <text class="no-job-subtitle">{{ freeToGrabText }}</text>
-      </view>
+      </Card>
     </view>
 
     <view class="opportunities-section">
@@ -92,19 +90,16 @@
       </view>
 
       <view class="opportunities-list" v-if="openTickets.length > 0">
-        <view
+        <Card
           v-for="ticket in openTickets.slice(0, 3)"
           :key="ticket.id"
           class="opportunity-card"
+          :hover="true"
           @click="handleTicketClick(ticket)"
         >
           <view class="opportunity-header">
-            <view class="priority-badge" :class="getPriorityClass(ticket.priority)">
-              <text class="priority-text">{{ ticket.priority }}</text>
-            </view>
-            <view class="type-badge" :class="getTypeClass(ticket.type)">
-              <text class="type-text">{{ getTypeLabel(ticket.type) }}</text>
-            </view>
+            <PriorityBadge :priority="ticket.priority" />
+            <TypeBadge :type="ticket.type" />
             <text class="distance">{{ formatDate(ticket.createdAt) }}</text>
           </view>
           <text class="opportunity-title">{{ ticket.title }}</text>
@@ -115,12 +110,10 @@
               Est. 2h
             </text>
           </view>
-        </view>
+        </Card>
       </view>
 
-      <view class="empty-state" v-else>
-        <text class="empty-text">No open tickets available</text>
-      </view>
+      <Empty v-else icon="📋" text="No open tickets available" />
     </view>
   </view>
 </template>
@@ -129,8 +122,9 @@
 import { computed, onMounted } from 'vue';
 import { useTicketStore } from '@/store/modules/tickets';
 import { useUserStore } from '@/store/modules/user';
-import type { Ticket, TicketPriority, TicketType } from '@/types/ticket';
-import { getStatusLabel, getTypeLabel, getPriorityClass, getTypeClass } from '@/utils/helpers';
+import type { Ticket } from '@/types/ticket';
+import { Card, Button, Empty } from '@/components/ui';
+import { StatusBadge, PriorityBadge, TypeBadge } from '@/components/tickets';
 
 const emit = defineEmits<{
   (e: 'ticketClick', ticket: Ticket): void;
@@ -155,12 +149,6 @@ const statusColorClass = computed(() => {
   if (status === 'REVIEW') return 'bg-purple';
   if (status === 'ON_HOLD') return 'bg-yellow';
   return 'bg-indigo';
-});
-
-const statusBadgeClass = computed(() => {
-  if (!currentJob.value) return '';
-  const status = currentJob.value.status.toLowerCase();
-  return `badge-${status}`;
 });
 
 function handleJobClick() {
@@ -197,7 +185,6 @@ const continueJobText = 'Continue Job';
 const noActiveJobsText = 'No Active Jobs';
 const nearbyOpportunitiesText = 'Nearby Opportunities';
 const viewAllText = 'View All';
-const estTimeText = 'Est.';
 
 onMounted(async () => {
   userStore.initFromStorage();
@@ -208,14 +195,6 @@ onMounted(async () => {
   await ticketStore.loadTickets({ reset: true });
   await ticketStore.loadStats();
 });
-</script>
-
-<script lang="ts">
-export default {
-  options: {
-    styleIsolation: 'shared',
-  },
-};
 </script>
 
 <style lang="scss" scoped>
@@ -251,14 +230,7 @@ export default {
 }
 
 .stat-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-lg;
   padding: $spacing-4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .stat-content {
@@ -337,19 +309,9 @@ export default {
 }
 
 .active-job-card {
-  background: $white;
-  border: 1px solid rgba($indigo-100, 0.5);
-  border-radius: $radius-xl;
   padding: $spacing-4;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
+  box-shadow: $shadow-md;
+  border: 1px solid rgba($indigo-100, 0.5);
 }
 
 .status-stripe {
@@ -381,27 +343,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   margin-bottom: $spacing-2;
-}
-
-.status-badge {
-  padding: $spacing-1 $spacing-2;
-  border-radius: $radius-full;
-  background: rgba($indigo-500, 0.1);
-
-  &.badge-review {
-    background: rgba($purple-500, 0.1);
-  }
-
-  &.badge-on_hold {
-    background: rgba($yellow-500, 0.1);
-  }
-}
-
-.status-text {
-  font-size: 12px;
-  font-weight: $font-medium;
-  color: $indigo-700;
-  text-transform: capitalize;
 }
 
 .job-id {
@@ -436,30 +377,11 @@ export default {
 
 .continue-btn {
   width: 100%;
-  height: 40px;
-  background: $indigo-600;
-  border-radius: $radius-md;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: $indigo-700;
-  }
-}
-
-.btn-text {
-  font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $white;
 }
 
 .no-job-card {
-  background: $gray-50;
-  border: 1px dashed $gray-200;
-  border-radius: $radius-xl;
-  padding: $spacing-6;
   text-align: center;
+  border-style: dashed;
 }
 
 .no-job-icon {
@@ -503,17 +425,7 @@ export default {
 }
 
 .opportunity-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-xl;
   padding: $spacing-4;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: background 0.2s ease;
-
-  &:active {
-    background: $gray-50;
-  }
 }
 
 .opportunity-header {
@@ -521,66 +433,6 @@ export default {
   align-items: center;
   gap: $spacing-2;
   margin-bottom: $spacing-2;
-}
-
-.priority-badge {
-  padding: 2px $spacing-1;
-  border-radius: $radius-sm;
-  font-size: 10px;
-  font-weight: $font-medium;
-  text-transform: capitalize;
-
-  &.priority-p1 {
-    background: rgba($error-color, 0.1);
-    color: $error-color;
-  }
-
-  &.priority-p2 {
-    background: rgba($warning-color, 0.1);
-    color: $warning-color;
-  }
-
-  &.priority-p3 {
-    background: rgba($gray-500, 0.1);
-    color: $gray-600;
-  }
-
-  &.priority-p4 {
-    background: rgba($gray-200, 0.5);
-    color: $gray-500;
-  }
-}
-
-.type-badge {
-  padding: 2px $spacing-1;
-  border-radius: $radius-sm;
-  font-size: 10px;
-  font-weight: $font-medium;
-  border: 1px solid;
-
-  &.type-corrective {
-    background: rgba($orange-500, 0.1);
-    color: $orange-600;
-    border-color: rgba($orange-200, 0.5);
-  }
-
-  &.type-planned {
-    background: rgba($blue-500, 0.1);
-    color: $blue-600;
-    border-color: rgba($blue-200, 0.5);
-  }
-
-  &.type-preventive {
-    background: rgba($green-500, 0.1);
-    color: $green-600;
-    border-color: rgba($green-200, 0.5);
-  }
-
-  &.type-problem {
-    background: rgba($rose-500, 0.1);
-    color: $rose-600;
-    border-color: rgba($rose-200, 0.5);
-  }
 }
 
 .distance {
@@ -627,15 +479,5 @@ export default {
 
 .est-icon {
   font-size: 12px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-6;
-}
-
-.empty-text {
-  font-size: $text-sm;
-  color: $gray-500;
 }
 </style>

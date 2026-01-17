@@ -1,6 +1,6 @@
 import type { Ticket, UserProfile, TicketStatus, TicketPriority, TicketType } from '@/types/ticket';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function getAuthToken(): string | null {
   try {
