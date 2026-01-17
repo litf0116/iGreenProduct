@@ -1,18 +1,14 @@
 package com.igreen.domain.dto;
 
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketStatus;
-import com.igreen.domain.enums.TicketType;
-
 import java.util.List;
 
 public record TicketResponse(
         String id,
         String title,
         String description,
-        TicketType type,
-        TicketStatus status,
-        Priority priority,
+        String type,
+        String status,
+        String priority,
         String site,
         String templateId,
         String templateName,

@@ -1,19 +1,15 @@
 package com.igreen.domain.dto;
 
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketStatus;
-import com.igreen.domain.enums.TicketType;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 public record TicketUpdateRequest(
     String title,
     String description,
-    TicketType type,
+    String type,
     String site,
-    TicketStatus status,
-    Priority priority,
+    String status,
+    String priority,
     String assignedTo,
     LocalDateTime dueDate,
     List<String> completedSteps,

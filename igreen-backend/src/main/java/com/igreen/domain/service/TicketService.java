@@ -20,9 +20,6 @@ import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.CommentType;
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketStatus;
-import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.mapper.TicketCommentMapper;
 import com.igreen.domain.mapper.TicketMapper;
 import com.igreen.domain.mapper.TicketStatusCount;
@@ -66,9 +63,6 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        TicketType ticketType = TicketType.valueOf(request.type());
-        Priority ticketPriority = request.priority() != null ? Priority.valueOf(request.priority()) : null;
-
         String relatedTicketIdsJson = null;
         if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
             try {
@@ -82,14 +76,14 @@ public class TicketService {
                 .id(UUID.randomUUID().toString())
                 .title(request.title())
                 .description(request.description())
-                .type(ticketType)
+                .type(request.type())
                 .site(request.site())
-                .priority(ticketPriority)
+                .priority(request.priority())
                 .templateId(request.templateId())
                 .assignedTo(request.assignedTo())
                 .createdBy(currentUserId)
                 .dueDate(request.dueDate())
-                .status(TicketStatus.OPEN)
+                .status("OPEN")
                 .problemType(request.problemType())
                 .relatedTicketIds(relatedTicketIdsJson)
                 .build();
@@ -114,19 +108,15 @@ public class TicketService {
             String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageHelper.startPage(page, size);
         try {
-            TicketType ticketType = type != null ? TicketType.valueOf(type) : null;
-            TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
-            Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
-
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
-            if (ticketType != null) {
-                wrapper.eq(Ticket::getType, ticketType);
+            if (type != null) {
+                wrapper.eq(Ticket::getType, type);
             }
-            if (ticketStatus != null) {
-                wrapper.eq(Ticket::getStatus, ticketStatus);
+            if (status != null) {
+                wrapper.eq(Ticket::getStatus, status);
             }
-            if (ticketPriority != null) {
-                wrapper.eq(Ticket::getPriority, ticketPriority);
+            if (priority != null) {
+                wrapper.eq(Ticket::getPriority, priority);
             }
             if (assignedTo != null) {
                 wrapper.eq(Ticket::getAssignedTo, assignedTo);
@@ -252,11 +242,11 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        if (ticket.getStatus() != TicketStatus.OPEN) {
+        if (!"OPEN".equals(ticket.getStatus())) {
             throw new BusinessException(ErrorCode.TICKET_ALREADY_ACCEPTED);
         }
 
-        ticket.setStatus(TicketStatus.ACCEPTED);
+        ticket.setStatus("ACCEPTED");
         ticket.setAccepted(true);
         ticket.setAcceptedAt(LocalDateTime.now());
 
@@ -287,7 +277,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.CANCELLED);
+        ticket.setStatus("CANCELLED");
         ticket.setAccepted(false);
 
         TicketComment comment = TicketComment.builder()
@@ -315,7 +305,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_CREATOR);
         }
 
-        ticket.setStatus(TicketStatus.CANCELLED);
+        ticket.setStatus("CANCELLED");
 
         TicketComment comment = TicketComment.builder()
                 .id(UUID.randomUUID().toString())
@@ -342,7 +332,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.IN_PROGRESS);
+        ticket.setStatus("IN_PROGRESS");
         ticket.setDepartureAt(LocalDateTime.now());
         if (departurePhoto != null) {
             ticket.setDeparturePhoto(departurePhoto);
@@ -417,7 +407,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.COMPLETED);
+        ticket.setStatus("COMPLETED");
         if (completionPhoto != null) {
             ticket.setCompletionPhoto(completionPhoto);
         }
@@ -436,9 +426,9 @@ public class TicketService {
 
         if (cause != null) {
             ticket.setCause(cause);
-            ticket.setStatus(TicketStatus.OPEN);
+            ticket.setStatus("OPEN");
         } else {
-            ticket.setStatus(TicketStatus.COMPLETED);
+            ticket.setStatus("COMPLETED");
         }
 
         ticketMapper.updateById(ticket);
@@ -502,7 +492,7 @@ public class TicketService {
             List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
             if (status != null) {
                 tickets = tickets.stream()
-                        .filter(t -> t.getStatus().name().equals(status))
+                        .filter(t -> status.equals(t.getStatus()))
                         .collect(Collectors.toList());
             }
 
@@ -523,7 +513,7 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public List<TicketResponse> getPendingTickets() {
-        List<String> statuses = Arrays.asList(TicketStatus.OPEN.name(), TicketStatus.ASSIGNED.name());
+        List<String> statuses = Arrays.asList("OPEN", "ASSIGNED");
         List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses);
 
         return tickets.stream()
@@ -539,7 +529,7 @@ public class TicketService {
     public PageResult<TicketResponse> getCompletedTickets(int page, int size) {
         PageHelper.startPage(page, size);
         try {
-            List<Ticket> tickets = ticketMapper.selectByStatus(TicketStatus.COMPLETED.name());
+            List<Ticket> tickets = ticketMapper.selectByStatus("COMPLETED");
 
             List<TicketResponse> ticketResponses = tickets.stream()
                     .map(ticket -> {

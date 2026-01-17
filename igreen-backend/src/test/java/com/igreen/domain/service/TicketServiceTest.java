@@ -87,9 +87,9 @@ class TicketServiceTest {
                 .id("ticket-id")
                 .title("Test Ticket")
                 .description("Test Description")
-                .type(TicketType.PLANNED)
-                .status(TicketStatus.OPEN)
-                .priority(Priority.P2)
+                .type("PLANNED")
+                .status("OPEN")
+                .priority("P2")
                 .site("Shanghai Office")
                 .assignedTo("assignee-id")
                 .createdBy("creator-id")
@@ -127,7 +127,7 @@ class TicketServiceTest {
         assertNotNull(response);
         assertEquals("New Ticket", response.title());
         assertEquals("Description", response.description());
-        assertEquals("preventive", response.type());
+        assertEquals("PREVENTIVE", response.type());
         assertEquals("P1", response.priority());
     }
 
@@ -188,7 +188,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("preventive", response.type());
+        assertEquals("PREVENTIVE", response.type());
     }
 
     @Test
@@ -278,7 +278,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("problem", response.type());
+        assertEquals("PROBLEM", response.type());
         assertEquals("pt-thermal-issue", response.problemType());
         assertNotNull(response.relatedTicketIds());
         assertTrue(response.relatedTicketIds().isEmpty());
@@ -556,7 +556,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("open", response.status());
+        assertEquals("OPEN", response.status());
     }
 
     @Test
@@ -589,9 +589,9 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("problem", response.type());
+        assertEquals("PROBLEM", response.type());
         verify(ticketMapper).insert(argThat(ticket ->
-            ticket.getType() == TicketType.PROBLEM
+            "PROBLEM".equals(ticket.getType())
         ));
     }
 
@@ -622,7 +622,7 @@ class TicketServiceTest {
         ticketService.createTicket(request, "creator-id");
 
         verify(ticketMapper).insert(argThat(ticket ->
-            ticket.getPriority() == Priority.P3
+            "P3".equals(ticket.getPriority())
         ));
     }
 

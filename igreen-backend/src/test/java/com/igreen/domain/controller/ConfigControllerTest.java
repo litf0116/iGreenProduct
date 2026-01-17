@@ -390,4 +390,142 @@ class ConfigControllerTest {
                     .andExpect(status().isForbidden());
         }
     }
+
+    @Nested
+    @DisplayName("边界情况和异常测试")
+    class BoundaryTests {
+
+        @Test
+        @DisplayName("获取不存在的SLA配置应返回错误")
+        @WithMockUser(roles = "ENGINEER")
+        void getSLAConfig_NotFound() throws Exception {
+            when(configService.getSLAConfigById("nonexistent"))
+                    .thenThrow(new BusinessException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+
+            mockMvc.perform(get("/api/configs/sla-configs/nonexistent"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(ErrorCode.SLA_CONFIG_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("获取不存在的问题类型应返回错误")
+        @WithMockUser(roles = "ENGINEER")
+        void getProblemType_NotFound() throws Exception {
+            when(configService.getAllProblemTypes())
+                    .thenThrow(new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND));
+
+            mockMvc.perform(get("/api/configs/problem-types"))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("更新不存在的站点级别配置应返回错误")
+        @WithMockUser(roles = "ADMIN")
+        void updateSiteLevelConfig_NotFound() throws Exception {
+            SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
+                    "新名称", "新描述", 5, 4);
+
+            when(configService.updateSiteLevelConfig(eq("nonexistent"), any()))
+                    .thenThrow(new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND));
+
+            mockMvc.perform(post("/api/configs/site-level-configs/nonexistent")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("删除不存在的站点级别配置应返回错误")
+        @WithMockUser(roles = "ADMIN")
+        void deleteSiteLevelConfig_NotFound() throws Exception {
+            doThrow(new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND))
+                    .when(configService).deleteSiteLevelConfig("nonexistent");
+
+            mockMvc.perform(delete("/api/configs/site-level-configs/nonexistent"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("创建SLA配置时响应时间小于1应验证失败")
+        @WithMockUser(roles = "ADMIN")
+        void createSLAConfig_ResponseTimeInvalid() throws Exception {
+            String invalidRequest = "{\"priority\": \"P1\", \"responseTimeMinutes\": 0, \"completionTimeHours\": 4}";
+
+            mockMvc.perform(post("/api/configs/sla-configs")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("创建SLA配置时完成时间小于1应验证失败")
+        @WithMockUser(roles = "ADMIN")
+        void createSLAConfig_CompletionTimeInvalid() throws Exception {
+            String invalidRequest = "{\"priority\": \"P1\", \"responseTimeMinutes\": 60, \"completionTimeHours\": 0}";
+
+            mockMvc.perform(post("/api/configs/sla-configs")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("更新问题类型不存在应返回错误")
+        @WithMockUser(roles = "MANAGER")
+        void updateProblemType_NotFound() throws Exception {
+            ProblemTypeUpdateRequest request = new ProblemTypeUpdateRequest("新名称", "新描述");
+
+            when(configService.updateProblemType(eq("nonexistent"), any()))
+                    .thenThrow(new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND));
+
+            mockMvc.perform(post("/api/configs/problem-types/nonexistent")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(ErrorCode.PROBLEM_TYPE_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("删除问题类型不存在应返回错误")
+        @WithMockUser(roles = "ADMIN")
+        void deleteProblemType_NotFound() throws Exception {
+            doThrow(new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND))
+                    .when(configService).deleteProblemType("nonexistent");
+
+            mockMvc.perform(delete("/api/configs/problem-types/nonexistent"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value(ErrorCode.PROBLEM_TYPE_NOT_FOUND.getCode()));
+        }
+
+        @Test
+        @DisplayName("Manager角色更新站点级别配置应被拒绝")
+        @WithMockUser(roles = "MANAGER")
+        void updateSiteLevelConfig_Forbidden() throws Exception {
+            SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
+                    "名称", "描述", 5, 4);
+
+            mockMvc.perform(post("/api/configs/site-level-configs/level-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Engineer角色删除SLA配置应被拒绝")
+        @WithMockUser(roles = "ENGINEER")
+        void deleteSLAConfig_Forbidden() throws Exception {
+            mockMvc.perform(delete("/api/configs/sla-configs/sla-1"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Engineer角色删除问题类型应被拒绝")
+        @WithMockUser(roles = "ENGINEER")
+        void deleteProblemType_Forbidden() throws Exception {
+            mockMvc.perform(delete("/api/configs/problem-types/problem-1"))
+                    .andExpect(status().isForbidden());
+        }
+    }
 }

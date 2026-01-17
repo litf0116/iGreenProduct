@@ -4,16 +4,15 @@
 
     <resultMap id="SLAConfigResultMap" type="com.igreen.domain.entity.SLAConfig">
         <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="responseTimeHours" column="response_time_hours"/>
-        <result property="resolutionTimeHours" column="resolution_time_hours"/>
         <result property="priority" column="priority"/>
+        <result property="responseTimeMinutes" column="response_time_minutes"/>
+        <result property="completionTimeHours" column="completion_time_hours"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, response_time_hours, resolution_time_hours, priority, created_at, updated_at
+        id, priority, response_time_minutes, completion_time_hours, created_at, updated_at
     </sql>
 
     <select id="selectByPriority" resultMap="SLAConfigResultMap">

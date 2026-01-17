@@ -1,7 +1,5 @@
 package com.igreen.domain.dto;
 
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
