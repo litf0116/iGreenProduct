@@ -358,4 +358,109 @@ class TemplateControllerTest {
             verify(templateService, never()).createTemplate(any());
         }
     }
+
+    @Nested
+    @DisplayName("边界条件和异常测试")
+    class BoundaryTests {
+
+        @Test
+        @DisplayName("获取模板详情带步骤信息")
+        @WithMockUser(roles = "ENGINEER")
+        void getTemplateDetail_WithSteps() throws Exception {
+            when(templateService.getTemplateById("template-1")).thenReturn(testTemplate);
+
+            mockMvc.perform(get("/api/templates/template-1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200))
+                    .andExpect(jsonPath("$.data.id").value("template-1"));
+        }
+
+        @Test
+        @DisplayName("创建模板时描述为null")
+        @WithMockUser(roles = "ADMIN")
+        void createTemplate_NullDescription() throws Exception {
+            CreateTemplateRequest request = new CreateTemplateRequest(
+                    "新模板", null, null);
+
+            when(templateService.createTemplate(any())).thenReturn(testTemplate);
+
+            mockMvc.perform(post("/api/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("创建模板时名称包含特殊字符")
+        @WithMockUser(roles = "ADMIN")
+        void createTemplate_SpecialCharacters() throws Exception {
+            CreateTemplateRequest request = new CreateTemplateRequest(
+                    "模板-测试_2024", "描述", null);
+
+            when(templateService.createTemplate(any())).thenReturn(testTemplate);
+
+            mockMvc.perform(post("/api/templates")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("更新模板时只更新描述")
+        @WithMockUser(roles = "ADMIN")
+        void updateTemplate_OnlyDescription() throws Exception {
+            CreateTemplateRequest request = new CreateTemplateRequest(
+                    "测试模板", "更新后描述", null);
+
+            testTemplate.setDescription("更新后描述");
+            when(templateService.updateTemplate(eq("template-1"), any())).thenReturn(testTemplate);
+
+            mockMvc.perform(put("/api/templates/template-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200));
+        }
+
+        @Test
+        @DisplayName("更新模板时名称为空应验证失败")
+        @WithMockUser(roles = "ADMIN")
+        void updateTemplate_EmptyName() throws Exception {
+            String invalidRequest = "{\"name\": \"\", \"description\": \"描述\"}";
+
+            mockMvc.perform(put("/api/templates/template-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("获取模板列表返回单个结果")
+        @WithMockUser(roles = "ENGINEER")
+        void getTemplates_SingleResult() throws Exception {
+            List<Template> templates = Arrays.asList(testTemplate);
+            when(templateService.getAllTemplates()).thenReturn(templates);
+
+            mockMvc.perform(get("/api/templates"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200))
+                    .andExpect(jsonPath("$.data").isArray())
+                    .andExpect(jsonPath("$.data[0].id").value("template-1"));
+        }
+
+        @Test
+        @DisplayName("Manager角色更新模板应被拒绝")
+        @WithMockUser(roles = "MANAGER")
+        void updateTemplate_Manager_Forbidden() throws Exception {
+            CreateTemplateRequest request = new CreateTemplateRequest(
+                    "更新后模板", "描述", null);
+
+            mockMvc.perform(put("/api/templates/template-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isForbidden());
+
+            verify(templateService, never()).updateTemplate(any(), any());
+        }
+    }
 }

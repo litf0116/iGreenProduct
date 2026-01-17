@@ -467,4 +467,157 @@ class SiteControllerTest {
             verify(siteService).getAllSites(2, 20, null, null, null);
         }
     }
+
+    @Nested
+    @DisplayName("边界条件和异常测试")
+    class BoundaryTests {
+
+        @Test
+        @DisplayName("获取站点列表按关键字筛选")
+        @WithMockUser(roles = "ENGINEER")
+        void getAllSites_ByKeyword() throws Exception {
+            when(siteService.getAllSites(1, 10, "北京", null, null)).thenReturn(testPageResult);
+
+            mockMvc.perform(get("/api/sites")
+                            .param("page", "1")
+                            .param("size", "10")
+                            .param("keyword", "北京"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200));
+
+            verify(siteService).getAllSites(1, 10, "北京", null, null);
+        }
+
+        @Test
+        @DisplayName("获取站点列表按级别筛选")
+        @WithMockUser(roles = "ENGINEER")
+        void getAllSites_ByLevel() throws Exception {
+            when(siteService.getAllSites(1, 10, null, "VIP", null)).thenReturn(testPageResult);
+
+            mockMvc.perform(get("/api/sites")
+                            .param("page", "1")
+                            .param("size", "10")
+                            .param("level", "VIP"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200));
+
+            verify(siteService).getAllSites(1, 10, null, "VIP", null);
+        }
+
+        @Test
+        @DisplayName("获取站点列表按状态筛选")
+        @WithMockUser(roles = "ENGINEER")
+        void getAllSites_ByStatus() throws Exception {
+            when(siteService.getAllSites(1, 10, null, null, "ONLINE")).thenReturn(testPageResult);
+
+            mockMvc.perform(get("/api/sites")
+                            .param("page", "1")
+                            .param("size", "10")
+                            .param("status", "ONLINE"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200));
+
+            verify(siteService).getAllSites(1, 10, null, null, "ONLINE");
+        }
+
+        @Test
+        @DisplayName("获取站点列表多个筛选条件组合")
+        @WithMockUser(roles = "ENGINEER")
+        void getAllSites_MultipleFilters() throws Exception {
+            when(siteService.getAllSites(1, 10, "测试", "VIP", "ONLINE")).thenReturn(testPageResult);
+
+            mockMvc.perform(get("/api/sites")
+                            .param("page", "1")
+                            .param("size", "10")
+                            .param("keyword", "测试")
+                            .param("level", "VIP")
+                            .param("status", "ONLINE"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200));
+
+            verify(siteService).getAllSites(1, 10, "测试", "VIP", "ONLINE");
+        }
+
+        @Test
+        @DisplayName("创建站点时地址为null")
+        @WithMockUser(roles = "ADMIN")
+        void createSite_NullAddress() throws Exception {
+            SiteCreateRequest request = new SiteCreateRequest(
+                    "新站点", null, "normal", SiteStatus.ONLINE);
+
+            Site createdSite = Site.builder()
+                    .id("new-site-id")
+                    .name("新站点")
+                    .address(null)
+                    .build();
+
+            when(siteService.createSite(any())).thenReturn(createdSite);
+
+            mockMvc.perform(post("/api/sites")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.name").value("新站点"));
+        }
+
+        @Test
+        @DisplayName("更新站点时只更新名称")
+        @WithMockUser(roles = "ADMIN")
+        void updateSite_OnlyName() throws Exception {
+            SiteUpdateRequest request = new SiteUpdateRequest(
+                    "新名称", null, null, null);
+
+            Site updatedSite = Site.builder()
+                    .id("site-1")
+                    .name("新名称")
+                    .address("测试地址")
+                    .build();
+
+            when(siteService.updateSite(eq("site-1"), any())).thenReturn(updatedSite);
+
+            mockMvc.perform(post("/api/sites/site-1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.name").value("新名称"));
+        }
+
+        @Test
+        @DisplayName("创建站点时级别为null")
+        @WithMockUser(roles = "ADMIN")
+        void createSite_NullLevel() throws Exception {
+            SiteCreateRequest request = new SiteCreateRequest(
+                    "新站点", "地址", null, SiteStatus.ONLINE);
+
+            Site createdSite = Site.builder()
+                    .id("new-site-id")
+                    .name("新站点")
+                    .address("地址")
+                    .build();
+
+            when(siteService.createSite(any())).thenReturn(createdSite);
+
+            mockMvc.perform(post("/api/sites")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.name").value("新站点"));
+        }
+
+        @Test
+        @DisplayName("获取站点统计所有数据")
+        @WithMockUser(roles = "ENGINEER")
+        void getSiteStats_AllData() throws Exception {
+            SiteStats stats = new SiteStats(100L, 80L, 20L, 30L);
+            when(siteService.getSiteStats()).thenReturn(stats);
+
+            mockMvc.perform(get("/api/sites/stats"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200))
+                    .andExpect(jsonPath("$.data.totalSites").value(100))
+                    .andExpect(jsonPath("$.data.onlineSites").value(80))
+                    .andExpect(jsonPath("$.data.offlineSites").value(20))
+                    .andExpect(jsonPath("$.data.vipSites").value(30));
+        }
+    }
 }
