@@ -33,7 +33,21 @@ USER_TOKEN=""
 
 # ============================================
 # 工具函数
-# ============================================
+# ====================================
+
+get_admin_token() {
+    if [ -z "$ADMIN_TOKEN" ]; then
+        local admin_login=$(curl -s -X POST "${API_URL}/auth/login" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@igreen.com","password":"password123","country":"CN"}')
+
+        ADMIN_TOKEN=$(extract_token "$admin_login")
+
+        if [ -z "$ADMIN_TOKEN" ]; then
+            print_info "无法获取管理员 Token，尝试创建管理员用户..."
+        fi
+    fi
+}========
 
 print_header() {
     echo -e "\n${BLUE}========================================${NC}"
@@ -219,6 +233,35 @@ test_configs() {
     test_api "SLA 配置列表" "GET" "/configs/sla-configs" "" "200" "$USER_TOKEN"
     test_api "问题类型列表" "GET" "/configs/problem-types" "" "200" "$USER_TOKEN"
     test_api "站点级别配置" "GET" "/configs/site-level-configs" "" "200" "$USER_TOKEN"
+
+    print_info "--- 配置增删改测试 (需要管理员权限) ---"
+
+    get_admin_token
+
+    if [ -n "$ADMIN_TOKEN" ]; then
+        test_api "创建 SLA 配置" "POST" "/configs/sla-configs" \
+            '{"priority":"P3","responseTimeMinutes":180,"completionTimeHours":12}' "200" "$ADMIN_TOKEN"
+
+        test_api "创建问题类型" "POST" "/configs/problem-types" \
+            '{"name":"网络故障","description":"网络连接问题排查"}' "200" "$ADMIN_TOKEN"
+
+        test_api "创建站点级别配置" "POST" "/configs/site-level-configs" \
+            '{"levelName":"普通站点","description":"普通站点配置","maxConcurrentTickets":5,"escalationTimeHours":4}' "200" "$ADMIN_TOKEN"
+
+        test_api "更新问题类型" "POST" "/configs/problem-types/prob-001" \
+            '{"name":"硬件故障-更新","description":"更新后的描述"}' "200" "$ADMIN_TOKEN"
+
+        test_api "更新站点级别配置" "POST" "/configs/site-level-configs/level-1" \
+            '{"levelName":"VIP-更新","description":"VIP站点更新配置","maxConcurrentTickets":5,"escalationTimeHours":3}' "200" "$ADMIN_TOKEN"
+
+        test_api "删除 SLA 配置" "DELETE" "/configs/sla-configs/sla-3" "" "200" "$ADMIN_TOKEN"
+
+        test_api "删除问题类型" "DELETE" "/configs/problem-types/prob-003" "" "200" "$ADMIN_TOKEN"
+
+        test_api "删除站点级别配置" "DELETE" "/configs/site-level-configs/level-3" "" "200" "$ADMIN_TOKEN"
+    else
+        print_skip "配置增删改测试 (无法获取管理员 Token)"
+    fi
 }
 
 test_sites() {
@@ -229,7 +272,26 @@ test_sites() {
         return
     fi
 
-    test_api "站点列表" "GET" "/sites" "" "200" "$USER_TOKEN"
+    test_api "站点列表" "GET" "/sites?page=1&size=10" "" "200" "$USER_TOKEN"
+    test_api "站点统计" "GET" "/sites/stats" "" "200" "$USER_TOKEN"
+
+    print_info "--- 站点增删改测试 (需要管理员/Manager权限) ---"
+
+    get_admin_token
+
+    if [ -n "$ADMIN_TOKEN" ]; then
+        test_api "创建站点" "POST" "/sites" \
+            '{"name":"API测试站点","address":"测试地址","level":"normal","status":"ONLINE"}' "200" "$ADMIN_TOKEN"
+
+        test_api "获取站点详情" "GET" "/sites/site-1" "" "200" "$USER_TOKEN"
+
+        test_api "更新站点" "POST" "/sites/site-1" \
+            '{"name":"API测试站点-更新","address":"更新后的地址","level":"VIP","status":"ONLINE"}' "200" "$ADMIN_TOKEN"
+
+        test_api "删除站点" "DELETE" "/sites/site-3" "" "200" "$ADMIN_TOKEN"
+    else
+        print_skip "站点增删改测试 (无法获取管理员 Token)"
+    fi
 }
 
 test_groups() {
@@ -253,6 +315,22 @@ test_templates() {
 
     test_api "模板列表" "GET" "/templates" "" "200" "$USER_TOKEN"
     test_api "模板详情" "GET" "/templates/tmpl-001" "" "200" "$USER_TOKEN"
+
+    print_info "--- 模板增删改测试 (需要管理员权限) ---"
+
+    get_admin_token
+
+    if [ -n "$ADMIN_TOKEN" ]; then
+        test_api "创建模板" "POST" "/templates" \
+            '{"name":"API测试模板","description":"通过API创建的模板","steps":[{"name":"步骤1","description":"第一步","order":1,"fields":[{"name":"字段1","type":"TEXT","required":true}]}]}' "200" "$ADMIN_TOKEN"
+
+        test_api "更新模板" "PUT" "/templates/tmpl-001" \
+            '{"name":"模板001-更新","description":"更新后的模板描述","steps":[{"name":"步骤1-更新","description":"更新后的步骤描述","order":1,"fields":[{"name":"字段1","type":"TEXT","required":true}]}]}' "200" "$ADMIN_TOKEN"
+
+        test_api "删除模板" "DELETE" "/templates/tmpl-004" "" "200" "$ADMIN_TOKEN"
+    else
+        print_skip "模板增删改测试 (无法获取管理员 Token)"
+    fi
 }
 
 test_files() {

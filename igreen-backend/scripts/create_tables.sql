@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS sla_configs (
 CREATE TABLE IF NOT EXISTS site_level_configs (
     id VARCHAR(36) PRIMARY KEY,
     level_name VARCHAR(50) NOT NULL,
+    description TEXT,
     max_concurrent_tickets INT DEFAULT 5,
     escalation_time_hours INT DEFAULT 4,
     created_at DATETIME NOT NULL,

@@ -26,10 +26,10 @@ INSERT INTO sla_configs (id, priority, response_time_minutes, completion_time_ho
 -- ============================================
 -- 3. 站点级别配置 (Site Level Configs)
 -- ============================================
-INSERT INTO site_level_configs (id, level_name, max_concurrent_tickets, escalation_time_hours, created_at, updated_at) VALUES
-('slc-001', '大型站点', 10, 2, NOW(), NOW()),
-('slc-002', '中型站点', 5, 4, NOW(), NOW()),
-('slc-003', '小型站点', 2, 8, NOW(), NOW());
+INSERT INTO site_level_configs (id, level_name, description, max_concurrent_tickets, escalation_time_hours, created_at, updated_at) VALUES
+('slc-001', '大型站点', '大型充电站点的配置', 10, 2, NOW(), NOW()),
+('slc-002', '中型站点', '中型充电站点的配置', 5, 4, NOW(), NOW()),
+('slc-003', '小型站点', '小型充电站点的配置', 2, 8, NOW(), NOW());
 
 -- ============================================
 -- 4. 分组 (Groups)

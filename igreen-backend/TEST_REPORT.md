@@ -112,8 +112,35 @@ http://localhost:8000/swagger-ui.html
 
 ## 后续优化
 
-1. [ ] 修复 SLAConfig 和 SiteLevelConfig 实体
-2. [ ] 修复站点接口的分页问题
-3. [ ] 完善单元测试
-4. [ ] 添加 API 契约测试
-5. [ ] 集成 CI/CD
+1. [x] ~~修复 SLAConfig 和 SiteLevelConfig 实体~~ (已修复: site_level_configs 表添加 description 字段)
+2. [x] ~~修复站点接口的分页问题~~ (已修复: 分页参数已正确配置)
+3. [x] 完善单元测试 - 新增 Controller 层测试
+4. [x] 补充 API 测试脚本增删改测试
+5. [ ] 添加 API 契约测试
+6. [ ] 集成 CI/CD
+
+---
+
+## 新增测试文件 (2026-01-17)
+
+### Controller 层测试
+
+| 文件 | 测试范围 | 测试用例数 |
+|------|----------|------------|
+| `ConfigControllerTest.java` | SLA配置、问题类型、站点级别配置的 CRUD + 权限控制 | 25+ |
+| `TemplateControllerTest.java` | 模板的 CRUD + 权限控制 | 15+ |
+| `SiteControllerTest.java` | 站点的 CRUD + 分页查询 + 权限控制 | 20+ |
+
+### API 测试脚本增强
+
+- SLA配置: 新增创建、更新、删除测试
+- 问题类型: 新增创建、更新、删除测试
+- 站点级别配置: 新增创建、更新、删除测试
+- 模板: 新增创建、更新、删除测试
+- 站点: 新增创建、更新、删除测试
+- 管理员 Token 自动获取
+
+### 修复的问题
+
+- `site_level_configs` 表添加缺失的 `description` 字段
+- 更新 `init_data.sql` 插入语句包含 `description` 字段
