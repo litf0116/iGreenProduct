@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from "react";
 import api from "../lib/api";
 import { User as UserType } from "../lib/types";
 
@@ -18,10 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    checkAuth().then(() => setLoading(false));
-  }, [checkAuth]);
+  const authChecked = useRef(false);
 
   const checkAuth = useCallback(async () => {
     const token = localStorage.getItem("auth_token");
@@ -40,6 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     return false;
   }, []);
+
+  useEffect(() => {
+    if (authChecked.current) return;
+    authChecked.current = true;
+    
+    checkAuth().finally(() => {
+      setLoading(false);
+    });
+  }, [checkAuth]);
 
   const login = useCallback(async (username: string, password: string, country: string) => {
     await api.login(username, password, country);

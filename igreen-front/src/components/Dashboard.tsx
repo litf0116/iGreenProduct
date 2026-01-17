@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -49,7 +49,7 @@ export function Dashboard() {
   const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
   const openModal = useUIStore((state) => state.openModal);
 
-  const t = (key: TranslationKey) => translations[language][key];
+  const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +63,12 @@ export function Dashboard() {
     onHold: 0,
   });
 
+  const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+
   // 加载统计数据
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
@@ -71,11 +77,11 @@ export function Dashboard() {
       setStats(data);
     } catch (error) {
       console.error("Failed to load stats:", error);
-      toast.error(t("errorOccurred") || "Failed to load statistics");
+      toast.error(t("failedToLoadStats") || "Failed to load statistics");
     } finally {
       setStatsLoading(false);
     }
-  }, [activeTab, t]);
+  }, [activeTab]);
 
   // 组件挂载时从 API 加载数据
   const loadTickets = useCallback(async () => {
@@ -89,22 +95,16 @@ export function Dashboard() {
       setTickets(response.records || response || []);
     } catch (error) {
       console.error("Failed to load tickets:", error);
-      toast.error(t("errorOccurred") || "Failed to load tickets");
+      toast.error(t("failedToLoadTickets") || "Failed to load tickets");
     } finally {
       setIsLoading(false);
     }
-  }, [setTickets, t, activeTab]);
+  }, [activeTab]);
 
   useEffect(() => {
     loadTickets();
     loadStats();
   }, [loadTickets, loadStats]);
-
-  const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
   // Filter tickets by time
   const filterByTime = (ticket: Ticket): boolean => {

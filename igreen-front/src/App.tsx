@@ -44,7 +44,7 @@ import {
 } from "./components/ui/dropdown-menu";
 import { toast } from "sonner@2.0.3";
 import { Toaster } from "./components/ui/sonner";
-import { useUIStore } from "./store";
+import { useUIStore, useDataStore } from "./store";
 
 // Layout component with navigation
 function AppLayout() {
@@ -56,15 +56,24 @@ function AppLayout() {
   const selectedTicket = useUIStore((state) => state.selectedTicket);
   const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
 
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [users, setUsers] = useState<UserType[]>([]);
+  // Use data store for tickets and other data
+  const tickets = useDataStore((state) => state.tickets);
+  const setTickets = useDataStore((state) => state.setTickets);
+  const templates = useDataStore((state) => state.templates);
+  const setTemplates = useDataStore((state) => state.setTemplates);
+  const sites = useDataStore((state) => state.sites);
+  const setSites = useDataStore((state) => state.setSites);
+  const groups = useDataStore((state) => state.groups);
+  const setGroups = useDataStore((state) => state.setGroups);
+  const users = useDataStore((state) => state.users);
+  const setUsers = useDataStore((state) => state.setUsers);
 
-  const [slaConfigs, setSlaConfigs] = useState<SLAConfig[]>([]);
-  const [problemTypes, setProblemTypes] = useState<ProblemType[]>([]);
-  const [siteLevelConfigs, setSiteLevelConfigs] = useState<SiteLevelConfig[]>([]);
+  const slaConfigs = useDataStore((state) => state.slaConfigs);
+  const setSLAConfigs = useDataStore((state) => state.setSLAConfigs);
+  const problemTypes = useDataStore((state) => state.problemTypes);
+  const setProblemTypes = useDataStore((state) => state.setProblemTypes);
+  const siteLevelConfigs = useDataStore((state) => state.siteLevelConfigs);
+  const setSiteLevelConfigs = useDataStore((state) => state.setSiteLevelConfigs);
 
   const t = (key: TranslationKey) => translations[language][key];
 
@@ -97,7 +106,7 @@ function AppLayout() {
         api.getSiteLevelConfigs().catch(() => []),
       ]);
 
-      setSlaConfigs(sla || []);
+      setSLAConfigs(sla || []);
       setProblemTypes(problems || []);
       setSiteLevelConfigs(levels || []);
     } catch (error) {
@@ -471,7 +480,7 @@ function AppLayout() {
   const handleUpdateSLA = async (config: SLAConfig) => {
     try {
       const updated = await api.saveSLAConfig(config);
-      setSlaConfigs((prev) => {
+      setSLAConfigs((prev) => {
         const existing = prev.findIndex((c) => c.priority === config.priority);
         if (existing >= 0) {
           const newConfigs = [...prev];

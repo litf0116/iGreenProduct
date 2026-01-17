@@ -346,6 +346,8 @@ export const translations = {
     onlineSites: "Online Sites",
     offlineSites: "Offline Sites",
     errorOccurred: "An error occurred",
+    failedToLoadStats: "Failed to load statistics",
+    failedToLoadTickets: "Failed to load tickets",
   },
   th: {
     // Navigation
@@ -694,6 +696,8 @@ export const translations = {
     onlineSites: "สถานที่ออนไลน์",
     offlineSites: "สถานที่ออฟไลน์",
     errorOccurred: "เกิดข้อผิดพลาด",
+    failedToLoadStats: "โหลดสถิติไม่สำเร็จ",
+    failedToLoadTickets: "โหลดตั๋วไม่สำเร็จ",
   },
 };
 

@@ -110,6 +110,9 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      ky:
+        specifier: ^1.14.2
+        version: 1.14.2
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@18.3.1)
@@ -177,6 +180,9 @@ importers:
       msw:
         specifier: ^2.12.7
         version: 2.12.7(@types/node@20.19.27)
+      playwright:
+        specifier: ^1.57.0
+        version: 1.57.0
       vite:
         specifier: 6.3.5
         version: 6.3.5(@types/node@20.19.27)
@@ -1882,6 +1888,10 @@ packages:
     peerDependenciesMeta:
       canvas:
         optional: true
+
+  ky@1.14.2:
+    resolution: {integrity: sha512-q3RBbsO5A5zrPhB6CaCS8ZUv+NWCXv6JJT4Em0i264G9W0fdPB8YRfnnEi7Dm7X7omAkBIPojzYJ2D1oHTHqug==}
+    engines: {node: '>=18'}
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
@@ -3930,6 +3940,8 @@ snapshots:
       - bufferutil
       - supports-color
       - utf-8-validate
+
+  ky@1.14.2: {}
 
   lodash@4.17.21: {}
 
