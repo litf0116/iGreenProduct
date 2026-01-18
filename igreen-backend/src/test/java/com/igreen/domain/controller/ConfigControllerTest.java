@@ -51,7 +51,7 @@ class ConfigControllerTest {
     void setUp() {
         testSLAConfig = new SLAConfigResponse("sla-1", Priority.P1, 60, 4);
         testProblemType = new ProblemTypeResponse("problem-1", "硬件故障", "硬件设备故障");
-        testSiteLevelConfig = new SiteLevelConfigResponse("level-1", "VIP", "VIP站点", 3, 2);
+        testSiteLevelConfig = new SiteLevelConfigResponse("level-1", "VIP", "VIP站点", 3);
     }
 
     @Nested
@@ -301,9 +301,9 @@ class ConfigControllerTest {
         @WithMockUser(roles = "ADMIN")
         void createSiteLevelConfig_Success() throws Exception {
             SiteLevelConfigRequest request = new SiteLevelConfigRequest(
-                    "普通站点", "普通站点描述", 5, 4);
+                    "普通站点", "普通站点描述", 5);
             SiteLevelConfigResponse response = new SiteLevelConfigResponse(
-                    "level-2", "普通站点", "普通站点描述", 5, 4);
+                    "level-2", "普通站点", "普通站点描述", 5);
 
             when(configService.createSiteLevelConfig(any())).thenReturn(response);
 
@@ -322,7 +322,7 @@ class ConfigControllerTest {
         @WithMockUser(roles = "MANAGER")
         void createSiteLevelConfig_Forbidden() throws Exception {
             SiteLevelConfigRequest request = new SiteLevelConfigRequest(
-                    "普通站点", "描述", 5, 4);
+                    "普通站点", "描述", 5);
 
             mockMvc.perform(post("/api/configs/site-level-configs")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -337,9 +337,9 @@ class ConfigControllerTest {
         @WithMockUser(roles = "ADMIN")
         void updateSiteLevelConfig_Success() throws Exception {
             SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
-                    "更新后VIP", "更新后描述", 4, 3);
+                    "更新后VIP", "更新后描述", 4);
             SiteLevelConfigResponse response = new SiteLevelConfigResponse(
-                    "level-1", "更新后VIP", "更新后描述", 4, 3);
+                    "level-1", "更新后VIP", "更新后描述", 4);
 
             when(configService.updateSiteLevelConfig(eq("level-1"), any())).thenReturn(response);
 
@@ -423,7 +423,7 @@ class ConfigControllerTest {
         @WithMockUser(roles = "ADMIN")
         void updateSiteLevelConfig_NotFound() throws Exception {
             SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
-                    "新名称", "新描述", 5, 4);
+                    "新名称", "新描述", 5);
 
             when(configService.updateSiteLevelConfig(eq("nonexistent"), any()))
                     .thenThrow(new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND));
@@ -504,7 +504,7 @@ class ConfigControllerTest {
         @WithMockUser(roles = "MANAGER")
         void updateSiteLevelConfig_Forbidden() throws Exception {
             SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
-                    "名称", "描述", 5, 4);
+                    "名称", "描述", 5);
 
             mockMvc.perform(post("/api/configs/site-level-configs/level-1")
                             .contentType(MediaType.APPLICATION_JSON)

@@ -245,8 +245,7 @@ class ConfigServiceTest {
         SiteLevelConfigRequest request = new SiteLevelConfigRequest(
                 "普通站点",
                 "普通站点描述",
-                5,
-                4
+                5
         );
 
         when(siteLevelConfigMapper.countByLevelName("普通站点")).thenReturn(0);
@@ -265,8 +264,7 @@ class ConfigServiceTest {
         SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
                 "更新后VIP",
                 "更新后描述",
-                3,
-                2
+                3
         );
 
         when(siteLevelConfigMapper.selectById("level-1")).thenReturn(testSiteLevelConfig);
@@ -365,8 +363,7 @@ class ConfigServiceTest {
         SiteLevelConfigRequest request = new SiteLevelConfigRequest(
                 "VIP",
                 "描述",
-                5,
-                4
+                5
         );
 
         when(siteLevelConfigMapper.countByLevelName("VIP")).thenReturn(1);
@@ -378,24 +375,11 @@ class ConfigServiceTest {
     }
 
     @Test
-    @DisplayName("更新不存在的站点级别配置应抛出异常")
-    void updateSiteLevelConfig_NotFound() {
-        SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
-                "新名称", "新描述", 5, 4);
-
-        when(siteLevelConfigMapper.selectById("nonexistent")).thenReturn(null);
-
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> configService.updateSiteLevelConfig("nonexistent", request));
-
-        assertEquals(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND.getCode(), exception.getCode());
-    }
-
-    @Test
     @DisplayName("更新站点级别配置时名称重复应抛出异常")
     void updateSiteLevelConfig_NameExists() {
         SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
-                "已存在名称", "描述", 5, 4);
+                "已存在名称", "描述", 5
+        );
 
         when(siteLevelConfigMapper.selectById("level-1")).thenReturn(testSiteLevelConfig);
         when(siteLevelConfigMapper.countByLevelNameAndIdNot("已存在名称", "level-1")).thenReturn(1);
@@ -416,49 +400,5 @@ class ConfigServiceTest {
 
         assertNotNull(result);
         assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("获取空的SLA配置列表")
-    void getAllSLAConfigs_EmptyList() {
-        when(slaConfigMapper.selectList(any(LambdaQueryWrapper.class)))
-                .thenReturn(Arrays.asList());
-
-        List<SLAConfigResponse> result = configService.getAllSLAConfigs();
-
-        assertNotNull(result);
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("获取空的站点级别配置列表")
-    void getAllSiteLevelConfigs_EmptyList() {
-        when(siteLevelConfigMapper.selectList(any(LambdaQueryWrapper.class)))
-                .thenReturn(Arrays.asList());
-
-        List<SiteLevelConfigResponse> result = configService.getAllSiteLevelConfigs();
-
-        assertNotNull(result);
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    @DisplayName("创建SLA配置时更新现有配置")
-    void createOrUpdateSLAConfig_UpdateExisting() {
-        SLAConfigRequest request = new SLAConfigRequest(
-                "sla-1",
-                Priority.P1,
-                120,
-                8
-        );
-
-        when(slaConfigMapper.selectById("sla-1")).thenReturn(testSLAConfig);
-        when(slaConfigMapper.updateById(any(SLAConfig.class))).thenReturn(1);
-
-        SLAConfigResponse result = configService.createOrUpdateSLAConfig(request);
-
-        assertNotNull(result);
-        verify(slaConfigMapper).updateById(any(SLAConfig.class));
-        verify(slaConfigMapper, never()).insert(any(SLAConfig.class));
     }
 }

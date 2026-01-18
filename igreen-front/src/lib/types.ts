@@ -67,14 +67,12 @@ export interface SiteLevelConfig {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
-  escalationTimeHours: number;
 }
 
 export interface SiteLevelConfigRequest {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
-  escalationTimeHours: number;
 }
 
 export interface TicketComment {

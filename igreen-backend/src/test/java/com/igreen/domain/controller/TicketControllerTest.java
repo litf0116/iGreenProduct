@@ -132,6 +132,23 @@ class TicketControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
         }
+
+        @Test
+        @DisplayName("获取工单列表按时间筛选")
+        @WithMockUser(roles = "ENGINEER")
+        void getTickets_FilterByCreatedAfter() throws Exception {
+            PageResult<TicketResponse> pageResult = PageResult.of(List.of(testTicketResponse), 1, 0, 10);
+            LocalDateTime createdAfter = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+            when(ticketService.getTickets(eq(0), eq(10), any(), any(), any(), any(), any(), eq(createdAfter))).thenReturn(pageResult);
+
+            mockMvc.perform(get("/api/tickets")
+                            .param("page", "0")
+                            .param("size", "10")
+                            .param("createdAfter", "2025-01-01 00:00:00"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value(200))
+                    .andExpect(jsonPath("$.data.records").isArray());
+        }
     }
 
     @Nested

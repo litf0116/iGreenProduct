@@ -50,8 +50,10 @@ export function GroupManager() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
+  const isDataLoaded = useRef(false);
 
   const loadData = useCallback(async () => {
+    if (isDataLoaded.current) return;
     setIsLoading(true);
     try {
       const [groupsRes, usersRes] = await Promise.all([
@@ -60,6 +62,7 @@ export function GroupManager() {
       ]);
       setGroups(groupsRes || []);
       setUsers(usersRes.records || usersRes || []);
+      isDataLoaded.current = true;
     } catch (error) {
       console.error("Failed to load data:", error);
       toast.error(t("errorOccurred") || "Failed to load data");
