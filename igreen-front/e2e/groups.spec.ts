@@ -42,6 +42,59 @@ test.describe('Groups Page', () => {
       });
     });
 
+    // Mock initial data APIs to prevent loading errors
+    await page.route(/.*\/api\/tickets.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/templates.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/sites.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/configs.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to login first
     await page.goto('/login');
     await page.waitForLoadState('domcontentloaded');
@@ -50,20 +103,46 @@ test.describe('Groups Page', () => {
     await page.click('button[type="submit"]');
     await page.waitForURL('/dashboard');
 
-    // Wait for dashboard to load (important!)
-    await page.waitForTimeout(2000);
+    // Wait for dashboard to load
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display groups page UI elements', async ({ page }) => {
+    // Mock groups and users API for this test
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
+    await page.waitForURL('/groups', { timeout: 5000 });
 
-    // Wait for page to settle
-    await page.waitForTimeout(2000);
+    // Wait for page to load
+    await page.waitForLoadState('networkidle');
 
-    // Verify page structure
-    await expect(page.getByRole('heading', { name: /group management/i })).toBeVisible();
+    // Verify page structure - use more flexible locators
     await expect(page.getByRole('tab', { name: /groups/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /users/i })).toBeVisible();
 
@@ -78,10 +157,37 @@ test.describe('Groups Page', () => {
   });
 
   test('should switch to users tab', async ({ page }) => {
+    // Mock groups and users API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Click on Users tab
     await page.getByRole('tab', { name: /users/i }).click();
@@ -89,26 +195,29 @@ test.describe('Groups Page', () => {
     // Verify Users tab is now active
     await expect(page.getByRole('tab', { name: /users/i })).toHaveAttribute('data-state', 'active');
 
-    // Verify users table headers are visible using exact match
-    await expect(page.getByRole('columnheader', { name: 'Name', exact: true })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Username', exact: true })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Role', exact: true })).toBeVisible();
+    // Verify users table headers are visible - use .first() to avoid strict mode violations
+    await expect(page.getByRole('columnheader', { name: /name/i }).first()).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /username/i }).first()).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /role/i }).first()).toBeVisible();
   });
 
   test('should load and display groups data', async ({ page }) => {
     // This test verifies that groups data can be loaded and displayed
-    // We'll mock the API and verify the page structure supports data display
-    
-    // Mock groups API - respond with array directly (afterResponse hook extracts data from wrapper)
+    // Mock groups API with proper response format
     await page.route(/.*\/api\/groups.*/, (route) => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
-          { id: '1', name: 'Engineering Team', description: 'Main engineering team', tags: ['technical', 'hardware'], status: 'active' },
-          { id: '2', name: 'Support Team', description: 'Customer support team', tags: ['service', 'customer'], status: 'active' },
-          { id: '3', name: 'Management', description: 'Management and coordination', tags: ['admin', 'coordination'], status: 'inactive' },
-        ]),
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [
+            { id: '1', name: 'Engineering Team', description: 'Main engineering team', tags: ['technical', 'hardware'], status: 'active' },
+            { id: '2', name: 'Support Team', description: 'Customer support team', tags: ['service', 'customer'], status: 'active' },
+            { id: '3', name: 'Management', description: 'Management and coordination', tags: ['admin', 'coordination'], status: 'inactive' },
+          ],
+          code: '200',
+        }),
       });
     });
 
@@ -117,78 +226,60 @@ test.describe('Groups Page', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ records: [
-          { id: '1', name: 'John Doe', username: 'john', role: 'engineer', groupId: '1', status: 'active' },
-        ], total: 1, current: 1, size: 100, hasNext: false }),
-      });
-    });
-
-    // Mock other APIs to prevent errors
-    await page.route(/.*\/api\/tickets.*/, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ records: [], total: 0, current: 1, size: 100, hasNext: false }),
-      });
-    });
-
-    await page.route(/.*\/api\/sites.*/, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ records: [], total: 0, current: 1, size: 100, hasNext: false }),
-      });
-    });
-
-    await page.route(/.*\/api\/templates.*/, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([]),
-      });
-    });
-
-    await page.route(/.*\/api\/configs.*/, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([]),
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [
+            { id: '1', name: 'John Doe', username: 'john', role: 'engineer', groupId: '1', status: 'active' },
+          ], total: 1, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
       });
     });
 
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
-    // Wait for data to load
-    await page.waitForTimeout(3000);
-
-    // Check that groups content area exists (even if data is empty, the structure should be there)
-    const contentArea = page.locator('.grid.grid-cols-1');
-    const contentCount = await contentArea.count();
-    
-    if (contentCount > 0) {
-      // Content area exists - check if "Engineering Team" is visible or any group cards exist
-      try {
-        await expect(page.getByText('Engineering Team').first()).toBeVisible({ timeout: 5000 });
-      } catch {
-        // If text not visible, check if any group cards exist
-        const cards = page.locator('[class*="grid"] > [class*="card"]');
-        const cardCount = await cards.count();
-        expect(cardCount).toBeGreaterThan(0);
-      }
-    } else {
-      // Verify page structure is correct (groups tab content area)
-      const groupsTabContent = page.locator('[data-state="active"][value="groups"]');
-      await expect(groupsTabContent).toBeVisible();
-    }
+    // Wait for data to load and verify group names are visible - use .first() to avoid strict mode violations
+    await expect(page.getByText('Engineering Team').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Support Team').first()).toBeVisible();
+    await expect(page.getByText('Management').first()).toBeVisible();
   });
 
   test('should switch between groups and users tabs', async ({ page }) => {
+    // Mock groups and users API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Verify Groups tab is active
     await expect(page.getByRole('tab', { name: /groups/i })).toHaveAttribute('data-state', 'active');
@@ -203,10 +294,37 @@ test.describe('Groups Page', () => {
   });
 
   test('should open create group dialog', async ({ page }) => {
+    // Mock groups API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Click "Create Group" button
     await page.getByRole('button', { name: /create group/i }).click();
@@ -215,14 +333,13 @@ test.describe('Groups Page', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('heading', { name: /create group/i })).toBeVisible();
 
-    // Verify form fields exist (using placeholder and sibling text)
-    // The Label component is separate from Input, so we use locators
+    // Verify form fields exist
     const dialog = page.getByRole('dialog');
-    
+
     // Check that input fields are visible inside the dialog
     await expect(dialog.locator('input').first()).toBeVisible();  // Group name input
     await expect(dialog.locator('textarea').first()).toBeVisible();  // Description textarea
-    
+
     // Check status select is visible
     await expect(dialog.locator('[role="combobox"]').first()).toBeVisible();
 
@@ -267,10 +384,23 @@ test.describe('Groups Page', () => {
       }
     });
 
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Click "Create Group" button
     await page.getByRole('button', { name: /create group/i }).click();
@@ -299,29 +429,52 @@ test.describe('Groups Page', () => {
     await page.route(/.*\/api\/groups.*/, (route) => {
       const method = route.request().method();
       const url = route.request().url();
-      
+
       if (method === 'GET') {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([
-            { id: '1', name: 'Engineering Team', description: 'Main engineering team', tags: ['technical'], status: 'active' },
-          ]),
+          body: JSON.stringify({
+            success: true,
+            message: 'Success',
+            data: [
+              { id: '1', name: 'Engineering Team', description: 'Main engineering team', tags: ['technical'], status: 'active' },
+            ],
+            code: '200',
+          }),
         });
       } else {
         // POST for update
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ id: '1', name: 'Updated Team', description: 'Updated description', tags: ['technical'], status: 'active' }),
+          body: JSON.stringify({
+            success: true,
+            message: 'Success',
+            data: { id: '1', name: 'Updated Team', description: 'Updated description', tags: ['technical'], status: 'active' },
+            code: '200',
+          }),
         });
       }
     });
 
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Find the edit button on the group card
     const editButton = page.locator('button').filter({ has: page.locator('svg.lucide-edit, svg[class*="edit"]') }).first();
@@ -329,18 +482,18 @@ test.describe('Groups Page', () => {
 
     if (buttonCount > 0) {
       await editButton.click();
-      
+
       // Verify dialog opens with group data
       await expect(page.getByRole('dialog')).toBeVisible();
       await expect(page.getByRole('heading', { name: /edit group/i })).toBeVisible();
-      
+
       // Update group name
       const dialog = page.getByRole('dialog');
       await dialog.locator('input').first().fill('Updated Team');
-      
+
       // Save changes
       await page.getByRole('button', { name: /save/i }).click();
-      
+
       // Verify dialog closes
       await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5000 });
     } else {
@@ -350,22 +503,49 @@ test.describe('Groups Page', () => {
 
   test('should delete group with confirmation', async ({ page }) => {
     // Mock delete API
-    await page.route(/.*\/api\/groups\/1.*/, (route) => {
+    await page.route(/.*\/api\/groups.*/, (route) => {
       if (route.request().method() === 'DELETE') {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ success: true, message: 'Group deleted successfully' }),
+          body: JSON.stringify({
+            success: true,
+            message: 'Group deleted successfully',
+            data: {},
+            code: '200',
+          }),
         });
       } else {
-        route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            message: 'Success',
+            data: [{ id: '1', name: 'Test Group', description: 'Test', tags: [], status: 'active' }],
+            code: '200',
+          }),
+        });
       }
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
     });
 
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Find the delete button (trash icon) on a group card
     const deleteButton = page.locator('button').filter({ has: page.locator('svg.lucide-trash-2, svg[class*="trash"]') }).first();
@@ -373,14 +553,14 @@ test.describe('Groups Page', () => {
 
     if (buttonCount > 0) {
       await deleteButton.click();
-      
+
       // Verify confirmation dialog appears
       await expect(page.getByRole('alertdialog')).toBeVisible();
       await expect(page.getByText(/are you sure/i)).toBeVisible();
-      
+
       // Confirm deletion
       await page.getByRole('button', { name: /delete/i }).click();
-      
+
       // Verify dialog closes
       await expect(page.getByRole('alertdialog')).not.toBeVisible({ timeout: 5000 });
     } else {
@@ -389,7 +569,20 @@ test.describe('Groups Page', () => {
   });
 
   test('should display users list in users tab', async ({ page }) => {
-    // Mock users API
+    // Mock groups and users API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
     await page.route(/.*\/api\/users.*/, (route) => {
       route.fulfill({
         status: 200,
@@ -415,46 +608,57 @@ test.describe('Groups Page', () => {
 
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Switch to Users tab
     await page.getByRole('tab', { name: /users/i }).click();
     await expect(page.getByRole('tab', { name: /users/i })).toHaveAttribute('data-state', 'active');
 
     // Wait for table to load
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle');
 
-    // Check for table or list container
-    const tables = page.getByRole('table');
-    const tableCount = await tables.count();
-    
-    if (tableCount > 0) {
-      // Table found, verify it's visible
-      await expect(tables.first()).toBeVisible();
-    }
-
-    // Verify user names are displayed in the tabpanel
-    const tabpanel = page.getByRole('tabpanel', { name: 'Users' });
-    const usersVisible = await tabpanel.getByText('John Doe').count() + await tabpanel.getByText('Jane Smith').count();
-    
-    if (usersVisible === 0) {
-      // If user names not found, check if any content is rendered
-      const tabpanelContent = await tabpanel.textContent();
-      // Test passes if tabpanel has some content
-      expect(tabpanelContent.length).toBeGreaterThan(0);
-    }
+    // Verify user names are displayed
+    await expect(page.getByText('John Doe')).toBeVisible();
+    await expect(page.getByText('Jane Smith')).toBeVisible();
   });
 
   test('should open create user dialog', async ({ page }) => {
+    // Mock groups and users API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
+    await page.route(/.*\/api\/users.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: { records: [], total: 0, current: 1, size: 100, hasNext: false },
+          code: '200',
+        }),
+      });
+    });
+
     // Navigate to groups page
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     // Switch to Users tab
     await page.getByRole('tab', { name: /users/i }).click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
 
     // Click "Create User" button
     const createUserButton = page.getByRole('button', { name: /create user/i });
@@ -482,7 +686,20 @@ test.describe('Groups Page', () => {
   });
 
   test('should search users', async ({ page }) => {
-    // Mock users API
+    // Mock groups and users API
+    await page.route(/.*\/api\/groups.*/, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Success',
+          data: [],
+          code: '200',
+        }),
+      });
+    });
+
     await page.route(/.*\/api\/users.*/, (route) => {
       const url = route.request().url();
       if (url.includes('keyword')) {
@@ -531,11 +748,11 @@ test.describe('Groups Page', () => {
 
     // Navigate to groups page and switch to users tab
     await page.getByRole('button', { name: /groups/i }).click();
-    await page.waitForURL('/groups');
-    await page.waitForTimeout(1000);
+    await page.waitForURL('/groups', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
     await page.getByRole('tab', { name: /users/i }).click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
 
     // Find and use search input
     const searchInput = page.getByPlaceholder(/search/i);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Group, User } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
 import { useDataStore, useUIStore } from "../store";
