@@ -14,7 +14,7 @@ GREEN = \033[0;32m
 YELLOW = \033[1;33m
 NC = \033[0m
 
-.PHONY: help start stop restart build test clean init-db api-test docs
+.PHONY: help start stop restart build test clean init-db api-test docs jacoco jacoco-report
 
 # ============================================
 # 帮助信息
@@ -31,6 +31,7 @@ help:
 	@echo "  restart     重启应用"
 	@echo "  build       构建应用 (JAR)"
 	@echo "  test        运行单元测试"
+	@echo "  jacoco      生成代码覆盖率报告"
 	@echo "  clean       清理构建产物"
 	@echo "  init-db     初始化数据库测试数据"
 	@echo "  api-test    运行 API 接口测试"
@@ -70,6 +71,23 @@ test:
 	@echo -e "${YELLOW}运行单元测试...${NC}"
 	@export JAVA_HOME=$(JAVA_HOME) && mvn test
 	@echo -e "${GREEN}测试完成${NC}"
+
+jacoco:
+	@echo -e "${YELLOW}生成代码覆盖率报告...${NC}"
+	@export JAVA_HOME=$(JAVA_HOME) && mvn clean test jacoco:report
+	@echo -e "${GREEN}覆盖率报告已生成: target/site/jacoco/index.html${NC}"
+	@echo ""
+	@bash -c "/tmp/detailed_jacoco_report.sh 2>/dev/null || echo '详细报告脚本未找到'"
+
+jacoco-report:
+	@echo -e "${GREEN}打开覆盖率报告...${NC}"
+	@if command -v open &> /dev/null; then \
+		open target/site/jacoco/index.html; \
+	elif command -v xdg-open &> /dev/null; then \
+		xdg-open target/site/jacoco/index.html; \
+	else \
+		echo "请手动访问: file://$(PWD)/target/site/jacoco/index.html"; \
+	fi
 
 api-test:
 	@echo -e "${YELLOW}运行 API 接口测试...${NC}"

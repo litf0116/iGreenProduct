@@ -1,0 +1,136 @@
+<testsuites id="" name="" tests="54" failures="0" skipped="2" errors="0" time="63.595072">
+<testsuite name="auth.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="9" failures="0" skipped="0" time="21.166" errors="0">
+<testcase name="Authentication Flow › should display login form" classname="auth.spec.ts" time="2.281">
+</testcase>
+<testcase name="Authentication Flow › should show validation errors for empty fields" classname="auth.spec.ts" time="2.129">
+</testcase>
+<testcase name="Authentication Flow › should successfully login and redirect to dashboard" classname="auth.spec.ts" time="2.548">
+</testcase>
+<testcase name="Authentication Flow › should login with admin credentials and redirect to dashboard" classname="auth.spec.ts" time="2.882">
+</testcase>
+<testcase name="Authentication Flow › should show error message on failed login" classname="auth.spec.ts" time="1.857">
+</testcase>
+<testcase name="Authentication Flow › should toggle remember me checkbox" classname="auth.spec.ts" time="1.856">
+</testcase>
+<testcase name="Authentication Flow › should select country from dropdown" classname="auth.spec.ts" time="2.556">
+</testcase>
+<testcase name="Authentication Flow › should login with different country options" classname="auth.spec.ts" time="3.438">
+</testcase>
+<testcase name="Authentication Flow › should have forgot password link" classname="auth.spec.ts" time="1.619">
+</testcase>
+</testsuite>
+<testsuite name="groups.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="11" failures="0" skipped="2" time="32.046" errors="0">
+<testcase name="Groups Page › should display groups page UI elements" classname="groups.spec.ts" time="2.728">
+</testcase>
+<testcase name="Groups Page › should switch to users tab" classname="groups.spec.ts" time="2.893">
+</testcase>
+<testcase name="Groups Page › should load and display groups data" classname="groups.spec.ts" time="2.873">
+</testcase>
+<testcase name="Groups Page › should switch between groups and users tabs" classname="groups.spec.ts" time="2.492">
+</testcase>
+<testcase name="Groups Page › should open create group dialog" classname="groups.spec.ts" time="2.804">
+</testcase>
+<testcase name="Groups Page › should create new group" classname="groups.spec.ts" time="3.283">
+</testcase>
+<testcase name="Groups Page › should edit existing group" classname="groups.spec.ts" time="2.791">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Groups Page › should delete group with confirmation" classname="groups.spec.ts" time="2.604">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Groups Page › should display users list in users tab" classname="groups.spec.ts" time="2.398">
+</testcase>
+<testcase name="Groups Page › should open create user dialog" classname="groups.spec.ts" time="3.585">
+</testcase>
+<testcase name="Groups Page › should search users" classname="groups.spec.ts" time="3.595">
+</testcase>
+</testsuite>
+<testsuite name="settings.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="12" failures="0" skipped="0" time="35.39" errors="0">
+<testcase name="Settings Page - SLA Configuration › should display SLA Configuration tab and items" classname="settings.spec.ts" time="2.329">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should edit SLA configuration and update list" classname="settings.spec.ts" time="2.629">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should cancel SLA edit without saving" classname="settings.spec.ts" time="2.611">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should switch between tabs on settings page" classname="settings.spec.ts" time="2.822">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should load and display problem types data" classname="settings.spec.ts" time="2.468">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should add new problem type" classname="settings.spec.ts" time="3.447">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should edit problem type" classname="settings.spec.ts" time="3.399">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should delete problem type" classname="settings.spec.ts" time="3.347">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should load and display site levels data" classname="settings.spec.ts" time="2.631">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should add new site level" classname="settings.spec.ts" time="2.997">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should edit site level" classname="settings.spec.ts" time="3.331">
+</testcase>
+<testcase name="Settings Page - SLA Configuration › should delete site level" classname="settings.spec.ts" time="3.379">
+</testcase>
+</testsuite>
+<testsuite name="sites.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="5" failures="0" skipped="0" time="25.764" errors="0">
+<testcase name="Sites Management › should display sites page" classname="sites.spec.ts" time="5.656">
+</testcase>
+<testcase name="Sites Management › should display sites list" classname="sites.spec.ts" time="5.545">
+</testcase>
+<testcase name="Sites Management › should open add site dialog" classname="sites.spec.ts" time="4.675">
+</testcase>
+<testcase name="Sites Management › should search sites" classname="sites.spec.ts" time="5.037">
+</testcase>
+<testcase name="Sites Management › should display site statistics" classname="sites.spec.ts" time="4.851">
+</testcase>
+</testsuite>
+<testsuite name="tickets.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="17" failures="0" skipped="0" time="101.975" errors="0">
+<testcase name="Ticket Management › should display ticket list" classname="tickets.spec.ts" time="5.908">
+</testcase>
+<testcase name="Ticket Management › should display statistics cards" classname="tickets.spec.ts" time="5.698">
+</testcase>
+<testcase name="Ticket Management › should filter tickets by type" classname="tickets.spec.ts" time="5.706">
+</testcase>
+<testcase name="Ticket Management › should filter tickets by status" classname="tickets.spec.ts" time="5.675">
+</testcase>
+<testcase name="Ticket Management › should search tickets" classname="tickets.spec.ts" time="5.704">
+</testcase>
+<testcase name="Ticket Management › should click create ticket button" classname="tickets.spec.ts" time="5.706">
+</testcase>
+<testcase name="Ticket Management › should click view button on ticket" classname="tickets.spec.ts" time="5.738">
+</testcase>
+<testcase name="Ticket Management › should display ticket tabs" classname="tickets.spec.ts" time="5.677">
+</testcase>
+<testcase name="Ticket Management › should show empty state when no tickets found" classname="tickets.spec.ts" time="5.814">
+</testcase>
+<testcase name="Ticket Management › should clear filters" classname="tickets.spec.ts" time="5.839">
+</testcase>
+<testcase name="Ticket Management › should navigate between ticket type tabs" classname="tickets.spec.ts" time="5.947">
+</testcase>
+<testcase name="Ticket Management › should navigate to create ticket" classname="tickets.spec.ts" time="5.73">
+</testcase>
+<testcase name="Ticket Management › should view ticket details" classname="tickets.spec.ts" time="6.72">
+</testcase>
+<testcase name="Ticket Management › should accept open ticket" classname="tickets.spec.ts" time="6.73">
+<system-out>
+<![CDATA[Note: Accept button not found - this may be expected in test environment
+]]>
+</system-out>
+</testcase>
+<testcase name="Ticket Management › should show ticket action buttons" classname="tickets.spec.ts" time="5.681">
+</testcase>
+<testcase name="Ticket Management › should display ticket information correctly" classname="tickets.spec.ts" time="5.698">
+</testcase>
+<testcase name="Ticket Management › should navigate to tickets page" classname="tickets.spec.ts" time="8.004">
+</testcase>
+</testsuite>
+</testsuites>
