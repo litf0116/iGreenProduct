@@ -62,6 +62,8 @@ igreen-front/.env.local
 igreen-front/dist/
 igreen-front/.vite/
 igreen-front/coverage/
+igreen-front/test-results/
+igreen-front/playwright-report/
 
 # Backend igreen-backend
 igreen-backend/.env
