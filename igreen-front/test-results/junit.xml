@@ -1,136 +1,454 @@
-<testsuites id="" name="" tests="54" failures="0" skipped="2" errors="0" time="63.595072">
-<testsuite name="auth.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="9" failures="0" skipped="0" time="21.166" errors="0">
-<testcase name="Authentication Flow › should display login form" classname="auth.spec.ts" time="2.281">
-</testcase>
-<testcase name="Authentication Flow › should show validation errors for empty fields" classname="auth.spec.ts" time="2.129">
-</testcase>
-<testcase name="Authentication Flow › should successfully login and redirect to dashboard" classname="auth.spec.ts" time="2.548">
-</testcase>
-<testcase name="Authentication Flow › should login with admin credentials and redirect to dashboard" classname="auth.spec.ts" time="2.882">
-</testcase>
-<testcase name="Authentication Flow › should show error message on failed login" classname="auth.spec.ts" time="1.857">
-</testcase>
-<testcase name="Authentication Flow › should toggle remember me checkbox" classname="auth.spec.ts" time="1.856">
-</testcase>
-<testcase name="Authentication Flow › should select country from dropdown" classname="auth.spec.ts" time="2.556">
-</testcase>
-<testcase name="Authentication Flow › should login with different country options" classname="auth.spec.ts" time="3.438">
-</testcase>
-<testcase name="Authentication Flow › should have forgot password link" classname="auth.spec.ts" time="1.619">
-</testcase>
-</testsuite>
-<testsuite name="groups.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="11" failures="0" skipped="2" time="32.046" errors="0">
-<testcase name="Groups Page › should display groups page UI elements" classname="groups.spec.ts" time="2.728">
-</testcase>
-<testcase name="Groups Page › should switch to users tab" classname="groups.spec.ts" time="2.893">
-</testcase>
-<testcase name="Groups Page › should load and display groups data" classname="groups.spec.ts" time="2.873">
-</testcase>
-<testcase name="Groups Page › should switch between groups and users tabs" classname="groups.spec.ts" time="2.492">
-</testcase>
-<testcase name="Groups Page › should open create group dialog" classname="groups.spec.ts" time="2.804">
-</testcase>
-<testcase name="Groups Page › should create new group" classname="groups.spec.ts" time="3.283">
-</testcase>
-<testcase name="Groups Page › should edit existing group" classname="groups.spec.ts" time="2.791">
-<properties>
-<property name="skip" value="">
-</property>
-</properties>
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Groups Page › should delete group with confirmation" classname="groups.spec.ts" time="2.604">
-<properties>
-<property name="skip" value="">
-</property>
-</properties>
-<skipped>
-</skipped>
-</testcase>
-<testcase name="Groups Page › should display users list in users tab" classname="groups.spec.ts" time="2.398">
-</testcase>
-<testcase name="Groups Page › should open create user dialog" classname="groups.spec.ts" time="3.585">
-</testcase>
-<testcase name="Groups Page › should search users" classname="groups.spec.ts" time="3.595">
-</testcase>
-</testsuite>
-<testsuite name="settings.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="12" failures="0" skipped="0" time="35.39" errors="0">
-<testcase name="Settings Page - SLA Configuration › should display SLA Configuration tab and items" classname="settings.spec.ts" time="2.329">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should edit SLA configuration and update list" classname="settings.spec.ts" time="2.629">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should cancel SLA edit without saving" classname="settings.spec.ts" time="2.611">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should switch between tabs on settings page" classname="settings.spec.ts" time="2.822">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should load and display problem types data" classname="settings.spec.ts" time="2.468">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should add new problem type" classname="settings.spec.ts" time="3.447">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should edit problem type" classname="settings.spec.ts" time="3.399">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should delete problem type" classname="settings.spec.ts" time="3.347">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should load and display site levels data" classname="settings.spec.ts" time="2.631">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should add new site level" classname="settings.spec.ts" time="2.997">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should edit site level" classname="settings.spec.ts" time="3.331">
-</testcase>
-<testcase name="Settings Page - SLA Configuration › should delete site level" classname="settings.spec.ts" time="3.379">
-</testcase>
-</testsuite>
-<testsuite name="sites.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="5" failures="0" skipped="0" time="25.764" errors="0">
-<testcase name="Sites Management › should display sites page" classname="sites.spec.ts" time="5.656">
-</testcase>
-<testcase name="Sites Management › should display sites list" classname="sites.spec.ts" time="5.545">
-</testcase>
-<testcase name="Sites Management › should open add site dialog" classname="sites.spec.ts" time="4.675">
-</testcase>
-<testcase name="Sites Management › should search sites" classname="sites.spec.ts" time="5.037">
-</testcase>
-<testcase name="Sites Management › should display site statistics" classname="sites.spec.ts" time="4.851">
-</testcase>
-</testsuite>
-<testsuite name="tickets.spec.ts" timestamp="2026-01-19T00:55:24.206Z" hostname="chromium" tests="17" failures="0" skipped="0" time="101.975" errors="0">
-<testcase name="Ticket Management › should display ticket list" classname="tickets.spec.ts" time="5.908">
-</testcase>
-<testcase name="Ticket Management › should display statistics cards" classname="tickets.spec.ts" time="5.698">
-</testcase>
-<testcase name="Ticket Management › should filter tickets by type" classname="tickets.spec.ts" time="5.706">
-</testcase>
-<testcase name="Ticket Management › should filter tickets by status" classname="tickets.spec.ts" time="5.675">
-</testcase>
-<testcase name="Ticket Management › should search tickets" classname="tickets.spec.ts" time="5.704">
-</testcase>
-<testcase name="Ticket Management › should click create ticket button" classname="tickets.spec.ts" time="5.706">
-</testcase>
-<testcase name="Ticket Management › should click view button on ticket" classname="tickets.spec.ts" time="5.738">
-</testcase>
-<testcase name="Ticket Management › should display ticket tabs" classname="tickets.spec.ts" time="5.677">
-</testcase>
-<testcase name="Ticket Management › should show empty state when no tickets found" classname="tickets.spec.ts" time="5.814">
-</testcase>
-<testcase name="Ticket Management › should clear filters" classname="tickets.spec.ts" time="5.839">
-</testcase>
-<testcase name="Ticket Management › should navigate between ticket type tabs" classname="tickets.spec.ts" time="5.947">
-</testcase>
-<testcase name="Ticket Management › should navigate to create ticket" classname="tickets.spec.ts" time="5.73">
-</testcase>
-<testcase name="Ticket Management › should view ticket details" classname="tickets.spec.ts" time="6.72">
-</testcase>
-<testcase name="Ticket Management › should accept open ticket" classname="tickets.spec.ts" time="6.73">
+<testsuites id="" name="" tests="12" failures="12" skipped="0" errors="0" time="80.689958">
+<testsuite name="templates.spec.ts" timestamp="2026-01-19T01:06:02.199Z" hostname="chromium" tests="12" failures="12" skipped="0" time="237.658" errors="0">
+<testcase name="Template Management › should display template management page" classname="templates.spec.ts" time="10.773">
+<failure message="templates.spec.ts:88:7 should display template management page" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:88:7 › Template Management › should display template management page 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: /templates/i })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('heading', { name: /templates/i })
+
+
+      93 |
+      94 |     // Verify page structure
+    > 95 |     await expect(page.getByRole('heading', { name: /templates/i })).toBeVisible();
+         |                                                                     ^
+      96 |     await expect(page.getByRole('button', { name: /create template/i })).toBeVisible();
+      97 |   });
+      98 |
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:95:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-621f9-ay-template-management-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-621f9-ay-template-management-page-chromium/error-context.md
+]]>
+</failure>
 <system-out>
-<![CDATA[Note: Accept button not found - this may be expected in test environment
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-621f9-ay-template-management-page-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-621f9-ay-template-management-page-chromium/error-context.md]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Ticket Management › should show ticket action buttons" classname="tickets.spec.ts" time="5.681">
+<testcase name="Template Management › should display templates list" classname="templates.spec.ts" time="9.995">
+<failure message="templates.spec.ts:99:7 should display templates list" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:99:7 › Template Management › should display templates list ────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('AC Maintenance')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('AC Maintenance')
+
+
+      104 |
+      105 |     // Verify templates are displayed
+    > 106 |     await expect(page.getByText('AC Maintenance')).toBeVisible();
+          |                                                    ^
+      107 |     await expect(page.getByText('Electrical Repair')).toBeVisible();
+      108 |     await expect(page.getByText('Air conditioning maintenance template')).toBeVisible();
+      109 |     await expect(page.getByText('Electrical repair template')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:106:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Management-should-display-templates-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Management-should-display-templates-list-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Management-should-display-templates-list-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Management-should-display-templates-list-chromium/error-context.md]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Ticket Management › should display ticket information correctly" classname="tickets.spec.ts" time="5.698">
+<testcase name="Template Management › should show template count" classname="templates.spec.ts" time="10.148">
+<failure message="templates.spec.ts:112:7 should show template count" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:112:7 › Template Management › should show template count ──────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/2 templates/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText(/2 templates/i)
+
+
+      117 |
+      118 |     // Verify template count is displayed
+    > 119 |     await expect(page.getByText(/2 templates/i)).toBeVisible();
+          |                                                  ^
+      120 |   });
+      121 |
+      122 |   test('should open create template dialog', async ({ page }) => {
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:119:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Management-should-show-template-count-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Management-should-show-template-count-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Management-should-show-template-count-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Management-should-show-template-count-chromium/error-context.md]]
+]]>
+</system-out>
 </testcase>
-<testcase name="Ticket Management › should navigate to tickets page" classname="tickets.spec.ts" time="8.004">
+<testcase name="Template Management › should open create template dialog" classname="templates.spec.ts" time="30.063">
+<failure message="templates.spec.ts:122:7 should open create template dialog" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:122:7 › Template Management › should open create template dialog ──
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /create template/i })
+
+
+      127 |
+      128 |     // Click create template button
+    > 129 |     await page.getByRole('button', { name: /create template/i }).click();
+          |                                                                  ^
+      130 |
+      131 |     // Verify dialog opens
+      132 |     await expect(page.getByRole('dialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:129:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-fdd54-open-create-template-dialog-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-fdd54-open-create-template-dialog-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-fdd54-open-create-template-dialog-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-fdd54-open-create-template-dialog-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should create new template with steps and fields" classname="templates.spec.ts" time="30.084">
+<failure message="templates.spec.ts:149:7 should create new template with steps and fields" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:149:7 › Template Management › should create new template with steps and fields 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /create template/i })
+
+
+      219 |
+      220 |     // Click create template button
+    > 221 |     await page.getByRole('button', { name: /create template/i }).click();
+          |                                                                  ^
+      222 |
+      223 |     // Verify dialog opens
+      224 |     await expect(page.getByRole('dialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:221:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-61493-plate-with-steps-and-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-61493-plate-with-steps-and-fields-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-61493-plate-with-steps-and-fields-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-61493-plate-with-steps-and-fields-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should edit existing template" classname="templates.spec.ts" time="30.076">
+<failure message="templates.spec.ts:261:7 should edit existing template" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:261:7 › Template Management › should edit existing template ───────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByText('AC Maintenance').locator('../..').locator('button').filter({ has: locator('svg.lucide-edit') })
+
+
+      267 |     // Click edit button on AC Maintenance template
+      268 |     const acTemplate = page.getByText('AC Maintenance').locator('../..');
+    > 269 |     await acTemplate.locator('button').filter({ has: page.locator('svg.lucide-edit') }).click();
+          |                                                                                         ^
+      270 |
+      271 |     // Verify dialog opens with edit title
+      272 |     await expect(page.getByRole('dialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:269:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Management-should-edit-existing-template-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Management-should-edit-existing-template-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Management-should-edit-existing-template-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Management-should-edit-existing-template-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should delete template with confirmation" classname="templates.spec.ts" time="30.082">
+<failure message="templates.spec.ts:285:7 should delete template with confirmation" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:285:7 › Template Management › should delete template with confirmation 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByText('AC Maintenance').locator('../..').locator('button').filter({ has: locator('svg.lucide-trash-2') })
+
+
+      327 |     // Click delete button on AC Maintenance template
+      328 |     const acTemplate = page.getByText('AC Maintenance').locator('../..');
+    > 329 |     await acTemplate.locator('button').filter({ has: page.locator('svg.lucide-trash-2') }).click();
+          |                                                                                            ^
+      330 |
+      331 |     // Verify confirmation dialog appears
+      332 |     await expect(page.getByRole('alertdialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:329:92
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-0a6aa--template-with-confirmation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-0a6aa--template-with-confirmation-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-0a6aa--template-with-confirmation-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-0a6aa--template-with-confirmation-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should add multiple steps to template" classname="templates.spec.ts" time="30.089">
+<failure message="templates.spec.ts:346:7 should add multiple steps to template" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:346:7 › Template Management › should add multiple steps to template 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /create template/i })
+
+
+      351 |
+      352 |     // Click create template button
+    > 353 |     await page.getByRole('button', { name: /create template/i }).click();
+          |                                                                  ^
+      354 |
+      355 |     // Verify dialog opens
+      356 |     await expect(page.getByRole('dialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:353:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-0ec81--multiple-steps-to-template-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-0ec81--multiple-steps-to-template-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-0ec81--multiple-steps-to-template-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-0ec81--multiple-steps-to-template-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should display step count on template cards" classname="templates.spec.ts" time="8.961">
+<failure message="templates.spec.ts:384:7 should display step count on template cards" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:384:7 › Template Management › should display step count on template cards 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('AC Maintenance').locator('../..').locator('text=1')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('AC Maintenance').locator('../..').locator('text=1')
+
+
+      390 |     // AC Maintenance has 1 step (badge shows "1")
+      391 |     const acTemplate = page.getByText('AC Maintenance').locator('../..');
+    > 392 |     await expect(acTemplate.locator('text=1')).toBeVisible();
+          |                                                ^
+      393 |
+      394 |     // Electrical Repair has 0 steps (badge shows "0")
+      395 |     const erTemplate = page.getByText('Electrical Repair').locator('../..');
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:392:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-b9ec2-tep-count-on-template-cards-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-b9ec2-tep-count-on-template-cards-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-b9ec2-tep-count-on-template-cards-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-b9ec2-tep-count-on-template-cards-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should show empty state when no templates" classname="templates.spec.ts" time="8.93">
+<failure message="templates.spec.ts:399:7 should show empty state when no templates" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:399:7 › Template Management › should show empty state when no templates 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/0 templates/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText(/0 templates/i)
+
+
+      418 |
+      419 |     // Verify empty state
+    > 420 |     await expect(page.getByText(/0 templates/i)).toBeVisible();
+          |                                                  ^
+      421 |   });
+      422 |
+      423 |   test('should switch between different field types', async ({ page }) => {
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:420:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-96684-pty-state-when-no-templates-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-96684-pty-state-when-no-templates-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-96684-pty-state-when-no-templates-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-96684-pty-state-when-no-templates-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should switch between different field types" classname="templates.spec.ts" time="30.058">
+<failure message="templates.spec.ts:423:7 should switch between different field types" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:423:7 › Template Management › should switch between different field types 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /create template/i })
+
+
+      428 |
+      429 |     // Click create template button
+    > 430 |     await page.getByRole('button', { name: /create template/i }).click();
+          |                                                                  ^
+      431 |
+      432 |     // Verify dialog opens
+      433 |     await expect(page.getByRole('dialog')).toBeVisible();
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:430:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-e16df-tween-different-field-types-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-e16df-tween-different-field-types-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-e16df-tween-different-field-types-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-e16df-tween-different-field-types-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Template Management › should show step description and field details" classname="templates.spec.ts" time="8.399">
+<failure message="templates.spec.ts:461:7 should show step description and field details" type="FAILURE">
+<![CDATA[  [chromium] › templates.spec.ts:461:7 › Template Management › should show step description and field details 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Air conditioning maintenance template')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText('Air conditioning maintenance template')
+
+
+      466 |
+      467 |     // Verify template descriptions are displayed
+    > 468 |     await expect(page.getByText('Air conditioning maintenance template')).toBeVisible();
+          |                                                                           ^
+      469 |     await expect(page.getByText('Electrical repair template')).toBeVisible();
+      470 |
+      471 |     // Verify step names are displayed
+        at /Users/mac/workspace/iGreenProduct/igreen-front/e2e/templates.spec.ts:468:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/templates-Template-Managem-dcb3d-scription-and-field-details-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/templates-Template-Managem-dcb3d-scription-and-field-details-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|templates-Template-Managem-dcb3d-scription-and-field-details-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|templates-Template-Managem-dcb3d-scription-and-field-details-chromium/error-context.md]]
+]]>
+</system-out>
 </testcase>
 </testsuite>
 </testsuites>

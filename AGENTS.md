@@ -31,13 +31,19 @@
 
 ## Build, Test, and Lint Commands
 
-### Backend (FastAPI)
+### Backend (Spring Boot 3 + Java 21)
+```bash
+cd igreen-backend
+./mvnw spring-boot:run              # Run dev server with auto-reload
+java -jar target/igreen-backend-1.0.0.jar  # Production
+mysql -u root -p < init-scripts/01-schema.sql  # Initialize database
+```
+
+### Backend - Legacy (FastAPI - 待迁移)
 ```bash
 cd backend
 python main.py                    # Run dev server with auto-reload
 uvicorn main:app --reload         # Alternative dev server
-gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000  # Production
-python scripts/init_db.py         # Initialize database
 ```
 
 ### Frontend - iGreenApp (Engineer Mobile APP)
@@ -124,26 +130,27 @@ import { Ticket, TicketStatus } from './lib/data';
 - Keep API calls in dedicated functions in lib/api.ts
 - Use URL search params or query strings for pagination (offset, limit)
 
-### Python/FastAPI (Backend)
+### Python/FastAPI (Legacy Backend - 待迁移)
 
-#### Structure
-- Use Pydantic models for request/response validation in app/schemas/
-- Use SQLAlchemy ORM models in app/models/
+#### Structure (FastAPI - 已迁移至 Spring Boot)
+- Legacy: Use Pydantic models for request/response validation in app/schemas/
+- Legacy: Use SQLAlchemy ORM models in app/models/
 - API endpoints in app/api/ with FastAPI routers
 - Core config, database, security in app/core/
 - Helper functions and utilities in app/utils/
 
-#### Naming Conventions
-- Files/modules: snake_case (ticket.py, auth.py, user.py)
-- Classes: PascalCase (User, Ticket, Template)
-- Functions/variables: snake_case (get_tickets, create_user, user_id)
-- Constants: UPPER_SNAKE_CASE (API_PREFIX, DEFAULT_PAGE_SIZE)
+#### Current: Spring Boot 3 + Java 21
+- Use JPA entities in com.igreen.domain.entity/
+- Use DTOs in com.igreen.domain.dto/
+- API endpoints in com.igreen.domain.controller/
+- Core config, database, security in com.igreen.common/
+- Mapper XML files in resources/mapper/
 
-#### API Design
+#### API Design (Current: Spring Boot)
 - Use RESTful conventions
-- Include router with prefix: `app.include_router(tickets.router, prefix="/api")`
-- Use FastAPI dependency injection for auth and database sessions
-- Return structured responses with appropriate status codes
+- Use `@RestController` and `@RequestMapping` annotations
+- Return `ResponseEntity<Result<T>>` for consistent response format
+- Use Spring Security for authentication and authorization
 
 ---
 
@@ -151,17 +158,26 @@ import { Ticket, TicketStatus } from './lib/data';
 
 ```
 iGreenProduct/
-├── backend/                    # FastAPI backend
-│   ├── app/
-│   │   ├── api/               # API route endpoints
-│   │   ├── core/              # Config, database, security
-│   │   ├── models/            # SQLAlchemy ORM models
-│   │   ├── schemas/           # Pydantic validation schemas
-│   │   └── utils/             # Helper functions
-│   ├── main.py
-│   └── requirements.txt
+├── igreen-backend/               # Spring Boot 3 backend (Java 21)
+│   ├── src/main/java/com/igreen/
+│   │   ├── domain/
+│   │   │   ├── controller/       # REST API controllers
+│   │   │   ├── entity/           # JPA entities
+│   │   │   ├── dto/              # Data transfer objects
+│   │   │   ├── enums/            # Enumerations
+│   │   │   ├── mapper/           # MyBatis mappers
+│   │   │   └── service/          # Business logic
+│   │   └── common/
+│   │       ├── config/           # Configuration classes
+│   │       ├── exception/        # Exception handling
+│   │       ├── result/           # Response wrappers
+│   │       └── utils/            # Utility classes
+│   ├── src/main/resources/
+│   │   ├── mapper/               # MyBatis XML mappers
+│   │   └── application.yml       # Application configuration
+│   └── init-scripts/             # Database initialization
 │
-├── iGreenApp/                  # Engineer Mobile APP
+├── iGreenApp/                    # Engineer Mobile APP
 │   └── src/
 │       ├── components/        # React components
 │       │   ├── ui/           # shadcn/ui components
