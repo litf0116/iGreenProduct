@@ -5,6 +5,8 @@ import com.igreen.domain.dto.GroupCreateRequest;
 import com.igreen.domain.dto.GroupUpdateRequest;
 import com.igreen.domain.entity.Group;
 import com.igreen.domain.service.GroupService;
+import com.igreen.domain.vo.GroupConverter;
+import com.igreen.domain.vo.GroupVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,33 +24,42 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
+    private final GroupConverter groupConverter;
 
     @Operation(summary = "获取所有分组")
     @GetMapping
-    public ResponseEntity<Result<List<Group>>> getAllGroups() {
-        return ResponseEntity.ok(Result.success(groupService.getAllGroups()));
+    public ResponseEntity<Result<List<GroupVO>>> getAllGroups() {
+        List<Group> groups = groupService.getAllGroups();
+        List<GroupVO> voList = groupConverter.toVOList(groups);
+        return ResponseEntity.ok(Result.success(voList));
     }
 
     @Operation(summary = "获取分组详情")
     @GetMapping("/{id}")
-    public ResponseEntity<Result<Group>> getGroupById(@PathVariable String id) {
-        return ResponseEntity.ok(Result.success(groupService.getGroupById(id)));
+    public ResponseEntity<Result<GroupVO>> getGroupById(@PathVariable String id) {
+        Group group = groupService.getGroupById(id);
+        GroupVO vo = groupConverter.toVO(group);
+        return ResponseEntity.ok(Result.success(vo));
     }
 
     @Operation(summary = "创建分组")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Result<Group>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
-        return ResponseEntity.ok(Result.success(groupService.createGroup(request)));
+    public ResponseEntity<Result<GroupVO>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
+        Group group = groupService.createGroup(request);
+        GroupVO vo = groupConverter.toVO(group);
+        return ResponseEntity.ok(Result.success(vo));
     }
 
     @Operation(summary = "更新分组")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Result<Group>> updateGroup(
+    public ResponseEntity<Result<GroupVO>> updateGroup(
             @PathVariable String id,
             @Valid @RequestBody GroupUpdateRequest request) {
-        return ResponseEntity.ok(Result.success(groupService.updateGroup(id, request)));
+        Group group = groupService.updateGroup(id, request);
+        GroupVO vo = groupConverter.toVO(group);
+        return ResponseEntity.ok(Result.success(vo));
     }
 
     @Operation(summary = "删除分组")

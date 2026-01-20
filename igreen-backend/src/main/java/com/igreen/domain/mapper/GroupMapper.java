@@ -9,4 +9,6 @@ import org.apache.ibatis.annotations.Param;
 public interface GroupMapper extends com.baomidou.mybatisplus.core.mapper.BaseMapper<Group> {
 
     int countByName(@Param("name") String name);
+
+    Group selectById(@Param("id") String id);
 }

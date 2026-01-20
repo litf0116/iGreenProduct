@@ -116,7 +116,7 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
-  tags?: string;
+  tags?: string[];
   status: GroupStatus;
   memberCount?: number;
   createdAt: string;

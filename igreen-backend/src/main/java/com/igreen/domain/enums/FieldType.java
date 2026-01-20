@@ -6,8 +6,7 @@ public enum FieldType {
     DATE("date"),
     LOCATION("location"),
     PHOTO("photo"),
-    SIGNATURE("signature"),
-    FACE_RECOGNITION("faceRecognition");
+    SIGNATURE("signature");
 
     private final String value;
 

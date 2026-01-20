@@ -139,73 +139,7 @@ export const api = {
   },
 
   updateGroup: async (id: string, updates: GroupUpdateRequest): Promise<Group> => {
-    return kyInstance.post(`api/groups/${id}`, { json: updates }).json<Group>();
-  },
-
-  deleteGroup: async (id: string): Promise<void> => {
-    await kyInstance.delete(`api/groups/${id}`);
-  },
-
-  getGroupMembers: async (groupId: string): Promise<User[]> => {
-    return kyInstance.get(`api/groups/${groupId}/members`).json<User[]>();
-  },
-
-  refreshTokenToken: async (): Promise<TokenResponse> => {
-    const newAccessToken = await handleTokenRefresh();
-    return {
-      accessToken: newAccessToken,
-      refreshToken: getRefreshToken()!,
-      expiresIn: 7200000,
-      tokenType: 'Bearer',
-    };
-  },
-
-  getUsers: async (params?: PageParams & { keyword?: string }): Promise<{ records: User[]; total: number; current: number; size: number; hasNext: boolean }> => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('page', String((params?.page ?? 0) + 1));
-    searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
-    if (params?.keyword) searchParams.set('keyword', params.keyword);
-    return kyInstance.get(`api/users?${searchParams}`).json();
-  },
-
-  getUser: async (id: string): Promise<User> => {
-    return kyInstance.get(`api/users/${id}`).json<User>();
-  },
-
-  createUser: async (user: UserCreateRequest): Promise<User> => {
-    return kyInstance.post('api/users', { json: user }).json<User>();
-  },
-
-  updateUser: async (id: string, updates: UserUpdateRequest): Promise<User> => {
-    return kyInstance.post(`api/users/${id}`, { json: updates }).json<User>();
-  },
-
-  deleteUser: async (id: string): Promise<void> => {
-    await kyInstance.delete(`api/users/${id}`);
-  },
-
-  updateUserCountries: async (id: string, country: string): Promise<User> => {
-    return kyInstance.patch(`api/users/${id}/countries`, { json: { country } }).json<User>();
-  },
-
-  getEngineers: async (): Promise<User[]> => {
-    return kyInstance.get('api/users/engineers').json<User[]>();
-  },
-
-  getGroups: async (): Promise<Group[]> => {
-    return kyInstance.get('api/groups').json<Group[]>();
-  },
-
-  getGroup: async (id: string): Promise<Group> => {
-    return kyInstance.get(`api/groups/${id}`).json<Group>();
-  },
-
-  createGroup: async (group: GroupCreateRequest): Promise<Group> => {
-    return kyInstance.post('api/groups', { json: group }).json<Group>();
-  },
-
-  updateGroup: async (id: string, updates: GroupUpdateRequest): Promise<Group> => {
-    return kyInstance.post(`api/groups/${id}`, { json: updates }).json<Group>();
+    return kyInstance.put(`api/groups/${id}`, { json: updates }).json<Group>();
   },
 
   deleteGroup: async (id: string): Promise<void> => {

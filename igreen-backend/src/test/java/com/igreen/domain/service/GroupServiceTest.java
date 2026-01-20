@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,9 +25,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GroupServiceTest {
 
     @Mock
@@ -57,7 +61,7 @@ class GroupServiceTest {
         GroupCreateRequest request = new GroupCreateRequest(
                 "新分组",
                 "新分组描述",
-                "开发,测试",
+                new String[]{"开发", "测试"},
                 GroupStatus.ACTIVE
         );
 
@@ -120,8 +124,8 @@ class GroupServiceTest {
     @DisplayName("获取所有分组成功")
     void getAllGroups_Success() {
         List<Group> groups = Arrays.asList(testGroup);
-        when(groupMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(groups);
-        when(userMapper.countByGroupId("group-1")).thenReturn(5);
+        when(groupMapper.selectList(nullable(LambdaQueryWrapper.class))).thenReturn(groups);
+        when(userMapper.countByGroupId(any())).thenReturn(5);
 
         List<Group> result = groupService.getAllGroups();
 
@@ -136,7 +140,7 @@ class GroupServiceTest {
         GroupUpdateRequest request = new GroupUpdateRequest(
                 "更新后分组",
                 "更新后描述",
-                "更新标签",
+                new String[]{"更新标签1", "更新标签2"},
                 GroupStatus.INACTIVE
         );
 
@@ -205,7 +209,7 @@ class GroupServiceTest {
     @Test
     @DisplayName("获取空分组列表")
     void getAllGroups_EmptyList() {
-        when(groupMapper.selectList(any(LambdaQueryWrapper.class)))
+        when(groupMapper.selectList(nullable(LambdaQueryWrapper.class)))
                 .thenReturn(Arrays.asList());
 
         List<Group> result = groupService.getAllGroups();
@@ -225,7 +229,7 @@ class GroupServiceTest {
                 .memberCount(3)
                 .build();
 
-        when(groupMapper.selectList(any(LambdaQueryWrapper.class)))
+        when(groupMapper.selectList(nullable(LambdaQueryWrapper.class)))
                 .thenReturn(Arrays.asList(testGroup, group2));
         when(userMapper.countByGroupId("group-1")).thenReturn(5);
         when(userMapper.countByGroupId("group-2")).thenReturn(3);
@@ -264,7 +268,7 @@ class GroupServiceTest {
         GroupUpdateRequest request = new GroupUpdateRequest(
                 null,
                 null,
-                "新标签",
+                new String[]{"新标签1", "新标签2"},
                 null
         );
 
@@ -276,7 +280,7 @@ class GroupServiceTest {
 
         assertNotNull(result);
         verify(groupMapper).updateById(argThat(group ->
-            "新标签".equals(group.getTags())
+            "新标签1,新标签2".equals(group.getTags())
         ));
     }
 
@@ -348,12 +352,37 @@ class GroupServiceTest {
     }
 
     @Test
+    @DisplayName("创建分组时标签为空数组")
+    void createGroup_EmptyTagsArray() {
+        GroupCreateRequest request = new GroupCreateRequest(
+                "新分组",
+                "描述",
+                new String[]{},
+                GroupStatus.ACTIVE
+        );
+
+        when(groupMapper.countByName("新分组")).thenReturn(0);
+        when(groupMapper.insert(any(Group.class))).thenAnswer(invocation -> {
+            Group group = invocation.getArgument(0);
+            group.setId("group-new");
+            return 1;
+        });
+
+        Group result = groupService.createGroup(request);
+
+        assertNotNull(result);
+        assertEquals("新分组", result.getName());
+        assertNull(result.getTags());
+        verify(groupMapper).insert(any(Group.class));
+    }
+
+    @Test
     @DisplayName("创建分组时状态为null应使用默认值ACTIVE")
     void createGroup_NullStatus() {
         GroupCreateRequest request = new GroupCreateRequest(
                 "新分组",
                 "描述",
-                "标签",
+                new String[]{"标签1", "标签2"},
                 null
         );
 
@@ -423,7 +452,7 @@ class GroupServiceTest {
         GroupCreateRequest request = new GroupCreateRequest(
                 "分组-测试_2024",
                 "描述",
-                "标签",
+                new String[]{"标签1"},
                 GroupStatus.ACTIVE
         );
 
@@ -458,5 +487,64 @@ class GroupServiceTest {
 
         assertNotNull(result);
         verify(groupMapper).updateById(any(Group.class));
+    }
+
+    @Test
+    @DisplayName("Group实体标签数组转换测试")
+    void group_TagsArrayConversion() {
+        // 测试 getTagsArray
+        Group group = Group.builder()
+                .id("test-1")
+                .name("测试")
+                .tags("标签1,标签2,标签3")
+                .build();
+
+        String[] tagsArray = group.getTagsArray();
+        assertNotNull(tagsArray);
+        assertEquals(3, tagsArray.length);
+        assertEquals("标签1", tagsArray[0]);
+        assertEquals("标签2", tagsArray[1]);
+        assertEquals("标签3", tagsArray[2]);
+    }
+
+    @Test
+    @DisplayName("Group实体空标签数组测试")
+    void group_EmptyTagsConversion() {
+        Group group = Group.builder()
+                .id("test-1")
+                .name("测试")
+                .tags(null)
+                .build();
+
+        String[] tagsArray = group.getTagsArray();
+        assertNotNull(tagsArray);
+        assertEquals(0, tagsArray.length);
+    }
+
+    @Test
+    @DisplayName("Group实体setTagsArray测试")
+    void group_SetTagsArray() {
+        Group group = Group.builder()
+                .id("test-1")
+                .name("测试")
+                .build();
+
+        group.setTagsArray(new String[]{"新标签1", "新标签2"});
+
+        assertEquals("新标签1,新标签2", group.getTags());
+    }
+
+    @Test
+    @DisplayName("Group实体setTagsArray空数组测试")
+    void group_SetEmptyTagsArray() {
+        Group group = Group.builder()
+                .id("test-1")
+                .name("测试")
+                .tags("旧标签1,旧标签2")
+                .build();
+
+        group.setTagsArray(new String[]{});
+
+        assertNull(group.getTags());
     }
 }

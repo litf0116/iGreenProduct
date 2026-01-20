@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,8 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final int MAX_REQUESTS = 5;
-    private static final long WINDOW_SIZE_MS = 60000;
+    @Value("${app.rate-limit.enabled:true}")
+    private boolean rateLimitEnabled;
+
+    @Value("${app.rate-limit.max-requests:5}")
+    private int maxRequests;
+
+    @Value("${app.rate-limit.window-seconds:60}")
+    private int windowSeconds;
 
     private final Map<String, RateLimitBucket> buckets = new ConcurrentHashMap<>();
 
@@ -32,10 +39,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 如果 rate limit 未启用，直接放行
+        if (!rateLimitEnabled) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String clientIp = getClientIp(request);
         RateLimitBucket bucket = buckets.computeIfAbsent(clientIp, k -> new RateLimitBucket());
 
-        if (!bucket.tryAcquire(WINDOW_SIZE_MS, MAX_REQUESTS)) {
+        long windowSizeMs = windowSeconds * 1000L;
+        if (!bucket.tryAcquire(windowSizeMs, maxRequests)) {
             log.warn("Rate limit exceeded for IP: {}", clientIp);
             response.setStatus(429);
             response.setContentType("application/json");

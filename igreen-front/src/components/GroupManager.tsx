@@ -60,8 +60,11 @@ export function GroupManager() {
         api.getGroups().catch(() => []),
         api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] })),
       ]);
-      setGroups(groupsRes || []);
-      setUsers(usersRes.records || usersRes || []);
+      // Handle API response that wraps data in { success, data, ... } format
+      const groupsData = (groupsRes as any)?.data || (groupsRes as any)?.records || groupsRes || [];
+      const usersData = (usersRes as any)?.records || usersRes || [];
+      setGroups(Array.isArray(groupsData) ? groupsData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
       isDataLoaded.current = true;
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -105,7 +108,7 @@ export function GroupManager() {
       setEditingGroup(group);
       setGroupName(group.name);
       setGroupDescription(group.description);
-      setGroupTags(group.tags);
+      setGroupTags(group.tags || []);
       setGroupStatus(group.status);
     } else {
       setEditingGroup(null);
@@ -332,7 +335,7 @@ export function GroupManager() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      {group.tags.map((tag, index) => (
+                      {(group.tags || []).map((tag, index) => (
                         <Badge key={index} variant="outline" className="bg-secondary/50">
                           <Tag className="h-3 w-3 mr-1" />
                           {tag}

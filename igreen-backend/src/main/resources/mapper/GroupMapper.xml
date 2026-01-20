@@ -29,16 +29,8 @@
     </select>
 
     <select id="selectList" resultMap="GroupResultMap">
-        SELECT <include refid="Base_Column_List"/>
+        SELECT id, name, description, tags, status, created_at, updated_at
         FROM `groups`
-        <where>
-            <if test="name != null and name != ''">
-                AND name LIKE CONCAT('%', #{name}, '%')
-            </if>
-            <if test="status != null">
-                AND status = #{status}
-            </if>
-        </where>
         ORDER BY created_at DESC
     </select>
 
