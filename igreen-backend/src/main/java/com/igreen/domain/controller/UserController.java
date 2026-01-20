@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @Operation(summary = "更新用户")
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<UserResponse>> updateUser(
             @PathVariable String id,

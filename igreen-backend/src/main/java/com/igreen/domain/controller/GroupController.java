@@ -43,7 +43,7 @@ public class GroupController {
     }
 
     @Operation(summary = "更新分组")
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<Group>> updateGroup(
             @PathVariable String id,
