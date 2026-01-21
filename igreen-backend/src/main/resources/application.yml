@@ -27,7 +27,7 @@ spring:
 # PageHelper 分页配置
 pagehelper:
   helperDialect: mysql
-  reasonable: true
+  reasonable: false
   supportMethodsArguments: true
   params: count=countSql
 

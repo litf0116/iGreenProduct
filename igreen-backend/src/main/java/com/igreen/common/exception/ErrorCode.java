@@ -32,6 +32,7 @@ public enum ErrorCode {
     INVALID_TOKEN("INVALID_TOKEN", "无效令牌"),
     TOKEN_EXPIRED("TOKEN_EXPIRED", "令牌已过期"),
     INVALID_REQUEST("INVALID_REQUEST", "请求无效"),
+    VALIDATION_ERROR("VALIDATION_ERROR", "参数验证失败"),
     INTERNAL_ERROR("INTERNAL_ERROR", "内部服务器错误"),
     PASSWORD_MISMATCH("PASSWORD_MISMATCH", "两次输入的密码不一致"),
     PASSWORD_TOO_WEAK("PASSWORD_TOO_WEAK", "密码强度不足，需要至少8位，包含字母和数字"),
