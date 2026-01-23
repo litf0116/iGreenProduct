@@ -1,0 +1,75 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  # 步骤1: 设置JDK环境
+  - name: setup-java
+    image: openjdk:21-jdk
+    commands:
+      - java -version
+      - ./mvnw --version
+
+  # 步骤2: 编译和测试
+  - name: build-and-test
+    image: openjdk:21-jdk
+    commands:
+      - ./mvnw clean compile test
+    environment:
+      MAVEN_OPTS: -Xmx1024m
+
+  # 步骤3: 打包应用
+  - name: package
+    image: openjdk:21-jdk
+    commands:
+      - ./mvnw package -DskipTests
+    environment:
+      MAVEN_OPTS: -Xmx1024m
+
+  # 步骤4: 构建Docker镜像 (可选)
+  - name: build-docker
+    image: plugins/docker
+    settings:
+      dockerfile: Dockerfile
+      context: .
+      registry: your-registry.com
+      repo: your-registry.com/igreen-backend
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags:
+        - latest
+        - ${DRONE_COMMIT_SHA:0:8}
+    when:
+      branch:
+        - main
+        - master
+
+  # 步骤5: 部署到服务器 (可选)
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host: 180.188.45.250
+      username: root
+      key:
+        from_secret: ssh_key
+      port: 22
+      script:
+        - cd /opt/igreen-backend
+        - docker-compose pull
+        - docker-compose up -d --no-deps igreen-backend
+    when:
+      branch:
+        - main
+        - master
+
+# 触发条件
+trigger:
+  branch:
+    - main
+    - master
+    - develop
+  event:
+    - push
+    - pull_request

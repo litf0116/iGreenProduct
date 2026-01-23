@@ -153,6 +153,7 @@ export interface Ticket {
   solution?: string;
   comments?: TicketComment[];
   relatedTicketIds?: string[];
+  problemType?: string;
 }
 
 export interface User {
@@ -261,6 +262,7 @@ export interface TicketResponse {
   solution?: string;
   comments?: TicketComment[];
   relatedTicketIds?: string[];
+  problemType?: string;
 }
 
 export interface TicketCreateRequest {

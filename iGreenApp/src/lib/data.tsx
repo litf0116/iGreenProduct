@@ -51,6 +51,7 @@ export interface Ticket {
     estimatedResolutionTime?: string;
     problemPhotoUrls?: string[];
     relatedTicketId?: string;
+    problemType?: string;
 }
 
 export const MOCK_TICKETS: Ticket[] = [

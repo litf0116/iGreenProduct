@@ -1,29 +1,32 @@
 package com.igreen.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Locale;
+
 public enum CommentType {
-    GENERAL("general"),
-    COMMENT("comment"),
-    ACCEPT("accept"),
-    DECLINE("decline"),
-    CANCEL("cancel"),
-    SYSTEM("system");
+    GENERAL,
+    COMMENT,
+    ACCEPT,
+    DECLINE,
+    CANCEL,
+    SYSTEM;
 
-    private final String value;
-
-    CommentType(String value) {
-        this.value = value;
-    }
-
+    @JsonValue
     public String getValue() {
-        return value;
+        return name();
     }
 
+    @JsonCreator
     public static CommentType fromValue(String value) {
-        for (CommentType type : values()) {
-            if (type.value.equals(value)) {
-                return type;
-            }
+        if (value == null) {
+            return GENERAL;
         }
-        throw new IllegalArgumentException("Unknown comment type: " + value);
+        try {
+            return valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return GENERAL;
+        }
     }
 }

@@ -6,7 +6,7 @@ import { Ticket } from './data';
 
 // Backend API Base URL
 // 请根据实际部署情况修改此URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
 
 // Get auth token from localStorage
 function getAuthToken(): string | null {

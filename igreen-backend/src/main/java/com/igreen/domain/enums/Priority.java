@@ -1,30 +1,30 @@
 package com.igreen.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Locale;
+
 public enum Priority {
-    P1("P1"),
-    P2("P2"),
-    P3("P3"),
-    P4("P4");
+    P1,
+    P2,
+    P3,
+    P4;
 
-    private final String value;
-
-    Priority(String value) {
-        this.value = value;
-    }
-
+    @JsonValue
     public String getValue() {
-        return value;
+        return name();
     }
 
+    @JsonCreator
     public static Priority fromValue(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("Priority cannot be null");
+            return P3;
         }
-        for (Priority priority : values()) {
-            if (priority.value.equalsIgnoreCase(value)) {
-                return priority;
-            }
+        try {
+            return valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return P3;
         }
-        throw new IllegalArgumentException("Unknown priority: " + value);
     }
 }
