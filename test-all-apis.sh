@@ -240,13 +240,14 @@ main() {
     test_api "获取站点列表" "GET" "/sites?page=1&size=10"
     test_api "获取站点统计" "GET" "/sites/stats"
 
-    # 创建测试站点
+    # 创建测试站点（使用随机名称避免重复）
+    RANDOM_SUFFIX=$((RANDOM % 1000))
     TEST_SITE_RESPONSE=$(curl -s -X POST ${BASE_URL}/sites \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer ${TOKEN}" \
       -d '{
-        "name": "API测试站点",
-        "address": "测试地址123号",
+        "name": "API测试站点_'${RANDOM_SUFFIX}'",
+        "address": "测试地址1",
         "level": "A",
         "status": "ONLINE"
       }')
@@ -257,14 +258,14 @@ main() {
         test_passed "创建站点"
         test_api "获取站点详情" "GET" "/sites/${TEST_SITE_ID}"
         test_api "更新站点信息" "POST" "/sites/${TEST_SITE_ID}" '{
-            "name": "更新的API测试站点",
+            "name": "更新的API测试站点_'${RANDOM_SUFFIX}'",
             "address": "新地址456号",
             "level": "B",
             "status": "OFFLINE"
         }'
         test_api "删除站点" "DELETE" "/sites/${TEST_SITE_ID}"
     else
-        test_failed "创建站点" "无法获取站点ID"
+        test_failed "创建站点" "响应: ${TEST_SITE_RESPONSE:0:200}"
     fi
 
     echo ""
