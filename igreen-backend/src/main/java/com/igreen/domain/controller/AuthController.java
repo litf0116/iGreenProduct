@@ -37,10 +37,8 @@ public class AuthController {
     public ResponseEntity<Result<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse response = userService.login(request);
 
-        Optional<User> userOpt = userMapper.selectByUsernameAndCountry(request.username(), request.country());
-        if (userOpt.isEmpty()) {
-            userOpt = userMapper.selectByUsername(request.username());
-        }
+                // 直接使用UserService的登录逻辑，UserService会处理country验证
+        TokenResponse response = userService.login(request);
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
