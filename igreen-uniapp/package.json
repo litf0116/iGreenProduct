@@ -5,15 +5,17 @@
   "description": "iGreen+ Engineer Mobile App - Built with uni-app",
   "scripts": {
     "dev": "npm run dev:h5",
-    "dev:h5": "npx @dcloudio/uni-app-cli -p h5",
-    "dev:app": "npx @dcloudio/uni-app-cli -p app-plus",
-    "dev:mp-weixin": "npx @dcloudio/uni-app-cli -p mp-weixin",
+    "dev:h5": "hbx run --platform h5",
+    "dev:app": "hbx run --platform app",
+    "dev:mp-weixin": "hbx run --platform mp-weixin",
     "build": "npm run build:h5",
-    "build:h5": "npx @dcloudio/uni-app-cli build --platform h5",
-    "build:app": "npx @dcloudio/uni-app-cli build --platform app-plus",
-    "build:mp-weixin": "npx @dcloudio/uni-app-cli build --platform mp-weixin",
-    "generate:icons": "python3 scripts/upscale_icon.py",
-    "install:cli": "npm install @dcloudio/uni-app-cli --no-save"
+    "build:h5": "hbx build --platform h5",
+    "build:app": "hbx build --platform app",
+    "build:mp-weixin": "hbx build --platform mp-weixin",
+    "build:android": "npm run build:app && ./scripts/build-android.sh",
+    "setup:android": "./scripts/setup-android-pack.sh",
+    "install:hbx-cli": "./scripts/install-hbx-cli.sh",
+    "generate:icons": "python3 scripts/upscale_icon.py"
   },
   "dependencies": {
     "@dcloudio/uni-app": "^3.0.0-3090920231225001",
@@ -24,7 +26,6 @@
   "devDependencies": {
     "@dcloudio/types": "^3.4.8",
     "sass": "^1.32.0",
-    "sass-loader": "^8.0.2",
     "typescript": "^4.9.5"
   },
   "uni-app": {

@@ -1,36 +1,50 @@
 import type { Component } from 'vue';
 
-const components: Record<string, Component> = {};
+import { Button } from './ui';
+import { Card } from './ui';
+import { Badge } from './ui';
+import { Input } from './ui';
+import { Avatar } from './ui';
+import { Empty } from './ui';
+import { Loading } from './ui';
+import { InfoRow } from './ui';
+import { LanguageSwitcher } from './ui';
 
-function importAllComponents(componentsContext: __WebpackModuleApi.RequireContext) {
-  componentsContext.keys().forEach((fileName) => {
-    const componentConfig = componentsContext(fileName);
-    const componentName = fileName
-      .split('/')
-      .pop()
-      ?.replace(/\.\w+$/, '') || '';
-    components[componentName] = componentConfig.default || componentConfig;
-  });
-}
+import Header from './layout/Header.vue';
+import Sidebar from './layout/Sidebar.vue';
+import TabBar from './layout/TabBar.vue';
 
-const uiContext = import.meta.glob('./components/ui/*.vue', { eager: true });
-const ticketsContext = import.meta.glob('./components/tickets/*.vue', { eager: true });
+import { TicketList } from './tickets';
+import { TicketCard } from './tickets';
+import { StatusBadge } from './tickets';
+import { PriorityBadge } from './tickets';
+import { TypeBadge } from './tickets';
+import { ActionCard } from './tickets';
+import { StepList } from './tickets';
+import { PhotoGrid } from './tickets';
 
-Object.keys(uiContext).forEach((fileName) => {
-  const componentName = fileName
-    .split('/')
-    .pop()
-    ?.replace(/\.\w+$/, '') || '';
-  components[componentName] = (uiContext[fileName] as any).default || uiContext[fileName];
-});
-
-Object.keys(ticketsContext).forEach((fileName) => {
-  const componentName = fileName
-    .split('/')
-    .pop()
-    ?.replace(/\.\w+$/, '') || '';
-  components[componentName] = (ticketsContext[fileName] as any).default || ticketsContext[fileName];
-});
+const components: Record<string, Component> = {
+  Button,
+  Card,
+  Badge,
+  Input,
+  Avatar,
+  Empty,
+  Loading,
+  InfoRow,
+  LanguageSwitcher,
+  Header,
+  Sidebar,
+  TabBar,
+  TicketList,
+  TicketCard,
+  StatusBadge,
+  PriorityBadge,
+  TypeBadge,
+  ActionCard,
+  StepList,
+  PhotoGrid,
+};
 
 export function setupComponents(app: any) {
   for (const [name, component] of Object.entries(components)) {

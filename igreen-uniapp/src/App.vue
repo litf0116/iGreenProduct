@@ -2,26 +2,28 @@
   <view class="app-container">
     <LoginPage v-if="!userStore.isAuthenticated" @login="handleLogin" />
 
-    <view class="desktop-layout" v-else-if="userStore.isAuthenticated">
-      <Sidebar :currentView="currentView" @update:currentView="currentView = $event" />
+    <template v-else>
+      <view class="desktop-layout">
+        <Sidebar :currentView="currentView" @update:currentView="currentView = $event" />
 
-      <view class="main-container">
-        <Header />
+        <view class="main-container">
+          <Header />
 
-        <view class="content-area">
-          <DashboardPage v-if="currentView === 'dashboard'" :tickets="ticketStore.tickets" @ticketClick="handleTicketClick" @viewAll="currentView = 'queue'" />
+          <view class="content-area">
+            <DashboardPage v-if="currentView === 'dashboard'" :tickets="ticketStore.tickets" @ticketClick="handleTicketClick" @viewAll="currentView = 'queue'" />
 
-          <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
 
-          <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
 
-          <TicketListPage v-else-if="currentView === 'history'" title="History" :tickets="historyTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'history'" title="History" :tickets="historyTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
 
-          <ProfilePage v-else-if="currentView === 'profile'" @logout="handleLogout" />
+            <ProfilePage v-else-if="currentView === 'profile'" @logout="handleLogout" />
+          </view>
         </view>
       </view>
 
-      <view class="mobile-layout" v-else-if="userStore.isAuthenticated">
+      <view class="mobile-layout">
         <view class="mobile-content">
           <DashboardPage v-if="currentView === 'dashboard'" :tickets="ticketStore.tickets" @ticketClick="handleTicketClick" @viewAll="currentView = 'queue'" />
 
@@ -36,7 +38,7 @@
       </view>
 
       <TicketDetailPage v-if="ticketStore.currentTicket" :id="ticketStore.currentTicket.id" @close="handleCloseDetail" />
-    </view>
+    </template>
   </view>
 </template>
 
