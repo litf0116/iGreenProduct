@@ -59,6 +59,7 @@ iGreenApp/coverage/
 
 # Frontend igreen-front
 igreen-front/.env.local
+igreen-front/.deploy.env
 igreen-front/dist/
 igreen-front/.vite/
 igreen-front/coverage/
