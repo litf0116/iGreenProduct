@@ -1,6 +1,12 @@
 import type { Ticket, UserProfile, TicketStatus, TicketPriority, TicketType } from '@/types/ticket';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// API base URL - 使用代理路径避免跨域问题
+// Vite 开发服务器会将 /api 请求代理到后端服务器
+const API_BASE_URL = ''; // 空字符串表示相对路径，通过 Vite 代理
+
+export function getBaseUrl(): string {
+  return API_BASE_URL;
+}
 
 function getAuthToken(): string | null {
   try {
@@ -12,9 +18,9 @@ function getAuthToken(): string | null {
 
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<any> {
   const token = getAuthToken();
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...options.headers as Record<string, string>,
   };
 
   if (token) {
@@ -51,29 +57,34 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<an
 
 export const api = {
   async login(username: string, password: string): Promise<{ access_token: string; user: UserProfile }> {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
-
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({ username, password }),
     });
 
     if (!response.ok) {
-      throw new Error('Login failed');
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Login failed: ${errorText}`);
     }
 
-    const data = await response.json();
-    uni.setStorageSync('auth_token', data.access_token);
+    // 后端返回格式: { code: "200", data: { accessToken, refreshToken, expiresIn }, message: "Success" }
+    const result = await response.json();
+    
+    if (result.code !== 0 && result.code !== "200" || !result.data) {
+      throw new Error(result.message || 'Login failed');
+    }
 
+    const { accessToken } = result.data;
+    uni.setStorageSync('auth_token', accessToken);
+
+    // 获取当前用户信息
     const user = await this.getCurrentUser();
     uni.setStorageSync('user', user);
 
-    return { access_token: data.access_token, user };
+    return { access_token: accessToken, user };
   },
 
   logout() {

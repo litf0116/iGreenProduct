@@ -58,15 +58,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUserStore } from '@/store/modules/user';
+import { getUser, clearAuth } from '@/store';
 import { setLanguage } from '@/utils/i18n';
 import { Card, Button, Avatar, InfoRow, LanguageSwitcher } from '@/components/ui';
 
 const emit = defineEmits<{
   (e: 'logout'): void;
 }>();
-
-const userStore = useUserStore();
 
 const userProfileText = 'User Profile';
 const accountInfoText = 'Account Information';
@@ -75,10 +73,12 @@ const languageText = 'Language';
 const signOutText = 'Sign Out';
 const versionText = 'Version';
 
-const userName = computed(() => userStore.user?.name || 'Guest User');
-const userPhone = computed(() => userStore.user?.phone || '-');
-const userUsername = computed(() => userStore.user?.username || 'guest');
-const userGroup = computed(() => userStore.user?.groupName || '-' );
+const user = computed(() => getUser());
+
+const userName = computed(() => user.value?.name || 'Guest User');
+const userPhone = computed(() => user.value?.phone || '-');
+const userUsername = computed(() => user.value?.username || 'guest');
+const userGroup = computed(() => user.value?.groupName || '-' );
 
 function handleLogout() {
   uni.showModal({
@@ -86,7 +86,7 @@ function handleLogout() {
     content: 'Are you sure you want to sign out?',
     success: (res) => {
       if (res.confirm) {
-        userStore.logout();
+        clearAuth();
         emit('logout');
       }
     },
@@ -108,8 +108,8 @@ function handleLogout() {
 
 .page-title {
   font-size: $text-2xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
 }
 
 .user-card {
@@ -126,8 +126,8 @@ function handleLogout() {
 
 .user-name {
   font-size: $text-xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
 }
 
 .info-card, .settings-card {
@@ -136,8 +136,8 @@ function handleLogout() {
 
 .card-title {
   font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-500;
+  font-weight: $font-weight-medium;
+  color: $muted-foreground;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -162,7 +162,7 @@ function handleLogout() {
   justify-content: center;
 
   &.bg-indigo {
-    background: rgba($indigo-500, 0.1);
+    background: oklch(39.8% 0.07 227.39 / 10%);
   }
 
   .icon {
@@ -172,7 +172,7 @@ function handleLogout() {
 
 .setting-label {
   font-size: $text-sm;
-  color: $gray-700;
+  color: $foreground;
 }
 
 .logout-btn {
@@ -187,6 +187,6 @@ function handleLogout() {
 
 .version-text {
   font-size: 12px;
-  color: $gray-400;
+  color: $muted-foreground;
 }
 </style>

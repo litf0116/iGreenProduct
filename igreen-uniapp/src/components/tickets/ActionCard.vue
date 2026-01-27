@@ -125,7 +125,7 @@ function handleAction() {
 
 .action-title {
   font-size: $text-lg;
-  font-weight: $font-semibold;
+  font-weight: $font-weight-semibold;
   color: $gray-900;
 }
 

@@ -44,4 +44,6 @@ public interface TicketMapper extends com.baomidou.mybatisplus.core.mapper.BaseM
     );
 
     List<TicketStatusCount> countByStatusGroup(@Param("type") String type);
+
+    Long countByDatePrefix(@Param("datePrefix") String datePrefix);
 }

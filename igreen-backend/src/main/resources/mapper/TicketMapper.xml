@@ -188,4 +188,10 @@
         GROUP BY status
     </select>
 
+    <select id="countByDatePrefix" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE ticket_number LIKE CONCAT(#{datePrefix}, '%')
+    </select>
+
 </mapper>

@@ -83,7 +83,7 @@ class TemplateServiceTest {
             return 1;
         });
         when(templateFieldMapper.selectByStepId(anyString())).thenReturn(new ArrayList<>());
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
         lenient().when(templateMapper.selectById("new-template-id")).thenReturn(createdTemplate);
 
         Template result = templateService.createTemplate(request);
@@ -115,7 +115,7 @@ class TemplateServiceTest {
     @DisplayName("获取模板详情成功")
     void getTemplateById_Success() {
         when(templateMapper.selectById("template-1")).thenReturn(testTemplate);
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc("template-1")).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc("template-1")).thenReturn(new ArrayList<>());
 
         Template result = templateService.getTemplateById("template-1");
 
@@ -140,7 +140,7 @@ class TemplateServiceTest {
     void getAllTemplates_Success() {
         List<Template> templates = Arrays.asList(testTemplate);
         when(templateMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(templates);
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
 
         List<Template> result = templateService.getAllTemplates();
 
@@ -192,7 +192,7 @@ class TemplateServiceTest {
 
         when(templateMapper.selectList(any(LambdaQueryWrapper.class)))
                 .thenReturn(Arrays.asList(testTemplate, template2));
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString()))
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
                 .thenReturn(new ArrayList<>());
 
         List<Template> result = templateService.getAllTemplates();
@@ -216,7 +216,7 @@ class TemplateServiceTest {
             t.setId("new-template-id");
             return 1;
         });
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString()))
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
                 .thenReturn(new ArrayList<>());
         lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
 
@@ -242,7 +242,7 @@ class TemplateServiceTest {
             return 1;
         });
         when(templateFieldMapper.selectByStepId(anyString())).thenReturn(new ArrayList<>());
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
         lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
 
         Template result = templateService.createTemplate(request);
@@ -266,7 +266,7 @@ class TemplateServiceTest {
             t.setId("new-template-id");
             return 1;
         });
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString()))
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
                 .thenReturn(new ArrayList<>());
         lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
 

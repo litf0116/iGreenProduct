@@ -7,7 +7,7 @@ import { Profile } from './components/Profile';
 import { Login } from './components/Login';
 import { Ticket, TicketStatus } from './lib/data';
 import { Toaster } from "./components/ui/sonner";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { api } from './lib/api';
 import { Button } from "./components/ui/button";
 import { RefreshCw, Database } from 'lucide-react';
@@ -39,7 +39,43 @@ function AppContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [initializing, setInitializing] = useState(true);
   const { t } = useLanguage();
+
+  // 检查登录状态并恢复会话
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        try {
+          // 验证 token 并获取用户信息
+          const userData = await api.getCurrentUser();
+          if (userData.success && userData.data) {
+            // 转换后端用户数据格式
+            const backendUser = userData.data;
+            setUser({
+              id: backendUser.id,
+              name: backendUser.name,
+              email: backendUser.email || '',
+              username: backendUser.username,
+              phone: backendUser.phone || '',
+              group: backendUser.groupName || backendUser.groupId || ''
+            });
+            setIsAuthenticated(true);
+          } else {
+            // Token 无效，清除
+            localStorage.removeItem('auth_token');
+          }
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('auth_token');
+        }
+      }
+      setInitializing(false);
+    };
+
+    checkAuth();
+  }, []);
 
   const loadTickets = async (reset = false) => {
     if (loadingMore && !reset) return;
@@ -52,13 +88,25 @@ function AppContent() {
         setLoadingMore(true);
       }
       
-      const limit = 20;
-      const offset = reset ? 0 : tickets.length;
+      const size = 20;
+      const page = reset ? 1 : Math.floor(tickets.length / size) + 1;
       
-      const data = await api.getTickets(offset, limit);
-      
-      if (data.length < limit) {
-        setHasMore(false);
+      // 根据当前视图加载不同的工单列表
+      let data;
+      switch (currentView) {
+        case 'queue':
+        case 'dashboard': // Dashboard 也需要加载待接单工单
+          data = await api.getPendingTickets();
+          setHasMore(false);
+          break;
+        case 'my-work':
+          data = await api.getMyTickets(page, size);
+          break;
+        case 'history':
+          data = await api.getCompletedTickets(page, size);
+          break;
+        default:
+          data = [];
       }
       
       if (reset) {
@@ -91,7 +139,7 @@ function AppContent() {
     if (isAuthenticated) {
       loadTickets(true);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentView]);
 
   const handleTicketClick = (ticket: Ticket) => {
     // TODO: Backend Integration - Ticket Details
@@ -105,14 +153,17 @@ function AppContent() {
   };
 
   const handleUpdateTicket = async (id: string, updates: Partial<Ticket>) => {
-    // Optimistic update
     const previousTickets = [...tickets];
     const targetTicket = tickets.find(t => t.id === id);
+    
     if (!targetTicket) return;
 
-    if (targetTicket.status === 'open' && updates.status === 'assigned') {
-      updates.assignee = "Mike Technician"; 
-    }
+    const statusActions: Record<string, () => Promise<any>> = {
+      'departed': () => api.departTicket(id),
+      'arrived': () => api.arriveTicket(id),
+      'completed': () => api.completeTicket(id),
+      'review': () => api.reviewTicket(id),
+    };
 
     setTickets(prev => prev.map(t => 
       t.id === id ? { ...t, ...updates } : t
@@ -123,9 +174,12 @@ function AppContent() {
     }
 
     try {
-      await api.updateTicket(id, updates);
+      if (updates.status && statusActions[updates.status]) {
+        await statusActions[updates.status]();
+      } else {
+        await api.updateTicket(id, updates);
+      }
     } catch (error) {
-      // Revert on failure
       setTickets(previousTickets);
       if (selectedTicket && selectedTicket.id === id) {
         setSelectedTicket(targetTicket);
@@ -138,7 +192,24 @@ function AppContent() {
      handleUpdateTicket(id, { status: newStatus as TicketStatus });
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    try {
+      // 获取用户信息
+      const userData = await api.getCurrentUser();
+      if (userData.success && userData.data) {
+        const backendUser = userData.data;
+        setUser({
+          id: backendUser.id,
+          name: backendUser.name,
+          email: backendUser.email || '',
+          username: backendUser.username,
+          phone: backendUser.phone || '',
+          group: backendUser.groupName || backendUser.groupId || ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to get user info:', error);
+    }
     setIsAuthenticated(true);
     setCurrentView('dashboard');
   };
@@ -177,6 +248,18 @@ function AppContent() {
         return [];
     }
   };
+
+  // Show loading while checking authentication
+  if (initializing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

@@ -16,7 +16,9 @@
           :class="{ active: currentView === item.id }"
           @click="handleMenuClick(item.id)"
         >
-          <text class="menu-icon">{{ item.icon }}</text>
+          <view class="menu-icon-wrapper">
+            <text class="menu-icon">{{ item.icon }}</text>
+          </view>
           <text class="menu-label">{{ item.label }}</text>
         </view>
       </view>
@@ -29,7 +31,9 @@
         :class="{ active: currentView === 'profile' }"
         @click="handleMenuClick('profile')"
       >
-        <text class="menu-icon">👤</text>
+        <view class="menu-icon-wrapper">
+          <text class="menu-icon">👤</text>
+        </view>
         <text class="menu-label">{{ profileText }}</text>
       </view>
     </scroll-view>
@@ -51,7 +55,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUserStore } from '@/store/modules/user';
+import { getUser } from '@/store';
 import { Avatar } from '@/components/ui';
 
 const props = defineProps<{
@@ -62,7 +66,7 @@ const emit = defineEmits<{
   (e: 'update:currentView', view: string): void;
 }>();
 
-const userStore = useUserStore();
+const user = computed(() => getUser());
 
 const menuItems = computed(() => [
   { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -74,8 +78,8 @@ const menuItems = computed(() => [
 const settingsText = 'Settings';
 const profileText = 'Profile';
 
-const userName = computed(() => userStore.user?.name || 'Mike Technician');
-const userRole = computed(() => userStore.user?.role || 'L3 Senior Engineer');
+const userName = computed(() => user.value?.name || 'Mike Technician');
+const userRole = computed(() => user.value?.role || 'L3 Senior Engineer');
 
 function handleMenuClick(view: string) {
   emit('update:currentView', view);
@@ -88,10 +92,10 @@ function handleMenuClick(view: string) {
 .sidebar {
   width: 256px;
   height: 100vh;
-  background: $gray-950;
+  background: $gray-950;  // slate-950 - dark theme like iGreenApp
   display: flex;
   flex-direction: column;
-  border-right: 1px solid $gray-800;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-header {
@@ -119,7 +123,7 @@ function handleMenuClick(view: string) {
 
 .app-name {
   font-size: $text-xl;
-  font-weight: $font-bold;
+  font-weight: $font-weight-bold;
   color: $white;
   letter-spacing: -0.5px;
 }
@@ -145,58 +149,66 @@ function handleMenuClick(view: string) {
   transition: all 0.2s ease;
 
   &:hover {
-    background: $gray-900;
-  }
-
-  &.active {
-    background: $success-color;
-
+    background: $gray-800;  // slate-800
+    
     .menu-label {
       color: $white;
     }
+  }
 
-    .menu-icon {
+  &.active {
+    background: $primary;  // green-600 - matches iGreenApp
+    
+    .menu-label {
+      color: $sidebar-primary-foreground;
+      font-weight: $font-weight-medium;
+    }
+    
+    .menu-icon-wrapper {
       filter: brightness(0) invert(1);
     }
   }
 }
 
+.menu-icon-wrapper {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .menu-icon {
   font-size: 16px;
-  width: 16px;
-  text-align: center;
 }
 
 .menu-label {
   font-size: $text-sm;
-  color: $gray-400;
-
-  .menu-item.active & {
-    color: $white;
-    font-weight: $font-medium;
-  }
+  color: $gray-400;  // slate-400 for inactive
+  transition: color 0.2s ease;
 }
 
 .divider {
   height: 1px;
-  background: $gray-800;
+  background: rgba(255, 255, 255, 0.1);
   margin: $spacing-4 0;
 }
 
 .section-title {
   font-size: 12px;
-  font-weight: $font-semibold;
-  color: $gray-500;
+  font-weight: $font-weight-semibold;
+  color: $gray-500;  // slate-500
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: $spacing-2;
   display: block;
+  padding-left: $spacing-3;
 }
 
 .sidebar-footer {
-  background: $gray-900;
+  background: $gray-900;  // slate-900
   padding: $spacing-4;
-  border-top: 1px solid $gray-800;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-info {
@@ -212,7 +224,7 @@ function handleMenuClick(view: string) {
 
 .user-name {
   font-size: $text-sm;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   color: $white;
   display: block;
   white-space: nowrap;
@@ -236,10 +248,21 @@ function handleMenuClick(view: string) {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border-radius: $radius-md;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $gray-800;
+    
+    .settings-icon {
+      color: $white;
+    }
+  }
 }
 
 .settings-icon {
   font-size: 16px;
   color: $gray-400;
+  transition: color 0.2s ease;
 }
 </style>

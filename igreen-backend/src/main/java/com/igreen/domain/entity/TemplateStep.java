@@ -18,8 +18,8 @@ public class TemplateStep {
     private String id;
     private String name;
     private String description;
-    @TableField("`order`")
-    private Integer order;
+    @TableField("sort_order")
+    private Integer sortOrder;
     private String templateId;
     @Builder.Default
     @TableField(exist = false)

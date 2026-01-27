@@ -291,13 +291,25 @@ class UserServiceTest {
         }
 
         @Test
-        @DisplayName("非管理员用户国家不匹配应抛出异常")
-        void login_WhenCountryMismatch_ShouldThrowException() {
-            // Given
-            LoginRequest request = new LoginRequest("testuser", "password123", "ID"); // 请求国家为ID
+        @DisplayName("非管理员用户未设置国家应抛出异常")
+        void login_WhenUserHasNoCountry_ShouldThrowException() {
+            // Given - user without country set
+            User userWithoutCountry = User.builder()
+                    .id("user-123")
+                    .name("Test User")
+                    .username("testuser")
+                    .email("test@example.com")
+                    .hashedPassword("encoded_password")
+                    .role(UserRole.ENGINEER)
+                    .status(UserStatus.ACTIVE)
+                    .country(null)  // No country set
+                    .groupId("group-123")
+                    .build();
+
+            LoginRequest request = new LoginRequest("testuser", "password123", null); // country 可选
 
             when(userMapper.selectList(any(LambdaQueryWrapper.class)))
-                    .thenReturn(List.of(testUser)); // 用户国家为TH
+                    .thenReturn(List.of(userWithoutCountry));
             when(passwordEncoder.matches("password123", "encoded_password")).thenReturn(true);
 
             // When & Then
@@ -307,6 +319,26 @@ class UserServiceTest {
             );
 
             assertEquals(ErrorCode.COUNTRY_NOT_ALLOWED.getCode(), exception.getCode());
+        }
+
+        @Test
+        @DisplayName("非管理员用户有国家设置可正常登录")
+        void login_WithValidCountry_ShouldSucceed() {
+            // Given - user has country set
+            LoginRequest request = new LoginRequest("testuser", "password123", null); // 不传 country
+
+            when(userMapper.selectList(any(LambdaQueryWrapper.class)))
+                    .thenReturn(List.of(testUser)); // testUser.country = "TH"
+            when(passwordEncoder.matches("password123", "encoded_password")).thenReturn(true);
+            when(jwtUtils.generateToken(anyString(), anyString(), anyString()))
+                    .thenReturn("test-jwt-token");
+
+            // When
+            TokenResponse response = userService.login(request);
+
+            // Then
+            assertNotNull(response);
+            assertEquals("test-jwt-token", response.accessToken());
         }
 
         @Test

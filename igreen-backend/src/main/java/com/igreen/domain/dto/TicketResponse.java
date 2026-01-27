@@ -4,12 +4,15 @@ import java.util.List;
 
 public record TicketResponse(
         String id,
+        String ticketNumber,
         String title,
         String description,
         String type,
         String status,
         String priority,
         String site,
+        String siteName,      // 新增：站点名称
+        String siteAddress,   // 新增：站点地址
         String templateId,
         String templateName,
         String assignedTo,

@@ -2,7 +2,9 @@
   <view
     class="btn"
     :class="[variantClass, sizeClass, { loading: loading, disabled: disabled }]"
-    :hover-class="disabled || loading ? 'none' : hoverClass"
+    :hover-class="disabled || loading ? 'none' : 'btn-hover'"
+    v-on="$attrs"
+    @tap="handleTap"
     @click="handleClick"
   >
     <view v-if="loading" class="btn-spinner"></view>
@@ -20,13 +22,11 @@ const props = withDefaults(defineProps<{
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   disabled?: boolean;
-  hoverClass?: string;
 }>(), {
   variant: 'primary',
   size: 'md',
   loading: false,
   disabled: false,
-  hoverClass: 'btn-hover',
 });
 
 const emit = defineEmits<{
@@ -36,7 +36,15 @@ const emit = defineEmits<{
 const variantClass = computed(() => `btn-${props.variant}`);
 const sizeClass = computed(() => `btn-${props.size}`);
 
+function handleTap(e: any) {
+  handleEvent(e);
+}
+
 function handleClick(e: any) {
+  handleEvent(e);
+}
+
+function handleEvent(e: any) {
   if (!props.disabled && !props.loading) {
     emit('click', e);
   }
@@ -52,11 +60,12 @@ function handleClick(e: any) {
   justify-content: center;
   gap: $spacing-2;
   border-radius: $radius-md;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  border: 1px solid transparent;
 
   &.disabled {
     opacity: 0.5;
@@ -66,6 +75,10 @@ function handleClick(e: any) {
   &.loading {
     cursor: wait;
   }
+}
+
+.btn-hover {
+  transform: translateY(-1px);
 }
 
 .btn-spinner {
@@ -109,58 +122,68 @@ function handleClick(e: any) {
   }
 }
 
+// Primary - indigo-600 with indigo-700 hover (matches iGreenApp)
 .btn-primary {
-  background: $primary-color;
+  background: $indigo-600;
   border: none;
   color: $white;
 
   &:not(.disabled):not(.loading):hover {
-    background: $primary-dark;
+    background: $indigo-700;
+  }
+
+  &:not(.disabled):not(.loading):active {
+    transform: translateY(0);
   }
 
   &.loading {
-    background: $gray-400;
+    background: $muted;
+    color: $muted-foreground;
   }
 }
 
+// Secondary - ghost style (matches iGreenApp)
 .btn-secondary {
-  background: $gray-100;
+  background: transparent;
   border: none;
-  color: $gray-700;
+  color: $foreground;
 
   &:not(.disabled):not(.loading):hover {
-    background: $gray-200;
+    background: $muted;
   }
 }
 
+// Outline - slate-200 border (matches iGreenApp)
 .btn-outline {
   background: transparent;
-  border: 1px solid $gray-300;
-  color: $gray-700;
+  border: 1px solid $gray-200;
+  color: $foreground;
 
   &:not(.disabled):not(.loading):hover {
-    background: $gray-50;
-    border-color: $gray-400;
+    background: $accent;
+    border-color: $gray-300;
   }
 }
 
+// Ghost - transparent background (matches iGreenApp)
 .btn-ghost {
   background: transparent;
   border: none;
-  color: $gray-600;
+  color: $foreground;
 
   &:not(.disabled):not(.loading):hover {
-    background: $gray-100;
+    background: $muted;
   }
 }
 
+// Danger - destructive red (matches iGreenApp)
 .btn-danger {
-  background: $error-color;
+  background: $destructive;
   border: none;
-  color: $white;
+  color: $destructive-foreground;
 
   &:not(.disabled):not(.loading):hover {
-    background: darken(#ef4444, 10%);
+    background: darken($destructive, 10%);
   }
 }
 

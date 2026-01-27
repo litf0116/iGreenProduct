@@ -77,6 +77,8 @@ class AuthControllerTest {
         when(userMapper.selectByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
         when(userMapper.selectByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(userService.login(any(LoginRequest.class))).thenReturn(new TokenResponse("access-token", null, 0));
+        when(jwtUtils.extractUserId("access-token")).thenReturn("test-user-id");
+        when(jwtUtils.extractUsername("access-token")).thenReturn("testuser");
         when(jwtUtils.generateRefreshToken(anyString(), anyString())).thenReturn("refresh-token");
         when(jwtUtils.getExpirationMs()).thenReturn(7200000L);
 
@@ -99,6 +101,8 @@ class AuthControllerTest {
         when(userMapper.selectByUsernameAndCountry("testuser", "CN")).thenReturn(Optional.of(testUser));
         when(userMapper.selectByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(userService.login(any(LoginRequest.class))).thenReturn(new TokenResponse("access-token", null, 0));
+        when(jwtUtils.extractUserId("access-token")).thenReturn("test-user-id");
+        when(jwtUtils.extractUsername("access-token")).thenReturn("testuser");
         when(jwtUtils.generateRefreshToken(anyString(), anyString())).thenReturn("refresh-token");
         when(jwtUtils.getExpirationMs()).thenReturn(3600000L);
 

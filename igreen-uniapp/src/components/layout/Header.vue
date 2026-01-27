@@ -13,7 +13,7 @@
     </view>
 
     <view class="header-actions">
-      <Avatar name="Mike Technician" size="sm" />
+      <Avatar name="MT" size="sm" />
     </view>
   </view>
 </template>
@@ -28,7 +28,7 @@ import { Avatar } from '@/components/ui';
 .header {
   height: 56px;
   background: $white;
-  border-bottom: 1px solid $gray-200;
+  border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -36,6 +36,11 @@ import { Avatar } from '@/components/ui';
   position: sticky;
   top: 0;
   z-index: 10;
+
+  @media (min-width: 768px) {
+    height: 64px;
+    padding: 0 $spacing-6;
+  }
 }
 
 .mobile-logo {
@@ -53,7 +58,7 @@ import { Avatar } from '@/components/ui';
   height: 32px;
   background: $white;
   border-radius: $radius-lg;
-  border: 1px solid $gray-200;
+  border: 1px solid $border;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,8 +72,8 @@ import { Avatar } from '@/components/ui';
 
 .app-name {
   font-size: $text-lg;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $gray-900;  // slate-900
   letter-spacing: -0.5px;
 }
 
@@ -84,19 +89,19 @@ import { Avatar } from '@/components/ui';
 
 .org-label {
   font-size: $text-sm;
-  color: $gray-500;
+  color: $gray-500;  // slate-500
 }
 
 .org-name {
   font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-900;
+  font-weight: $font-weight-medium;
+  color: $gray-900;  // slate-900
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: $spacing-4;
+  gap: $spacing-2;
 
   @media (min-width: 768px) {
     display: none;

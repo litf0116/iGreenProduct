@@ -1,6 +1,6 @@
 <template>
   <view class="app-container">
-    <LoginPage v-if="!userStore.isAuthenticated" @login="handleLogin" />
+    <LoginPage v-if="!isAuth" @login="onLoginSuccess" />
 
     <template v-else>
       <view class="desktop-layout">
@@ -10,42 +10,43 @@
           <Header />
 
           <view class="content-area">
-            <DashboardPage v-if="currentView === 'dashboard'" :tickets="ticketStore.tickets" @ticketClick="handleTicketClick" @viewAll="currentView = 'queue'" />
+            <DashboardPage v-if="currentView === 'dashboard'" :tickets="tickets" @ticketClick="onTicketClick" @viewAll="currentView = 'queue'" />
 
-            <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="onTicketClick" @refresh="onRefresh" @loadMore="onLoadMore" />
 
-            <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="onTicketClick" @refresh="onRefresh" @loadMore="onLoadMore" />
 
-            <TicketListPage v-else-if="currentView === 'history'" title="History" :tickets="historyTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+            <TicketListPage v-else-if="currentView === 'history'" title="History" :tickets="historyTickets" @ticketClick="onTicketClick" @refresh="onRefresh" @loadMore="onLoadMore" />
 
-            <ProfilePage v-else-if="currentView === 'profile'" @logout="handleLogout" />
+            <ProfilePage v-else-if="currentView === 'profile'" @logout="onLogout" />
           </view>
         </view>
       </view>
 
       <view class="mobile-layout">
         <view class="mobile-content">
-          <DashboardPage v-if="currentView === 'dashboard'" :tickets="ticketStore.tickets" @ticketClick="handleTicketClick" @viewAll="currentView = 'queue'" />
+          <DashboardPage v-if="currentView === 'dashboard'" :tickets="tickets" @ticketClick="onTicketClick" @viewAll="currentView = 'queue'" />
 
-          <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+          <TicketListPage v-else-if="currentView === 'queue'" title="Ticket Queue" :tickets="queueTickets" @ticketClick="onTicketClick" @refresh="onRefresh" @loadMore="onLoadMore" />
 
-          <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="handleTicketClick" @refresh="handleRefresh" @loadMore="handleLoadMore" />
+          <TicketListPage v-else-if="currentView === 'my-work'" title="My Workspace" :tickets="myWorkTickets" @ticketClick="onTicketClick" @refresh="onRefresh" @loadMore="onLoadMore" />
 
-          <ProfilePage v-else-if="currentView === 'profile'" @logout="handleLogout" />
+          <ProfilePage v-else-if="currentView === 'profile'" @logout="onLogout" />
         </view>
 
         <TabBar :currentView="currentView" @update:currentView="currentView = $event" />
       </view>
 
-      <TicketDetailPage v-if="ticketStore.currentTicket" :id="ticketStore.currentTicket.id" @close="handleCloseDetail" />
+      <TicketDetailPage v-if="currentTicketData" :id="currentTicketData.id" @close="onCloseDetail" />
     </template>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue';
-import { useUserStore } from '@/store/modules/user';
-import { useTicketStore } from '@/store/modules/tickets';
+import { ref, computed, onMounted } from 'vue';
+import { isAuthenticated, getUser, setUser, setAuthToken, clearAuth, getCachedTickets, setCachedTickets, getCurrentTicket, setCurrentTicket } from '@/store';
+import { api } from '@/utils/api';
+import type { Ticket } from '@/types/ticket';
 import LoginPage from '@/pages/login/index.vue';
 import DashboardPage from '@/pages/dashboard/index.vue';
 import TicketListPage from '@/pages/tickets/index.vue';
@@ -55,56 +56,79 @@ import Sidebar from '@/components/layout/Sidebar.vue';
 import TabBar from '@/components/layout/TabBar.vue';
 import Header from '@/components/layout/Header.vue';
 
-const userStore = useUserStore();
-const ticketStore = useTicketStore();
-
+const user = ref<any>(getUser());
+const isAuth = computed(() => isAuthenticated());
+const tickets = ref<Ticket[]>(getCachedTickets());
+const currentTicketData = ref<Ticket | null>(getCurrentTicket());
 const currentView = ref('dashboard');
 
 const queueTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => t.status === 'OPEN')
+  tickets.value.filter((t: Ticket) => t.status === 'OPEN')
 );
 
 const myWorkTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => ['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'DEPARTED', 'ARRIVED', 'REVIEW'].includes(t.status))
+  tickets.value.filter((t: Ticket) => ['ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'DEPARTED', 'ARRIVED', 'REVIEW'].includes(t.status))
 );
 
 const historyTickets = computed(() =>
-  ticketStore.tickets.filter((t: any) => t.status === 'COMPLETED')
+  tickets.value.filter((t: Ticket) => t.status === 'COMPLETED')
 );
 
 onMounted(() => {
-  userStore.initFromStorage();
-  if (userStore.isAuthenticated) {
-    ticketStore.loadTickets(true);
+  if (isAuth.value) {
+    loadTickets(true);
   }
 });
 
-function handleLogin() {
-  ticketStore.loadTickets(true);
+async function loadTickets(reset: boolean) {
+  try {
+    const result = await api.getTickets({ page: 0, size: 20 });
+    tickets.value = result.records;
+    setCachedTickets(result.records);
+  } catch (error) {
+    console.error('Failed to load tickets:', error);
+  }
 }
 
-function handleLogout() {
-  userStore.logout();
+async function onLoginSuccess() {
+  try {
+    const userData = await api.getCurrentUser();
+    user.value = userData;
+    setUser(userData);
+    const token = uni.getStorageSync('auth_token');
+    if (token) {
+      setAuthToken(token);
+    }
+    await loadTickets(true);
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
 }
 
-function handleTicketClick(ticket: any) {
-  ticketStore.setCurrentTicket(ticket);
+function onLogout() {
+  clearAuth();
+  user.value = null;
+  tickets.value = [];
+  uni.reLaunch({ url: '/pages/login/index' });
 }
 
-function handleCloseDetail() {
-  ticketStore.setCurrentTicket(null);
+function onTicketClick(ticket: Ticket) {
+  currentTicketData.value = ticket;
+  setCurrentTicket(ticket);
 }
 
-function handleUpdateTicket(id: string, updates: any) {
-  ticketStore.updateTicket(id, updates);
+function onCloseDetail() {
+  currentTicketData.value = null;
+  setCurrentTicket(null);
 }
 
-function handleRefresh() {
-  ticketStore.loadTickets(true);
+function onRefresh() {
+  loadTickets(true);
 }
 
-function handleLoadMore() {
-  ticketStore.loadTickets(false);
+function onLoadMore() {
+  // TODO: Implement pagination
 }
 </script>
 
@@ -116,11 +140,11 @@ function handleLoadMore() {
 }
 
 page {
-  background-color: $gray-50;
+  background-color: $background;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: $text-base;
   line-height: 1.5;
-  color: $gray-900;
+  color: $foreground;
 }
 
 .app-container {
@@ -146,7 +170,7 @@ page {
 .content-area {
   flex: 1;
   overflow-y: auto;
-  background: $gray-50;
+  background: $background;
 }
 
 .mobile-layout {

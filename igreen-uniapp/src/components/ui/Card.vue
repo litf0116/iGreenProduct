@@ -44,6 +44,7 @@ function handleClick() {
 
 .card {
   background: $white;
+  border: 1px solid $gray-200;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
   overflow: hidden;
@@ -53,8 +54,7 @@ function handleClick() {
     transition: all 0.2s ease;
 
     &:active {
-      background: $gray-50;
-      box-shadow: $shadow-md;
+      background: $gray-50;  // slate-50 - matches iGreenApp
     }
   }
 }
@@ -64,7 +64,7 @@ function handleClick() {
   align-items: center;
   justify-content: space-between;
   padding: $spacing-4;
-  border-bottom: 1px solid $gray-100;
+  border-bottom: 1px solid $border;
 }
 
 .card-header-left {
@@ -75,8 +75,8 @@ function handleClick() {
 
 .card-title {
   font-size: $text-base;
-  font-weight: $font-semibold;
-  color: $gray-900;
+  font-weight: $font-weight-semibold;
+  color: $foreground;
 }
 
 .card-action {
@@ -93,7 +93,7 @@ function handleClick() {
 
 .card-footer {
   padding: $spacing-4;
-  border-top: 1px solid $gray-100;
-  background: $gray-50;
+  border-top: 1px solid $border;
+  background: $gray-50;  // slate-50
 }
 </style>

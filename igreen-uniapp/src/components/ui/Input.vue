@@ -1,31 +1,33 @@
 <template>
-  <view class="input-wrapper">
-    <view v-if="$slots.prefix" class="input-prefix">
-      <slot name="prefix"></slot>
+  <view class="input-container">
+    <view class="input-wrapper">
+      <view v-if="$slots.prefix" class="input-prefix">
+        <slot name="prefix"></slot>
+      </view>
+      <input
+        class="input-field"
+        :class="{ 'has-prefix': $slots.prefix, 'has-suffix': $slots.suffix }"
+        :type="type"
+        :password="password"
+        :placeholder="placeholder"
+        :value="modelValue || ''"
+        :disabled="disabled"
+        :maxlength="maxlength"
+        @input="onInput"
+        @blur="$emit('blur', $event)"
+        @focus="$emit('focus', $event)"
+      />
+      <view v-if="$slots.suffix" class="input-suffix">
+        <slot name="suffix"></slot>
+      </view>
     </view>
-    <input
-      class="input-field"
-      :class="{ 'has-prefix': $slots.prefix, 'has-suffix': $slots.suffix }"
-      :type="type"
-      :password="password"
-      :placeholder="placeholder"
-      :value="modelValue"
-      :disabled="disabled"
-      :maxlength="maxlength"
-      @input="handleInput"
-      @blur="handleBlur"
-      @focus="handleFocus"
-    />
-    <view v-if="$slots.suffix" class="input-suffix">
-      <slot name="suffix"></slot>
-    </view>
+    <text v-if="error" class="input-error">{{ error }}</text>
   </view>
-  <text v-if="error" class="input-error">{{ error }}</text>
 </template>
 
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  modelValue: string;
+  modelValue?: string;
   type?: string;
   password?: boolean;
   placeholder?: string;
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<{
   maxlength?: number;
   error?: string;
 }>(), {
+  modelValue: '',
   type: 'text',
   password: false,
   disabled: false,
@@ -45,16 +48,10 @@ const emit = defineEmits<{
   (e: 'focus', event: any): void;
 }>();
 
-function handleInput(e: any) {
-  emit('update:modelValue', e.detail.value);
-}
-
-function handleBlur(e: any) {
-  emit('blur', e);
-}
-
-function handleFocus(e: any) {
-  emit('focus', e);
+function onInput(e: any) {
+  const value = e.detail?.value || '';
+  console.log('Input onInput:', value);
+  emit('update:modelValue', value);
 }
 </script>
 
@@ -71,25 +68,25 @@ function handleFocus(e: any) {
   width: 100%;
   height: 44px;
   padding: $spacing-3 $spacing-4;
-  background: $white;
-  border: 1px solid $gray-200;
+  background: #f3f3f5;  // bg-input-background - matches iGreenApp
+  border: 1px solid $gray-200;  // slate-200 - matches iGreenApp
   border-radius: $radius-md;
   font-size: $text-base;
-  color: $gray-900;
+  color: $foreground;
 
   &:focus {
     outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    border-color: $teal-600;  // teal-600
+    box-shadow: 0 0 0 3px oklch(60% 0.118 184.7 / 15%);  // teal-600 ring with opacity
   }
 
   &:disabled {
-    background: $gray-100;
-    color: $gray-500;
+    background: $muted;
+    color: $muted-foreground;
   }
 
   &::placeholder {
-    color: $gray-400;
+    color: $muted-foreground;
   }
 
   &.has-prefix {
@@ -105,6 +102,11 @@ function handleFocus(e: any) {
   position: absolute;
   left: $spacing-3;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 100%;
 }
 
 .input-suffix {
@@ -117,6 +119,6 @@ function handleFocus(e: any) {
   display: block;
   margin-top: $spacing-1;
   font-size: $text-xs;
-  color: $error-color;
+  color: $destructive;
 }
 </style>

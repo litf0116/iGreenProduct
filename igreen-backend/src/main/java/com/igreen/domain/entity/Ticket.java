@@ -15,6 +15,7 @@ import java.util.List;
 public class Ticket {
 
     private String id;
+    private String ticketNumber;
     private String title;
     private String description;
     private String type;

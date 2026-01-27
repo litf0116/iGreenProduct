@@ -123,11 +123,13 @@ export const api = {
   },
 
   getEngineers: async (): Promise<User[]> => {
-    return kyInstance.get('api/users/engineers').json<User[]>();
+    const response = await kyInstance.get('api/users/engineers').json<{ data: { records: User[] } }>();
+    return response.data.records;
   },
 
   getGroups: async (): Promise<Group[]> => {
-    return kyInstance.get('api/groups').json<Group[]>();
+    const response = await kyInstance.get('api/groups').json<{ data: { records: Group[] } }>();
+    return response.data.records;
   },
 
   getGroup: async (id: string): Promise<Group> => {
@@ -181,7 +183,8 @@ export const api = {
   },
 
   getTemplates: async (): Promise<Template[]> => {
-    return kyInstance.get('api/templates').json<Template[]>();
+    const response = await kyInstance.get('api/templates').json<{ data: { records: Template[] } }>();
+    return response.data.records;
   },
 
   getTemplate: async (id: string): Promise<Template> => {
@@ -290,7 +293,8 @@ export const api = {
   },
 
   getTicketComments: async (ticketId: string): Promise<TicketComment[]> => {
-    return kyInstance.get(`api/tickets/${ticketId}/comments`).json<TicketComment[]>();
+    const response = await kyInstance.get(`api/tickets/${ticketId}/comments`).json<{ data: { records: TicketComment[] } }>();
+    return response.data.records;
   },
 
   addComment: async (
@@ -310,7 +314,8 @@ export const api = {
   },
 
   getPendingTickets: async (): Promise<Ticket[]> => {
-    return kyInstance.get('api/tickets/pending').json<Ticket[]>();
+    const response = await kyInstance.get('api/tickets/pending').json<{ data: { records: Ticket[] } }>();
+    return response.data.records;
   },
 
   getCompletedTickets: async (params?: { page?: number; size?: number }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
@@ -346,7 +351,8 @@ export const api = {
   },
 
   getSLAConfigs: async (): Promise<SLAConfig[]> => {
-    return kyInstance.get('api/configs/sla-configs').json<SLAConfig[]>();
+    const response = await kyInstance.get('api/configs/sla-configs').json<{ data: { records: SLAConfig[] } }>();
+    return response.data.records;
   },
 
   getSLAConfig: async (id: string): Promise<SLAConfig> => {
@@ -362,7 +368,8 @@ export const api = {
   },
 
   getProblemTypes: async (): Promise<ProblemType[]> => {
-    return kyInstance.get('api/configs/problem-types').json<ProblemType[]>();
+    const response = await kyInstance.get('api/configs/problem-types').json<{ data: { records: ProblemType[] } }>();
+    return response.data.records;
   },
 
   createProblemType: async (type: ProblemTypeRequest): Promise<ProblemType> => {
@@ -378,7 +385,8 @@ export const api = {
   },
 
   getSiteLevelConfigs: async (): Promise<SiteLevelConfig[]> => {
-    return kyInstance.get('api/configs/site-level-configs').json<SiteLevelConfig[]>();
+    const response = await kyInstance.get('api/configs/site-level-configs').json<{ data: { records: SiteLevelConfig[] } }>();
+    return response.data.records;
   },
 
   createSiteLevelConfig: async (config: SiteLevelConfigRequest): Promise<SiteLevelConfig> => {

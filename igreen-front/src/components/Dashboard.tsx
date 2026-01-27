@@ -305,6 +305,33 @@ export function Dashboard() {
     }
   };
 
+  const getStatusTranslationKey = (status: string): TranslationKey => {
+    const statusMap: Record<string, TranslationKey> = {
+      "OPEN": "open",
+      "ASSIGNED": "assigned",
+      "ACCEPTED": "accepted",
+      "IN_PROGRESS": "inProgress",
+      "SUBMITTED": "submitted",
+      "COMPLETED": "closed",
+      "ON_HOLD": "onHold",
+      "CANCELLED": "cancelled",
+    };
+    return statusMap[status] || status as TranslationKey;
+  };
+
+  const getPriorityTranslationKey = (priority: string): TranslationKey => {
+    if (priority === "P1" || priority === "P2" || priority === "P3" || priority === "P4") {
+      return priority as TranslationKey;
+    }
+    const priorityMap: Record<string, TranslationKey> = {
+      "urgent": "urgent",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+    };
+    return priorityMap[priority] || priority as TranslationKey;
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : language === "pt" ? "pt-BR" : "en-US", {
       year: "numeric",
@@ -518,10 +545,10 @@ export function Dashboard() {
                   <TableRow>
                     <TableHead>{t("ticketId")}</TableHead>
                     <TableHead>{t("title")}</TableHead>
-                    <TableHead>{t("status")}</TableHead>
                     <TableHead>{t("site")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
                     <TableHead>{t("priority")}</TableHead>
-                    <TableHead>{t("assignedTo")}</TableHead>
+                    <TableHead>{t("assignedToName")}</TableHead>
                     <TableHead>{t("createdDate")}</TableHead>
                     <TableHead>{t("dueDate")}</TableHead>
                     <TableHead>{t("progress")}</TableHead>
@@ -562,7 +589,9 @@ export function Dashboard() {
                           openModal("ticketDetail");
                         }}
                       >
-                        <TableCell className="font-medium">{ticket.id}</TableCell>
+                        <TableCell className="font-medium">
+                          {ticket.ticketNumber ? `T${ticket.ticketNumber}` : ticket.id}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{ticket.title}</p>
@@ -571,15 +600,15 @@ export function Dashboard() {
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(ticket.status)}>
-                            {t(ticket.status as TranslationKey)}
-                          </Badge>
-                        </TableCell>
                         <TableCell>{ticket.site}</TableCell>
                         <TableCell>
+                          <Badge variant={getStatusBadgeVariant(ticket.status)}>
+                            {t(getStatusTranslationKey(ticket.status))}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={getPriorityBadge(ticket.priority)}>
-                            {t(ticket.priority as TranslationKey)}
+                            {t(getPriorityTranslationKey(ticket.priority))}
                           </Badge>
                         </TableCell>
                         <TableCell>{ticket.assignedToName || "-"}</TableCell>

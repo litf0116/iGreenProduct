@@ -7,7 +7,9 @@
       :class="{ active: currentView === item.id }"
       @click="handleTabClick(item.id)"
     >
-      <text class="tab-icon">{{ item.icon }}</text>
+      <view class="tab-icon-wrapper">
+        <text class="tab-icon">{{ item.icon }}</text>
+      </view>
       <text class="tab-label">{{ item.label }}</text>
     </view>
   </view>
@@ -57,27 +59,42 @@ function handleTabClick(view: string) {
   justify-content: center;
   gap: 4px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: $radius-md;
 
-  &.active {
-    .tab-icon {
+  &:active {
+    background: $gray-50;
+  }
+
+    &.active {
+    .tab-icon-wrapper {
       transform: scale(1.1);
     }
 
     .tab-label {
-      color: $primary-color;
-      font-weight: $font-medium;
+      color: $primary;  // green-600 - matches iGreenApp
+      font-weight: $font-weight-medium;
     }
   }
 }
 
+.tab-icon-wrapper {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
 .tab-icon {
   font-size: 20px;
-  transition: transform 0.2s ease;
 }
 
 .tab-label {
   font-size: 10px;
-  font-weight: $font-medium;
-  color: $gray-500;
+  font-weight: $font-weight-medium;
+  color: $gray-500;  // slate-500 for inactive
+  transition: color 0.2s ease;
 }
 </style>

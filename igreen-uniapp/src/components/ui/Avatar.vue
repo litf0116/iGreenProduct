@@ -1,6 +1,6 @@
 <template>
   <view class="avatar" :class="[sizeClass]" :style="{ backgroundColor: bgColor }">
-    <text class="avatar-text">{{ initials }}</text>
+    <text class="avatar-text" :style="{ color: textColor }">{{ initials }}</text>
   </view>
 </template>
 
@@ -25,17 +25,13 @@ const initials = computed(() => {
   return name.slice(0, 2).toUpperCase();
 });
 
+// Use indigo theme colors (matches iGreenApp)
 const bgColor = computed(() => {
-  const colors = [
-    'rgba(99, 102, 241, 0.1)',
-    'rgba(245, 158, 11, 0.1)',
-    'rgba(16, 185, 129, 0.1)',
-    'rgba(239, 68, 68, 0.1)',
-    'rgba(59, 130, 246, 0.1)',
-    'rgba(168, 85, 247, 0.1)',
-  ];
-  const index = props.name.charCodeAt(0) % colors.length;
-  return colors[index];
+  return $indigo-100;  // indigo-100
+});
+
+const textColor = computed(() => {
+  return $indigo-600;  // indigo-600
 });
 </script>
 
@@ -56,7 +52,7 @@ const bgColor = computed(() => {
 
   .avatar-text {
     font-size: 10px;
-    font-weight: $font-bold;
+    font-weight: $font-weight-bold;
   }
 }
 
@@ -66,7 +62,7 @@ const bgColor = computed(() => {
 
   .avatar-text {
     font-size: 12px;
-    font-weight: $font-bold;
+    font-weight: $font-weight-bold;
   }
 }
 
@@ -76,12 +72,11 @@ const bgColor = computed(() => {
 
   .avatar-text {
     font-size: 16px;
-    font-weight: $font-bold;
+    font-weight: $font-weight-bold;
   }
 }
 
 .avatar-text {
-  color: inherit;
   text-transform: uppercase;
 }
 </style>

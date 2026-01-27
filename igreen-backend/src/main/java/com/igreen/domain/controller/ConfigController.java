@@ -1,5 +1,6 @@
 package com.igreen.domain.controller;
 
+import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.enums.Priority;
@@ -24,8 +25,10 @@ public class ConfigController {
 
     @Operation(summary = "获取所有SLA配置")
     @GetMapping("/sla-configs")
-    public ResponseEntity<Result<List<SLAConfigResponse>>> getSLAConfigs() {
-        return ResponseEntity.ok(Result.success(configService.getAllSLAConfigs()));
+    public ResponseEntity<Result<PageResult<SLAConfigResponse>>> getSLAConfigs() {
+        List<SLAConfigResponse> configs = configService.getAllSLAConfigs();
+        PageResult<SLAConfigResponse> pageResult = new PageResult<>(configs, configs.size(), 0, configs.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "获取SLA配置")
@@ -52,8 +55,10 @@ public class ConfigController {
 
     @Operation(summary = "获取所有问题类型")
     @GetMapping("/problem-types")
-    public ResponseEntity<Result<List<ProblemTypeResponse>>> getProblemTypes() {
-        return ResponseEntity.ok(Result.success(configService.getAllProblemTypes()));
+    public ResponseEntity<Result<PageResult<ProblemTypeResponse>>> getProblemTypes() {
+        List<ProblemTypeResponse> types = configService.getAllProblemTypes();
+        PageResult<ProblemTypeResponse> pageResult = new PageResult<>(types, types.size(), 0, types.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "创建问题类型")
@@ -83,8 +88,10 @@ public class ConfigController {
 
     @Operation(summary = "获取所有站点级别配置")
     @GetMapping("/site-level-configs")
-    public ResponseEntity<Result<List<SiteLevelConfigResponse>>> getSiteLevelConfigs() {
-        return ResponseEntity.ok(Result.success(configService.getAllSiteLevelConfigs()));
+    public ResponseEntity<Result<PageResult<SiteLevelConfigResponse>>> getSiteLevelConfigs() {
+        List<SiteLevelConfigResponse> configs = configService.getAllSiteLevelConfigs();
+        PageResult<SiteLevelConfigResponse> pageResult = new PageResult<>(configs, configs.size(), 0, configs.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "创建站点级别配置")

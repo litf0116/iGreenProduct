@@ -124,8 +124,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useTicketStore } from '@/store/modules/tickets';
+import { getCurrentTicket, setCurrentTicket, getCachedTickets, setCachedTickets } from '@/store';
+import { api } from '@/utils/api';
 import { formatDateTime } from '@/types/ticket';
+import type { Ticket } from '@/types/ticket';
 import { Card, Loading, InfoRow } from '@/components/ui';
 import { StatusBadge, PriorityBadge, TypeBadge, PhotoGrid, StepList, ActionCard } from '@/components/tickets';
 
@@ -137,24 +139,39 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const ticketStore = useTicketStore();
 const loading = ref(false);
 const photos = ref<string[]>([]);
+const ticketData = ref<Ticket | null>(getCurrentTicket());
+const cachedTickets = ref<Ticket[]>(getCachedTickets());
 
-const ticket = computed(() => ticketStore.currentTicket);
+const ticket = computed(() => ticketData.value);
 
 const showPhotoSection = computed(() => {
   const status = ticket.value?.status;
   return ['DEPARTED', 'IN_PROGRESS', 'ARRIVED', 'REVIEW'].includes(status || '');
 });
 
-onMounted(async () => {
+async function loadTicket(id: string) {
   loading.value = true;
   try {
-    await ticketStore.loadTicket(props.id);
+    // Try to get from cache first
+    const cached = cachedTickets.value.find(t => t.id === id);
+    if (cached) {
+      ticketData.value = cached;
+    }
+    // Fetch from API
+    const data = await api.getTicket(id);
+    ticketData.value = data;
+    setCurrentTicket(data);
+  } catch (error) {
+    console.error('Failed to load ticket:', error);
   } finally {
     loading.value = false;
   }
+}
+
+onMounted(() => {
+  loadTicket(props.id);
 });
 
 function handleClose() {
@@ -165,8 +182,12 @@ async function handleAccept() {
   if (!ticket.value) return;
   loading.value = true;
   try {
-    await ticketStore.acceptTicket(ticket.value.id);
-    await ticketStore.loadTicket(props.id);
+    await api.acceptTicket(ticket.value.id);
+    await loadTicket(props.id);
+    // Update cache
+    const updated = await api.getTickets({ page: 0, size: 20 });
+    setCachedTickets(updated.records);
+    cachedTickets.value = updated.records;
   } catch (error) {
     console.error('Failed to accept ticket:', error);
   } finally {
@@ -179,8 +200,8 @@ async function handleDepart() {
   loading.value = true;
   try {
     const photo = photos.value.length > 0 ? photos.value[0] : undefined;
-    await ticketStore.departTicket(ticket.value.id, photo);
-    await ticketStore.loadTicket(props.id);
+    await api.departTicket(ticket.value.id, photo);
+    await loadTicket(props.id);
   } catch (error) {
     console.error('Failed to depart:', error);
   } finally {
@@ -193,8 +214,8 @@ async function handleArrive() {
   loading.value = true;
   try {
     const photo = photos.value.length > 0 ? photos.value[0] : undefined;
-    await ticketStore.arriveTicket(ticket.value.id, photo);
-    await ticketStore.loadTicket(props.id);
+    await api.arriveTicket(ticket.value.id, photo);
+    await loadTicket(props.id);
   } catch (error) {
     console.error('Failed to arrive:', error);
   } finally {
@@ -207,8 +228,8 @@ async function handleComplete() {
   loading.value = true;
   try {
     const photo = photos.value.length > 0 ? photos.value[0] : undefined;
-    await ticketStore.completeTicket(ticket.value.id, photo);
-    await ticketStore.loadTicket(props.id);
+    await api.completeTicket(ticket.value.id, photo);
+    await loadTicket(props.id);
   } catch (error) {
     console.error('Failed to complete ticket:', error);
   } finally {
@@ -244,7 +265,7 @@ function handlePreviewPhoto(index: number) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: $white;
+  background: $background;
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -252,8 +273,8 @@ function handlePreviewPhoto(index: number) {
 
 .detail-header {
   height: 56px;
-  background: $white;
-  border-bottom: 1px solid $gray-200;
+  background: $card;
+  border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -270,13 +291,13 @@ function handlePreviewPhoto(index: number) {
 
 .back-icon {
   font-size: 20px;
-  color: $gray-700;
+  color: $foreground;
 }
 
 .header-title {
   font-size: $text-lg;
-  font-weight: $font-semibold;
-  color: $gray-900;
+  font-weight: $font-weight-semibold;
+  color: $foreground;
 }
 
 .header-right {
@@ -309,23 +330,24 @@ function handlePreviewPhoto(index: number) {
 
 .card-title {
   font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-500;
+  font-weight: $font-weight-medium;
+  color: $muted-foreground;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .description-title {
   font-size: $text-base;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
   display: block;
   margin-bottom: $spacing-2;
 }
 
 .description-text {
   font-size: $text-sm;
-  color: $gray-600;
+  color: $foreground;
+  opacity: 0.7;
   line-height: 1.6;
 }
 
@@ -349,8 +371,8 @@ function handlePreviewPhoto(index: number) {
   align-items: center;
   justify-content: center;
 
-  &.icon-purple { background: rgba($purple-500, 0.1); }
-  &.icon-green { background: rgba($green-500, 0.1); }
+  &.icon-purple { background: oklch(39.8% 0.07 227.39 / 10%); }
+  &.icon-green { background: oklch(60% 0.118 184.7 / 10%); }
 
   .icon {
     font-size: 24px;
@@ -359,13 +381,14 @@ function handlePreviewPhoto(index: number) {
 
 .action-title {
   font-size: $text-lg;
-  font-weight: $font-semibold;
-  color: $gray-900;
+  font-weight: $font-weight-semibold;
+  color: $foreground;
 }
 
 .action-subtitle {
   font-size: $text-sm;
-  color: $gray-600;
+  color: $foreground;
+  opacity: 0.7;
 }
 
 .loading-overlay {
@@ -374,7 +397,7 @@ function handlePreviewPhoto(index: number) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba($white, 0.8);
+  background: oklch(100% 0 0 / 80%);
   display: flex;
   align-items: center;
   justify-content: center;

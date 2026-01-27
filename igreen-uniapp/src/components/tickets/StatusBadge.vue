@@ -1,6 +1,5 @@
 <template>
   <view class="status-badge" :class="statusClass">
-    <text class="status-icon">{{ icon }}</text>
     <text class="status-text">{{ label }}</text>
   </view>
 </template>
@@ -25,20 +24,7 @@ const labelMap: Record<TicketStatus, string> = {
   DECLINED: 'Declined',
 };
 
-const iconMap: Record<TicketStatus, string> = {
-  OPEN: '📋',
-  ASSIGNED: '👤',
-  ACCEPTED: '✓',
-  IN_PROGRESS: '🔧',
-  DEPARTED: '🚗',
-  ARRIVED: '📍',
-  REVIEW: '👀',
-  COMPLETED: '✅',
-  DECLINED: '❌',
-};
-
 const label = computed(() => labelMap[props.status] || props.status);
-const icon = computed(() => iconMap[props.status] || '•');
 
 const statusClass = computed(() => {
   const classMap: Record<TicketStatus, string> = {
@@ -62,54 +48,55 @@ const statusClass = computed(() => {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   padding: 2px $spacing-2;
   border-radius: $radius-sm;
   font-size: 10px;
-  font-weight: $font-medium;
-}
-
-.status-icon {
-  font-size: 10px;
-}
-
-.status-text {
+  font-weight: $font-weight-medium;
+  height: 20px;
   text-transform: capitalize;
 }
 
+// Open - indigo-50 with indigo-700 (matches iGreenApp)
 .status-open {
-  background: rgba($blue-500, 0.1);
-  color: $blue-600;
+  background: $indigo-50;
+  color: $indigo-700;
 }
 
+// Assigned/Accepted - yellow/orange style
 .status-assigned,
 .status-accepted {
-  background: rgba($warning-color, 0.1);
+  background: $warning-bg;
   color: $warning-600;
 }
 
+// In Progress/Departed/Arrived - purple style
 .status-progress {
-  background: rgba($purple-500, 0.1);
+  background: $purple-100;
   color: $purple-600;
 }
 
+// Review - indigo style
 .status-review {
-  background: rgba($indigo-500, 0.1);
+  background: $indigo-100;
   color: $indigo-600;
 }
 
+// Completed - green-50 with green-700 (matches iGreenApp)
 .status-completed {
-  background: rgba($success-color, 0.1);
+  background: $success-bg;
   color: $success-600;
+  border: 1px solid rgba($success-color, 0.2);
 }
 
+// Declined - red style
 .status-declined {
-  background: rgba($error-color, 0.1);
+  background: $error-bg;
   color: $error-color;
 }
 
+// Default - slate style
 .status-default {
-  background: rgba($gray-500, 0.1);
+  background: $gray-100;
   color: $gray-600;
 }
 </style>

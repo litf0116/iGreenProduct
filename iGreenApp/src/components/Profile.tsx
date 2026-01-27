@@ -7,6 +7,8 @@ import { useLanguage } from './LanguageContext';
 import { LogOut, Globe, User, Mail, Phone, Shield, Users, Pencil, Save, X } from 'lucide-react';
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
+import { api } from '../lib/api';
+import { toast } from 'sonner';
 
 // Redefine here to avoid importing from App.tsx which might cause cycles
 export interface UserProfile {
@@ -34,6 +36,7 @@ export function Profile({ onLogout, user, onUpdateProfile }: ProfileProps) {
     name: "Mike Technician",
     // Email removed as per requirement
     phone: "+1 (555) 123-4567",
+    username: "mike_tech",
     group: "Bangkok Operations (Zone A)",
     id: "TECH-8821"
   };
@@ -51,15 +54,21 @@ export function Profile({ onLogout, user, onUpdateProfile }: ProfileProps) {
     setFormData({});
   };
 
-  const handleSave = () => {
-    // TODO: Backend Integration - Update Profile
-    // Call API to save user profile updates
-    // Example: await api.updateUserProfile(user.id, formData);
-    
-    if (onUpdateProfile) {
-      onUpdateProfile(formData);
+  const handleSave = async () => {
+    try {
+      await api.updateProfile({
+        name: formData.name,
+        phone: formData.phone
+      });
+      toast.success('Profile updated successfully');
+      if (onUpdateProfile) {
+        onUpdateProfile(formData);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Failed to update profile');
+      console.error('Update profile error:', error);
     }
-    setIsEditing(false);
   };
 
   const handleChange = (field: keyof UserProfile, value: string) => {

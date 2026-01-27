@@ -49,6 +49,7 @@ import {
 } from '../lib/data';
 import { toast } from "sonner@2.0.3";
 import { useLanguage } from './LanguageContext';
+import { api } from '../lib/api';
 
 interface TicketDetailProps {
   ticket: Ticket | null;
@@ -89,24 +90,16 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       }
   };
 
-  const handleGrabOrder = () => {
-      // TODO: Backend Integration - Grab Ticket
-      // Call API to assign ticket to current user and update status
-      // Example: await api.updateTicket(ticket.id, { status: 'assigned', assignee: currentUser.id });
-
-      if (ticket.type === 'problem') {
-          onUpdateTicket(ticket.id, { 
-              status: 'arrived', // Skip to arrived/work-in-progress for problem tickets
-              assignee: 'Mike Technician',
-              history: { ...ticket.history, arrivedAt: new Date().toISOString() }
-          });
-          toast.success("Ticket accepted. Please provide solution details.");
-      } else {
-          onUpdateTicket(ticket.id, { 
-              status: 'assigned',
-              assignee: 'Mike Technician' // Hardcoded for demo
-          });
-          toast.success("Ticket assigned to you");
+  const handleGrabOrder = async () => {
+      try {
+        await api.acceptTicket(ticket.id);
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        onUpdateTicket(ticket.id, updatedTicket);
+        toast.success("Ticket assigned to you");
+      } catch (error) {
+        console.error("Failed to accept ticket:", error);
+        toast.error("Failed to accept ticket");
       }
   };
 

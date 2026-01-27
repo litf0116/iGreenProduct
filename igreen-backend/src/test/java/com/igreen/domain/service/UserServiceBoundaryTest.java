@@ -238,11 +238,11 @@ class UserServiceBoundaryTest {
         }
 
         @Test
-        @DisplayName("登录时非ADMIN用户国家不匹配应失败")
-        void login_NonAdminCountryMismatch_ShouldThrow() {
+        @DisplayName("登录时非ADMIN用户未设置国家应失败")
+        void login_NonAdminWithoutCountry_ShouldThrow() {
             testUser.setRole(UserRole.ENGINEER);
-            testUser.setCountry("TH");
-            LoginRequest request = new LoginRequest("testuser", "password", "ID");
+            testUser.setCountry(null);  // User has no country set
+            LoginRequest request = new LoginRequest("testuser", "password", null);  // country 可选
 
             when(userMapper.selectList(any())).thenReturn(Collections.singletonList(testUser));
             when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
@@ -254,19 +254,17 @@ class UserServiceBoundaryTest {
         }
 
         @Test
-        @DisplayName("登录时非ADMIN用户国家为null应失败")
-        void login_NonAdminNullCountry_ShouldThrow() {
+        @DisplayName("登录时非ADMIN用户有国家设置应成功")
+        void login_NonAdminWithCountry_ShouldSucceed() {
             testUser.setRole(UserRole.ENGINEER);
-            testUser.setCountry("TH");
-            LoginRequest request = new LoginRequest("testuser", "password", null);
+            testUser.setCountry("TH");  // User has country set
+            LoginRequest request = new LoginRequest("testuser", "password", null);  // 不传 country
 
             when(userMapper.selectList(any())).thenReturn(Collections.singletonList(testUser));
             when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+            when(jwtUtils.generateToken(anyString(), anyString(), anyString())).thenReturn("token");
 
-            BusinessException exception = assertThrows(BusinessException.class,
-                    () -> userService.login(request));
-
-            assertEquals(ErrorCode.COUNTRY_NOT_ALLOWED.getCode(), exception.getCode());
+            assertDoesNotThrow(() -> userService.login(request));
         }
 
         @Test

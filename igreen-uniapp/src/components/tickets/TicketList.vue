@@ -12,8 +12,8 @@
     <scroll-view
       class="ticket-scroll"
       scroll-y
-      : refresher-enabled="enableRefresh"
-      : refresher-triggered="refreshing"
+      :refresher-enabled="enableRefresh"
+      :refresher-triggered="refreshing"
       @refresherrefresh="handleRefresh"
       @scrolltolower="handleLoadMore"
       :upper-threshold="50"
@@ -44,7 +44,7 @@
         subtext="Pull down to refresh"
       >
         <template #action>
-          <Button variant="outline" size="sm" @click="handleRefresh">
+          <Button variant="outline" size="sm" @tap="handleRefresh">
             Refresh
           </Button>
         </template>
@@ -118,12 +118,17 @@ function handleLoadMore() {
 .header {
   padding: $spacing-4;
   padding-bottom: 0;
+  
+  @media (min-width: 768px) {
+    padding: $spacing-6;
+    padding-bottom: 0;
+  }
 }
 
 .title {
   font-size: $text-xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
   letter-spacing: -0.5px;
 }
 
@@ -133,25 +138,32 @@ function handleLoadMore() {
   justify-content: center;
   gap: $spacing-2;
   padding: $spacing-3;
-  color: $gray-500;
+  color: $muted-foreground;
+  background: $white;
+  border-bottom: 1px solid $border;
 }
 
 .refresh-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid $gray-200;
-  border-top-color: $primary-color;
+  border: 2px solid $muted;
+  border-top-color: $indigo-600;  // indigo-600 - matches iGreenApp loading spinner
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .refresh-text {
   font-size: $text-sm;
+  color: $gray-500;  // slate-500
 }
 
 .ticket-scroll {
   flex: 1;
   padding: $spacing-4;
+  
+  @media (min-width: 768px) {
+    padding: $spacing-6;
+  }
 }
 
 .ticket-cards {
@@ -166,30 +178,34 @@ function handleLoadMore() {
   justify-content: center;
   gap: $spacing-2;
   padding: $spacing-4;
-  color: $gray-400;
+  color: $muted-foreground;
 }
 
 .loading-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid $gray-200;
-  border-top-color: $primary-color;
+  border: 2px solid $muted;
+  border-top-color: $indigo-600;  // indigo-600 - matches iGreenApp
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .loading-text {
   font-size: $text-sm;
+  color: $gray-500;  // slate-500
 }
 
 .end-indicator {
   text-align: center;
   padding: $spacing-4;
+  background: $gray-50;  // slate-50 - matches iGreenApp
+  border-radius: $radius-lg;
+  border: 1px dashed $gray-200;
 }
 
 .end-text {
   font-size: $text-sm;
-  color: $gray-400;
+  color: $muted-foreground;
 }
 
 @keyframes spin {

@@ -66,6 +66,7 @@ class UserControllerTest {
                 testUser.getName(),
                 testUser.getUsername(),
                 testUser.getEmail(),
+                "+86-13800000000",
                 testUser.getRole(),
                 testUser.getGroupId(),
                 null,

@@ -1,43 +1,29 @@
 package com.igreen.domain.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
-import com.igreen.domain.dto.StepData;
-import com.igreen.domain.dto.TicketAcceptRequest;
-import com.igreen.domain.dto.TicketCancelRequest;
-import com.igreen.domain.dto.TicketCommentCreateRequest;
-import com.igreen.domain.dto.TicketCommentResponse;
-import com.igreen.domain.dto.TicketCreateRequest;
-import com.igreen.domain.dto.TicketDeclineRequest;
-import com.igreen.domain.dto.TicketResponse;
-import com.igreen.domain.dto.TicketStatsResponse;
-import com.igreen.domain.dto.TicketUpdateRequest;
+import com.igreen.domain.dto.*;
+import com.igreen.domain.entity.Site;
 import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.CommentType;
-import com.igreen.domain.mapper.TicketCommentMapper;
-import com.igreen.domain.mapper.TicketMapper;
-import com.igreen.domain.mapper.TicketStatusCount;
-import com.igreen.domain.mapper.UserMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,6 +35,7 @@ public class TicketService {
     private final TicketMapper ticketMapper;
     private final TicketCommentMapper ticketCommentMapper;
     private final UserMapper userMapper;
+    private final SiteMapper siteMapper;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -72,8 +59,14 @@ public class TicketService {
             }
         }
 
+        // 生成工单编号: yyyyMMdd + 4位序号
+        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        Long todayCount = ticketMapper.countByDatePrefix(dateStr);
+        String ticketNumber = dateStr + String.format("%04d", todayCount + 1);
+
         Ticket ticket = Ticket.builder()
                 .id(UUID.randomUUID().toString())
+                .ticketNumber(ticketNumber)
                 .title(request.title())
                 .description(request.description())
                 .type(request.type())
@@ -89,7 +82,8 @@ public class TicketService {
                 .build();
 
         ticketMapper.insert(ticket);
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional(readOnly = true)
@@ -100,7 +94,8 @@ public class TicketService {
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
 
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +130,8 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -222,7 +218,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -238,11 +235,15 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
-            throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
-        }
-
-        if (!"OPEN".equals(ticket.getStatus())) {
+        // OPEN tickets can be accepted by any engineer
+        // ASSIGNED tickets can only be accepted by the assigned engineer
+        if ("OPEN".equals(ticket.getStatus())) {
+            ticket.setAssignedTo(userId);
+        } else if ("ASSIGNED".equals(ticket.getStatus())) {
+            if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+                throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
+            }
+        } else {
             throw new BusinessException(ErrorCode.TICKET_ALREADY_ACCEPTED);
         }
 
@@ -265,7 +266,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -273,7 +275,7 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -293,7 +295,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -320,7 +323,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -328,8 +332,14 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        // Check if user is the assigned engineer
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
+        }
+
+        // Allow depart from ASSIGNED or ACCEPTED status
+        if (!"ASSIGNED".equals(ticket.getStatus()) && !"ACCEPTED".equals(ticket.getStatus())) {
+            throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
         }
 
         ticket.setStatus("IN_PROGRESS");
@@ -342,7 +352,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -350,7 +361,8 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        // Check if user is the assigned engineer
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -363,7 +375,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -371,7 +384,7 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -395,7 +408,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -403,7 +417,7 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -416,7 +430,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -435,7 +450,8 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
@@ -500,7 +516,8 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -512,17 +529,21 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public List<TicketResponse> getPendingTickets() {
-        List<String> statuses = Arrays.asList("OPEN", "ASSIGNED");
+    public PageResult<TicketResponse> getPendingTickets() {
+        // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
+        List<String> statuses = Arrays.asList("OPEN");
         List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses);
 
-        return tickets.stream()
+        List<TicketResponse> ticketResponses = tickets.stream()
                 .map(ticket -> {
                     User creator = userMapper.selectById(ticket.getCreatedBy());
                     User assignee = userMapper.selectById(ticket.getAssignedTo());
-                    return toResponse(ticket, creator, assignee);
+                    Site site = siteMapper.selectById(ticket.getSite());
+                    return toResponse(ticket, creator, assignee, site);
                 })
                 .collect(Collectors.toList());
+
+        return new PageResult<>(ticketResponses, ticketResponses.size(), 0, ticketResponses.size(), false);
     }
 
     @Transactional(readOnly = true)
@@ -535,7 +556,8 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -579,7 +601,7 @@ public class TicketService {
         );
     }
 
-    private TicketResponse toResponse(Ticket ticket, User creator, User assignee) {
+    private TicketResponse toResponse(Ticket ticket, User creator, User assignee, Site site) {
         List<String> completedSteps = new ArrayList<>();
         if (ticket.getCompletedSteps() != null && !ticket.getCompletedSteps().isEmpty()) {
             try {
@@ -611,12 +633,15 @@ public class TicketService {
 
         return new TicketResponse(
                 ticket.getId(),
+                ticket.getTicketNumber(),
                 ticket.getTitle(),
                 ticket.getDescription(),
                 ticket.getType(),
                 ticket.getStatus(),
                 ticket.getPriority(),
                 ticket.getSite(),
+                site != null ? site.getName() : null,       // siteName
+                site != null ? site.getAddress() : null,    // siteAddress
                 ticket.getTemplateId(),
                 null,
                 ticket.getAssignedTo(),

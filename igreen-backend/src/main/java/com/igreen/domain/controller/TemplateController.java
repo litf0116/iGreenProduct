@@ -1,5 +1,6 @@
 package com.igreen.domain.controller;
 
+import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
 import com.igreen.domain.dto.CreateTemplateRequest;
 import com.igreen.domain.entity.Template;
@@ -26,8 +27,10 @@ public class TemplateController {
 
     @Operation(summary = "获取所有模板")
     @GetMapping
-    public ResponseEntity<Result<List<Template>>> getAllTemplates() {
-        return ResponseEntity.ok(Result.success(templateService.getAllTemplates()));
+    public ResponseEntity<Result<PageResult<Template>>> getAllTemplates() {
+        List<Template> templates = templateService.getAllTemplates();
+        PageResult<Template> pageResult = new PageResult<>(templates, templates.size(), 0, templates.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "获取模板详情")

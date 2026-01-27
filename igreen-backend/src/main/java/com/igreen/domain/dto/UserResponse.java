@@ -8,6 +8,7 @@ public record UserResponse(
         String name,
         String username,
         String email,
+        String phone,
         UserRole role,
         String groupId,
         String groupName,

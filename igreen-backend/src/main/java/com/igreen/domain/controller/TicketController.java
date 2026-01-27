@@ -62,7 +62,7 @@ public class TicketController {
     }
 
     @Operation(summary = "更新工单")
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<TicketResponse>> updateTicket(
             @PathVariable String id,
@@ -162,8 +162,10 @@ public class TicketController {
 
     @Operation(summary = "获取工单评论")
     @GetMapping("/{id}/comments")
-    public ResponseEntity<Result<List<TicketCommentResponse>>> getTicketComments(@PathVariable String id) {
-        return ResponseEntity.ok(Result.success(ticketService.getTicketComments(id)));
+    public ResponseEntity<Result<PageResult<TicketCommentResponse>>> getTicketComments(@PathVariable String id) {
+        List<TicketCommentResponse> comments = ticketService.getTicketComments(id);
+        PageResult<TicketCommentResponse> pageResult = new PageResult<>(comments, comments.size(), 0, comments.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "添加工单评论")
@@ -189,7 +191,7 @@ public class TicketController {
 
     @Operation(summary = "获取待办工单")
     @GetMapping("/pending")
-    public ResponseEntity<Result<List<TicketResponse>>> getPendingTickets() {
+    public ResponseEntity<Result<PageResult<TicketResponse>>> getPendingTickets() {
         return ResponseEntity.ok(Result.success(ticketService.getPendingTickets()));
     }
 

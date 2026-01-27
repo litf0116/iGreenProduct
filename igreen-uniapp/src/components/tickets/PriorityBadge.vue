@@ -39,26 +39,26 @@ export default {
   padding: 2px $spacing-1;
   border-radius: $radius-sm;
   font-size: 10px;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
 }
 
 .priority-p1 {
-  background: rgba($error-color, 0.1);
-  color: $error-color;
+  background: oklch(54% 0.186 25.72 / 10%);
+  color: $destructive;
 }
 
 .priority-p2 {
-  background: rgba($warning-color, 0.1);
-  color: $warning-600;
+  background: oklch(82.8% 0.189 84.43 / 10%);
+  color: $chart-4;
 }
 
 .priority-p3 {
-  background: rgba($gray-500, 0.1);
-  color: $gray-600;
+  background: oklch(93% 0.01 265 / 50%);
+  color: $muted-foreground;
 }
 
 .priority-p4 {
-  background: rgba($gray-200, 0.5);
-  color: $gray-500;
+  background: oklch(93% 0.01 265 / 30%);
+  color: $muted-foreground;
 }
 </style>

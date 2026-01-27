@@ -37,18 +37,17 @@ public class AuthController {
     public ResponseEntity<Result<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse response = userService.login(request);
 
-                // 直接使用UserService的登录逻辑，UserService会处理country验证
-        TokenResponse response = userService.login(request);
+        // 生成 refresh token
+        String refreshToken = jwtUtils.generateRefreshToken(
+            jwtUtils.extractUserId(response.accessToken()),
+            jwtUtils.extractUsername(response.accessToken())
+        );
 
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            String refreshToken = jwtUtils.generateRefreshToken(user.getId(), user.getUsername());
-            response = new TokenResponse(
-                response.accessToken(),
-                refreshToken,
-                jwtUtils.getExpirationMs() / 1000
-            );
-        }
+        response = new TokenResponse(
+            response.accessToken(),
+            refreshToken,
+            jwtUtils.getExpirationMs() / 1000
+        );
 
         return ResponseEntity.ok(Result.success(response));
     }

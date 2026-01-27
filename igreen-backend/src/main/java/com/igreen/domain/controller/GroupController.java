@@ -1,5 +1,6 @@
 package com.igreen.domain.controller;
 
+import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
 import com.igreen.domain.dto.GroupCreateRequest;
 import com.igreen.domain.dto.GroupUpdateRequest;
@@ -28,10 +29,11 @@ public class GroupController {
 
     @Operation(summary = "获取所有分组")
     @GetMapping
-    public ResponseEntity<Result<List<GroupVO>>> getAllGroups() {
+    public ResponseEntity<Result<PageResult<GroupVO>>> getAllGroups() {
         List<Group> groups = groupService.getAllGroups();
         List<GroupVO> voList = groupConverter.toVOList(groups);
-        return ResponseEntity.ok(Result.success(voList));
+        PageResult<GroupVO> pageResult = new PageResult<>(voList, voList.size(), 0, voList.size(), false);
+        return ResponseEntity.ok(Result.success(pageResult));
     }
 
     @Operation(summary = "获取分组详情")

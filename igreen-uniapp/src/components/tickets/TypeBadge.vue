@@ -39,31 +39,31 @@ export default {
   padding: 2px $spacing-1;
   border-radius: $radius-sm;
   font-size: 10px;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   border: 1px solid;
 }
 
 .type-corrective {
-  background: rgba($orange-500, 0.1);
-  color: $orange-600;
-  border-color: rgba($orange-200, 0.5);
+  background: oklch(76.9% 0.188 70.08 / 10%);
+  color: $chart-5;
+  border-color: oklch(76.9% 0.188 70.08 / 20%);
 }
 
 .type-planned {
-  background: rgba($blue-500, 0.1);
-  color: $blue-600;
-  border-color: rgba($blue-200, 0.5);
+  background: oklch(64.6% 0.222 41.12 / 10%);
+  color: $chart-1;
+  border-color: oklch(64.6% 0.222 41.12 / 20%);
 }
 
 .type-preventive {
-  background: rgba($green-500, 0.1);
-  color: $green-600;
-  border-color: rgba($green-200, 0.5);
+  background: oklch(60% 0.118 184.7 / 10%);
+  color: $chart-2;
+  border-color: oklch(60% 0.118 184.7 / 20%);
 }
 
 .type-problem {
-  background: rgba($rose-500, 0.1);
-  color: $rose-600;
-  border-color: rgba($rose-200, 0.5);
+  background: oklch(54% 0.186 25.72 / 10%);
+  color: $destructive;
+  border-color: oklch(54% 0.186 25.72 / 20%);
 }
 </style>

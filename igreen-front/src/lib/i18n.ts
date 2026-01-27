@@ -277,6 +277,7 @@ export const translations = {
     // Table
     ticketId: "Ticket ID",
     title: "Title",
+    status: "Status",
     site: "Site",
     selectSite: "Select Site",
     assignedToName: "Assigned To",

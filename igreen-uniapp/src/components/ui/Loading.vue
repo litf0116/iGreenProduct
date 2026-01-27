@@ -39,7 +39,7 @@ const sizeClass = computed(() => `loading-${props.size}`);
 
 .loading-spinner {
   border: 2px solid $gray-200;
-  border-top-color: $primary-color;
+  border-top-color: $indigo-600;  // indigo-600 - matches iGreenApp loading spinner
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

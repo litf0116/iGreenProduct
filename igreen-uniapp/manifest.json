@@ -15,6 +15,10 @@
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
         "compilerVersion" : 3,
+        "sassImplementationName" : "node-sass",
+        "setting" : {
+            "disableTypeCheck" : true
+        },
         "splashscreen" : {
             "alwaysShowBeforeRender" : true,
             "waiting" : true,

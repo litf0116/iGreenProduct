@@ -81,6 +81,8 @@ class TicketControllerTest {
                 status,               // status
                 "P2",                 // priority
                 "site-1",             // site
+                "测试站点",            // siteName
+                "上海市浦东新区",       // siteAddress
                 "template-1",         // templateId
                 "模板名称",            // templateName
                 "engineer-1",         // assignedTo

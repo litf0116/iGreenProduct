@@ -4,7 +4,9 @@
     <view class="ticket-content">
       <view class="ticket-header">
         <view class="ticket-badges">
-          <text class="ticket-id">{{ ticket.id }}</text>
+          <view class="ticket-id-badge">
+            <text class="ticket-id">{{ ticket.id }}</text>
+          </view>
           <StatusBadge :status="ticket.status" />
           <PriorityBadge :priority="ticket.priority" />
           <TypeBadge :type="ticket.type" />
@@ -27,7 +29,6 @@
 
         <view v-if="ticket.status === 'OPEN'" class="ticket-action" @click.stop="handleGrab">
           <view class="grab-btn">
-            <text class="grab-icon">⚡</text>
             <text class="grab-text">Grab</text>
           </view>
         </view>
@@ -60,7 +61,7 @@ const emit = defineEmits<{
 
 const statusClass = computed(() => {
   const statusMap: Record<TicketStatus, string> = {
-    OPEN: 'bg-blue',
+    OPEN: 'bg-indigo',
     ASSIGNED: 'bg-yellow',
     ACCEPTED: 'bg-yellow',
     IN_PROGRESS: 'bg-purple',
@@ -126,15 +127,17 @@ export default {
 
 .ticket-card {
   background: $white;
+  border: 1px solid $gray-200;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
   display: flex;
   overflow: hidden;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 
   &:active {
-    background: $gray-50;
+    background: $gray-50;  // slate-50 - matches iGreenApp
+    transform: scale(0.98);
   }
 }
 
@@ -142,12 +145,11 @@ export default {
   width: 4px;
   flex-shrink: 0;
 
-  &.bg-blue { background: $blue-500; }
-  &.bg-green { background: $green-500; }
-  &.bg-purple { background: $purple-500; }
-  &.bg-yellow { background: $yellow-500; }
-  &.bg-red { background: $red-500; }
   &.bg-indigo { background: $indigo-500; }
+  &.bg-green { background: $success-color; }
+  &.bg-purple { background: $purple-500; }
+  &.bg-yellow { background: $warning-color; }
+  &.bg-red { background: $destructive; }
 }
 
 .ticket-content {
@@ -171,22 +173,32 @@ export default {
   flex-wrap: wrap;
 }
 
+.ticket-id-badge {
+  width: 24px;
+  height: 24px;
+  background: $indigo-100;  // indigo-100 - matches iGreenApp
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ticket-id {
-  font-size: 12px;
+  font-size: 10px;
+  font-weight: $font-weight-bold;
+  color: $indigo-600;  // indigo-600
   font-family: monospace;
-  font-weight: $font-medium;
-  color: $gray-500;
 }
 
 .ticket-date {
   font-size: 12px;
-  color: $gray-400;
+  color: $gray-400;  // slate-400
 }
 
 .ticket-title {
   font-size: $text-base;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;  // slate-900
   display: block;
   margin-bottom: $spacing-2;
   line-height: 1.4;
@@ -205,14 +217,17 @@ export default {
 
 .location-text {
   font-size: $text-xs;
-  color: $gray-600;
+  color: $gray-500;  // slate-500
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ticket-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid $gray-50;
+  border-top: 1px solid $border;
   padding-top: $spacing-3;
 }
 
@@ -228,27 +243,32 @@ export default {
 
 .status-text {
   font-size: $text-xs;
-  font-weight: $font-medium;
-  color: $gray-700;
+  font-weight: $font-weight-medium;
+  color: $gray-600;  // slate-600
   text-transform: capitalize;
 }
 
-.grab-btn {
-  display: flex;
-  align-items: center;
-  gap: $spacing-1;
-  padding: $spacing-1 $spacing-3;
-  background: $blue-600;
-  border-radius: $radius-md;
+.ticket-action {
+  margin-left: auto;
 }
 
-.grab-icon {
-  font-size: 12px;
+.grab-btn {
+  padding: $spacing-1 $spacing-3;
+  background: $indigo-600;  // indigo-600 - matches iGreenApp
+  border-radius: $radius-md;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    background: $indigo-700;
+  }
 }
 
 .grab-text {
   font-size: $text-xs;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   color: $white;
 }
 
@@ -256,11 +276,12 @@ export default {
   display: flex;
   align-items: center;
   gap: $spacing-1;
+  margin-left: auto;
 }
 
 .assignee-name {
   font-size: $text-xs;
-  color: $gray-500;
+  color: $gray-500;  // slate-500
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;

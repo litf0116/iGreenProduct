@@ -72,12 +72,12 @@ withDefaults(defineProps<{
 
 .info-value {
   font-size: $text-sm;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   color: $gray-900;
   text-align: right;
 
   &.value-primary {
-    color: $primary-color;
+    color: $primary;
   }
 }
 

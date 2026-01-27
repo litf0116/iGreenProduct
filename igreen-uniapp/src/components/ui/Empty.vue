@@ -40,7 +40,7 @@ withDefaults(defineProps<{
 
 .empty-text {
   font-size: $text-lg;
-  font-weight: $font-medium;
+  font-weight: $font-weight-medium;
   color: $gray-900;
   display: block;
   margin-bottom: $spacing-2;

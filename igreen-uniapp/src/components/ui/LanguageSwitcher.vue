@@ -55,7 +55,7 @@ function setLanguage(lang: 'en' | 'th') {
 
     .lang-text {
       color: $gray-900;
-      font-weight: $font-medium;
+      font-weight: $font-weight-medium;
     }
   }
 }

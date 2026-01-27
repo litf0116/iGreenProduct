@@ -22,7 +22,7 @@
       <InfoRow label="Framework" value="uni-app 3.x" />
       <InfoRow label="Vue Version" value="Vue 3.2.13" />
       <InfoRow label="TypeScript" value="Enabled" />
-      <InfoRow label="State Management" value="Pinia" />
+      <InfoRow label="State Management" value="uni Storage" />
       <InfoRow label="Styling" value="SCSS" />
     </Card>
   </view>
@@ -66,7 +66,7 @@ onMounted(() => {
 .logo-text {
   color: $white;
   font-size: $text-xl;
-  font-weight: $font-bold;
+  font-weight: $font-weight-bold;
 }
 
 .welcome-card {
@@ -78,7 +78,7 @@ onMounted(() => {
 .welcome-title {
   display: block;
   font-size: $text-2xl;
-  font-weight: $font-bold;
+  font-weight: $font-weight-bold;
   color: $gray-900;
   margin-bottom: $spacing-1;
 }
@@ -113,7 +113,7 @@ onMounted(() => {
 
 .info-title {
   font-size: $text-sm;
-  font-weight: $font-semibold;
+  font-weight: $font-weight-semibold;
   color: $gray-700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
