@@ -11,11 +11,11 @@ import java.util.List;
 @Mapper
 public interface TicketCommentMapper extends com.baomidou.mybatisplus.core.mapper.BaseMapper<TicketComment> {
 
-    List<TicketComment> selectByTicketIdOrderByCreatedAtAsc(@Param("ticketId") String ticketId);
+    List<TicketComment> selectByTicketIdOrderByCreatedAtAsc(@Param("ticketId") Long ticketId);
 
-    List<TicketComment> selectByTicketIdWithUser(@Param("ticketId") String ticketId);
+    List<TicketComment> selectByTicketIdWithUser(@Param("ticketId") Long ticketId);
 
     List<TicketComment> selectByUserId(@Param("userId") String userId);
 
-    List<TicketComment> selectByTicketIdAndType(@Param("ticketId") String ticketId, @Param("type") String type);
+    List<TicketComment> selectByTicketIdAndType(@Param("ticketId") Long ticketId, @Param("type") String type);
 }

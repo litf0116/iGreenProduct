@@ -10,6 +10,7 @@ import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.Site;
+import com.igreen.domain.entity.TemplateStep;
 import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
 import com.igreen.domain.entity.User;
@@ -36,6 +37,7 @@ public class TicketService {
     private final TicketCommentMapper ticketCommentMapper;
     private final UserMapper userMapper;
     private final SiteMapper siteMapper;
+    private final TemplateStepMapper templateStepMapper;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -59,14 +61,7 @@ public class TicketService {
             }
         }
 
-        // 生成工单编号: yyyyMMdd + 4位序号
-        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        Long todayCount = ticketMapper.countByDatePrefix(dateStr);
-        String ticketNumber = dateStr + String.format("%04d", todayCount + 1);
-
         Ticket ticket = Ticket.builder()
-                .id(UUID.randomUUID().toString())
-                .ticketNumber(ticketNumber)
                 .title(request.title())
                 .description(request.description())
                 .type(request.type())
@@ -87,7 +82,7 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public TicketResponse getTicketById(String id) {
+    public TicketResponse getTicketById(Long id) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -143,7 +138,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse updateTicket(String id, TicketUpdateRequest request) {
+    public TicketResponse updateTicket(Long id, TicketUpdateRequest request) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -223,7 +218,7 @@ public class TicketService {
     }
 
     @Transactional
-    public void deleteTicket(String id) {
+    public void deleteTicket(Long id) {
         if (ticketMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
@@ -231,7 +226,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse acceptTicket(String id, TicketAcceptRequest request, String userId) {
+    public TicketResponse acceptTicket(Long id, TicketAcceptRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -271,7 +266,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse declineTicket(String id, TicketDeclineRequest request, String userId) {
+    public TicketResponse declineTicket(Long id, TicketDeclineRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -300,7 +295,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse cancelTicket(String id, TicketCancelRequest request, String userId) {
+    public TicketResponse cancelTicket(Long id, TicketCancelRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -328,7 +323,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse departTicket(String id, String departurePhoto, String userId) {
+    public TicketResponse departTicket(Long id, String departurePhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -357,7 +352,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse arriveTicket(String id, String arrivalPhoto, String userId) {
+    public TicketResponse arriveTicket(Long id, String arrivalPhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -371,6 +366,11 @@ public class TicketService {
             ticket.setArrivalPhoto(arrivalPhoto);
         }
 
+        // Initialize stepData from template if ticket has templateId and stepData is null/empty
+        if (ticket.getTemplateId() != null && (ticket.getStepData() == null || ticket.getStepData().isEmpty())) {
+            initializeStepDataFromTemplate(ticket);
+        }
+
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
@@ -379,8 +379,41 @@ public class TicketService {
         return toResponse(ticket, creator, assignee, site);
     }
 
+    private void initializeStepDataFromTemplate(Ticket ticket) {
+        try {
+            // Fetch template steps from database
+            LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
+            stepWrapper.eq(TemplateStep::getTemplateId, ticket.getTemplateId());
+            stepWrapper.orderByAsc(TemplateStep::getSortOrder);
+            List<TemplateStep> templateSteps = templateStepMapper.selectList(stepWrapper);
+
+            if (templateSteps != null && !templateSteps.isEmpty()) {
+                // Convert template steps to the format expected by frontend
+                List<Map<String, Object>> steps = new ArrayList<>();
+                for (TemplateStep step : templateSteps) {
+                    Map<String, Object> stepMap = new HashMap<>();
+                    stepMap.put("id", step.getId());
+                    stepMap.put("name", step.getName());
+                    stepMap.put("description", step.getDescription() != null ? step.getDescription() : "");
+                    stepMap.put("completed", false);
+                    stepMap.put("status", "pending");
+                    stepMap.put("sortOrder", step.getSortOrder());
+                    steps.add(stepMap);
+                }
+
+                Map<String, Object> stepDataMap = new HashMap<>();
+                stepDataMap.put("steps", steps);
+
+                ticket.setStepData(objectMapper.writeValueAsString(stepDataMap));
+                log.info("Initialized stepData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
+            }
+        } catch (JsonProcessingException e) {
+            log.error("Error initializing stepData from template for ticket {}", ticket.getId(), e);
+        }
+    }
+
     @Transactional
-    public TicketResponse submitTicket(String id, StepData stepData, String userId) {
+    public TicketResponse submitTicket(Long id, StepData stepData, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -413,7 +446,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse completeTicket(String id, String completionPhoto, String userId) {
+    public TicketResponse completeTicket(Long id, String completionPhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -435,7 +468,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse reviewTicket(String id, String cause, String userId) {
+    public TicketResponse reviewTicket(Long id, String cause, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -455,7 +488,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketCommentResponse addTicketComment(String ticketId, TicketCommentCreateRequest request, String userId) {
+    public TicketCommentResponse addTicketComment(Long ticketId, TicketCommentCreateRequest request, String userId) {
         Ticket ticket = ticketMapper.selectById(ticketId);
         if (ticket == null) {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
@@ -484,7 +517,7 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public List<TicketCommentResponse> getTicketComments(String ticketId) {
+    public List<TicketCommentResponse> getTicketComments(Long ticketId) {
         return ticketCommentMapper.selectByTicketIdWithUser(ticketId).stream()
                 .map(comment -> {
                     User user = userMapper.selectById(comment.getUserId());
@@ -506,9 +539,9 @@ public class TicketService {
         PageHelper.startPage(page, size);
         try {
             List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
-            if (status != null) {
+            if (status != null && !status.isEmpty()) {
                 tickets = tickets.stream()
-                        .filter(t -> status.equals(t.getStatus()))
+                        .filter(t -> status.equalsIgnoreCase(t.getStatus()))
                         .collect(Collectors.toList());
             }
 
@@ -633,7 +666,6 @@ public class TicketService {
 
         return new TicketResponse(
                 ticket.getId(),
-                ticket.getTicketNumber(),
                 ticket.getTitle(),
                 ticket.getDescription(),
                 ticket.getType(),
@@ -666,5 +698,87 @@ public class TicketService {
                 relatedTicketIds,
                 ticket.getProblemType()
         );
+    }
+
+    @Transactional
+    public TicketResponse updateTicketStep(Long ticketId, String stepId, TicketStepUpdateRequest request, String userId) {
+        Ticket ticket = ticketMapper.selectById(ticketId);
+        if (ticket == null) {
+            throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
+        }
+
+        // 解析现有的 stepData
+        Map<String, Object> stepDataMap = new HashMap<>();
+        if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
+            try {
+                stepDataMap = objectMapper.readValue(ticket.getStepData(), Map.class);
+            } catch (JsonProcessingException e) {
+                log.error("Error parsing step data", e);
+            }
+        }
+
+        // 更新步骤数据
+        Map<String, Object> stepData = new HashMap<>();
+        if (stepDataMap.containsKey("steps")) {
+            Object existingSteps = stepDataMap.get("steps");
+            if (existingSteps instanceof List) {
+                List<Map<String, Object>> steps = new ArrayList<>();
+                for (Object s : (List<?>) existingSteps) {
+                    if (s instanceof Map) {
+                        Map<String, Object> step = new HashMap<>((Map<String, Object>) s);
+                        if (stepId.equals(step.get("id"))) {
+                            // 更新当前步骤
+                            if (request.getCompleted() != null) {
+                                step.put("completed", request.getCompleted());
+                            }
+                            if (request.getDescription() != null) {
+                                step.put("description", request.getDescription());
+                            }
+                            if (request.getStatus() != null) {
+                                step.put("status", request.getStatus());
+                            }
+                            if (request.getCause() != null) {
+                                step.put("cause", request.getCause());
+                            }
+                            if (request.getPhotoUrl() != null) {
+                                step.put("photoUrl", request.getPhotoUrl());
+                            }
+                            if (request.getPhotoUrls() != null) {
+                                step.put("photoUrls", request.getPhotoUrls());
+                            }
+                            if (request.getBeforePhotoUrl() != null) {
+                                step.put("beforePhotoUrl", request.getBeforePhotoUrl());
+                            }
+                            if (request.getBeforePhotoUrls() != null) {
+                                step.put("beforePhotoUrls", request.getBeforePhotoUrls());
+                            }
+                            if (request.getAfterPhotoUrl() != null) {
+                                step.put("afterPhotoUrl", request.getAfterPhotoUrl());
+                            }
+                            if (request.getAfterPhotoUrls() != null) {
+                                step.put("afterPhotoUrls", request.getAfterPhotoUrls());
+                            }
+                            if (request.getTimestamp() != null) {
+                                step.put("timestamp", request.getTimestamp());
+                            }
+                        }
+                        steps.add(step);
+                    }
+                }
+                stepData.put("steps", steps);
+            }
+        }
+
+        // 保存更新后的 stepData
+        try {
+            String stepDataJson = objectMapper.writeValueAsString(stepData);
+            ticket.setStepData(stepDataJson);
+            ticketMapper.updateById(ticket);
+        } catch (JsonProcessingException e) {
+            log.error("Error saving step data", e);
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
+        }
+
+        return getTicketById(ticketId);
     }
 }

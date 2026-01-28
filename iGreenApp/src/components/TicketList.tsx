@@ -202,7 +202,7 @@ export function TicketList({
                   onClick={() => onTicketClick(ticket)}
                 >
                   <TableCell className="font-mono font-medium text-slate-600">
-                    {ticket.id}
+                    T{ticket.id}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium text-slate-900">{ticket.title}</div>
@@ -249,7 +249,7 @@ export function TicketList({
                     </TableCell>
                   )}
                   <TableCell className="text-right text-slate-500 text-sm">
-                    {new Date(ticket.createdAt).toLocaleDateString()}
+                    {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : '-'}
                   </TableCell>
                 </TableRow>
               ))
@@ -280,7 +280,9 @@ export function TicketList({
 
                <div className="flex items-start justify-between mb-2 pl-2">
                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="font-mono text-[10px] text-slate-500">{ticket.id}</Badge>
+                     <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
+                     T{ticket.id}
+                   </Badge>
                     <Badge variant={getPriorityColor(ticket.priority)} className="text-[10px] px-1.5 h-5 capitalize">
                       {ticket.priority}
                     </Badge>
@@ -288,7 +290,7 @@ export function TicketList({
                       {getTicketTypeLabel(ticket.type)}
                     </span>
                  </div>
-                 <span className="text-xs text-slate-400 shrink-0">{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-400 shrink-0">{ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : '-'}</span>
                </div>
                
                <div className="pl-2 mb-3">

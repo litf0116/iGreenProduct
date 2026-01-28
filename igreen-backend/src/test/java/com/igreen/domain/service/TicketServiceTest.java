@@ -96,7 +96,7 @@ class TicketServiceTest {
                 .build();
 
         testTicket = Ticket.builder()
-                .id("ticket-id")
+                .id(202601200001L)
                 .title("Test Ticket")
                 .description("Test Description")
                 .type("PLANNED")
@@ -704,7 +704,7 @@ class TicketServiceTest {
 
         TicketDeclineRequest request = new TicketDeclineRequest("Cannot complete this task");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.declineTicket("ticket-1", request, "assignee-id");
@@ -727,7 +727,7 @@ class TicketServiceTest {
 
         TicketDeclineRequest request = new TicketDeclineRequest("Reason");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> ticketService.declineTicket("ticket-1", request, "other-user-id"));
@@ -744,7 +744,7 @@ class TicketServiceTest {
 
         TicketCancelRequest request = new TicketCancelRequest("No longer needed");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.cancelTicket("ticket-1", request, "creator-id");
@@ -766,7 +766,7 @@ class TicketServiceTest {
 
         TicketCancelRequest request = new TicketCancelRequest("Reason");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> ticketService.cancelTicket("ticket-1", request, "other-user-id"));
@@ -786,7 +786,7 @@ class TicketServiceTest {
         stepDataMap.put("step1", "value1");
         StepData stepData = new StepData(stepDataMap);
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.submitTicket("ticket-1", stepData, "assignee-id");
@@ -800,7 +800,7 @@ class TicketServiceTest {
     void submitTicket_NullStepData_ShouldNotThrow() {
         Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         assertDoesNotThrow(() -> ticketService.submitTicket("ticket-1", null, "assignee-id"));
@@ -813,7 +813,7 @@ class TicketServiceTest {
 
         StepData stepData = new StepData(new HashMap<>());
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> ticketService.submitTicket("ticket-1", stepData, "other-user-id"));
@@ -828,7 +828,7 @@ class TicketServiceTest {
     void reviewTicket_WithCause_ShouldReopen() {
         Ticket testTicket = createTestTicket("ticket-1", "COMPLETED", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.reviewTicket("ticket-1", "Needs more work", "reviewer-id");
@@ -845,7 +845,7 @@ class TicketServiceTest {
     void reviewTicket_WithoutCause_ShouldKeepCompleted() {
         Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.reviewTicket("ticket-1", null, "reviewer-id");
@@ -1149,7 +1149,7 @@ class TicketServiceTest {
                 List.of("related-1", "related-2")
         );
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.updateTicket("ticket-1", request);
@@ -1178,7 +1178,7 @@ class TicketServiceTest {
                 List.of("step1"), null, null, null, null, null, null, null, null, null
         );
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         // Should not throw with valid input
@@ -1217,7 +1217,7 @@ class TicketServiceTest {
     void arriveTicket_WithPhoto_Success() {
         Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.arriveTicket("ticket-1", "arrival-photo.jpg", "assignee-id");
@@ -1234,7 +1234,7 @@ class TicketServiceTest {
     void arriveTicket_NotAssignee_ShouldThrow() {
         Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> ticketService.arriveTicket("ticket-1", "photo.jpg", "other-user-id"));
@@ -1249,7 +1249,7 @@ class TicketServiceTest {
     void completeTicket_WithPhoto_Success() {
         Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.completeTicket("ticket-1", "completion-photo.jpg", "assignee-id");
@@ -1267,7 +1267,7 @@ class TicketServiceTest {
     void completeTicket_WithoutPhoto_Success() {
         Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         TicketResponse response = ticketService.completeTicket("ticket-1", null, "assignee-id");
@@ -1281,7 +1281,7 @@ class TicketServiceTest {
     void completeTicket_NotAssignee_ShouldThrow() {
         Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectByIdWithDetails("ticket-1")).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> ticketService.completeTicket("ticket-1", "photo.jpg", "other-user-id"));

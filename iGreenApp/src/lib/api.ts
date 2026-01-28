@@ -204,7 +204,7 @@ export const api = {
     return [];
   },
 
-  getTicket: async (id: string): Promise<Ticket> => {
+  getTicket: async (id: number): Promise<Ticket> => {
     const data = await fetchWithAuth(`/api/tickets/${id}`);
     if (data.success && data.data) {
       return transformTicket(data.data);
@@ -212,7 +212,7 @@ export const api = {
     throw new Error('Ticket not found');
   },
 
-  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
+  updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
     return fetchWithAuth(`/api/tickets/${id}`, {
       method: 'POST',
       body: JSON.stringify(updates),
@@ -220,7 +220,7 @@ export const api = {
   },
 
   // 接受工单
-  acceptTicket: async (id: string, comment?: string) => {
+  acceptTicket: async (id: number, comment?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/accept`, {
       method: 'POST',
       body: JSON.stringify({ comment }),
@@ -228,7 +228,7 @@ export const api = {
   },
 
   // 拒绝工单
-  declineTicket: async (id: string, comment: string) => {
+  declineTicket: async (id: number, comment: string) => {
     return fetchWithAuth(`/api/tickets/${id}/decline`, {
       method: 'POST',
       body: JSON.stringify({ comment }),
@@ -236,7 +236,7 @@ export const api = {
   },
 
   // 出发
-  departTicket: async (id: string, departurePhoto?: string) => {
+  departTicket: async (id: number, departurePhoto?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/depart`, {
       method: 'POST',
       body: departurePhoto ? JSON.stringify(departurePhoto) : undefined,
@@ -244,14 +244,14 @@ export const api = {
   },
 
   // 到达
-  arriveTicket: async (id: string, arrivalPhoto?: string) => {
+  arriveTicket: async (id: number, arrivalPhoto?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/arrive`, {
       method: 'POST',
       body: arrivalPhoto ? JSON.stringify(arrivalPhoto) : undefined,
     });
   },
 
-  completeTicket: async (id: string, completionData?: {
+  completeTicket: async (id: number, completionData?: {
     cause?: string;
     solution?: string;
     completionPhoto?: string;
@@ -262,19 +262,43 @@ export const api = {
     });
   },
 
-  reviewTicket: async (id: string, cause?: string) => {
+  reviewTicket: async (id: number, cause?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/review`, {
       method: 'POST',
       body: cause ? JSON.stringify(cause) : undefined,
     });
   },
 
+  // 更新工单步骤
+  updateTicketStep: async (
+    ticketId: number,
+    stepId: string,
+    updates: {
+      completed?: boolean;
+      description?: string;
+      status?: string;
+      cause?: string;
+      photoUrl?: string;
+      photoUrls?: string[];
+      beforePhotoUrl?: string;
+      beforePhotoUrls?: string[];
+      afterPhotoUrl?: string;
+      afterPhotoUrls?: string[];
+      timestamp?: string;
+    }
+  ) => {
+    return fetchWithAuth(`/api/tickets/${ticketId}/steps/${stepId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
   // File upload
-  uploadFile: async (file: File, fieldType?: string) => {
+  uploadFile: async (file: File, fieldType?: string): Promise<{ id: string; url: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     if (fieldType) {
-      formData.append('field_type', fieldType);
+      formData.append('fieldType', fieldType);
     }
 
     const token = getAuthToken();
@@ -293,7 +317,8 @@ export const api = {
       throw new Error('File upload failed');
     }
 
-    return response.json();
+    const result = await response.json();
+    return { id: result.data.id, url: result.data.url };
   },
 
   // Users

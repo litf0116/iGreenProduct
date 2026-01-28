@@ -14,8 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Ticket {
 
-    private String id;
-    private String ticketNumber;
+    private Long id;
     private String title;
     private String description;
     private String type;

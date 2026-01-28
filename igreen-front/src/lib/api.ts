@@ -244,7 +244,7 @@ export const api = {
     return kyInstance.get(`api/tickets?${searchParams}`).json();
   },
 
-  getTicket: async (id: string): Promise<Ticket> => {
+  getTicket: async (id: number): Promise<Ticket> => {
     return kyInstance.get(`api/tickets/${id}`).json<Ticket>();
   },
 
@@ -252,53 +252,53 @@ export const api = {
     return kyInstance.post('api/tickets', { json: ticket }).json<Ticket>();
   },
 
-  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
-    return kyInstance.put(`api/tickets/${id}`, { json: updates }).json<Ticket>();
+  updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
+    return kyInstance.post(`api/tickets/${id}`, { json: updates }).json<Ticket>();
   },
 
-  deleteTicket: async (id: string): Promise<void> => {
+  deleteTicket: async (id: number): Promise<void> => {
     await kyInstance.delete(`api/tickets/${id}`);
   },
 
-  acceptTicket: async (id: string, comment?: string): Promise<Ticket> => {
+  acceptTicket: async (id: number, comment?: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/accept`, { json: { comment } }).json<Ticket>();
   },
 
-  declineTicket: async (id: string, reason: string): Promise<Ticket> => {
+  declineTicket: async (id: number, reason: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/decline`, { json: { reason } }).json<Ticket>();
   },
 
-  cancelTicket: async (id: string, reason: string): Promise<Ticket> => {
+  cancelTicket: async (id: number, reason: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/cancel`, { json: { reason } }).json<Ticket>();
   },
 
-  departTicket: async (id: string, departurePhoto?: string): Promise<Ticket> => {
+  departTicket: async (id: number, departurePhoto?: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/depart`, { json: { departurePhoto } }).json<Ticket>();
   },
 
-  arriveTicket: async (id: string, arrivalPhoto?: string): Promise<Ticket> => {
+  arriveTicket: async (id: number, arrivalPhoto?: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/arrive`, { json: { arrivalPhoto } }).json<Ticket>();
   },
 
-  submitTicket: async (id: string, stepData: Record<string, any>): Promise<Ticket> => {
+  submitTicket: async (id: number, stepData: Record<string, any>): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/submit`, { json: { data: stepData } }).json<Ticket>();
   },
 
-  completeTicket: async (id: string, completionPhoto?: string): Promise<Ticket> => {
+  completeTicket: async (id: number, completionPhoto?: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/complete`, { json: { completionPhoto } }).json<Ticket>();
   },
 
-  reviewTicket: async (id: string, cause?: string): Promise<Ticket> => {
+  reviewTicket: async (id: number, cause?: string): Promise<Ticket> => {
     return kyInstance.post(`api/tickets/${id}/review`, { json: { cause } }).json<Ticket>();
   },
 
-  getTicketComments: async (ticketId: string): Promise<TicketComment[]> => {
+  getTicketComments: async (ticketId: number): Promise<TicketComment[]> => {
     const response = await kyInstance.get(`api/tickets/${ticketId}/comments`).json<{ data: { records: TicketComment[] } }>();
     return response.data.records;
   },
 
   addComment: async (
-    ticketId: string,
+    ticketId: number,
     comment: string,
     type: string = 'GENERAL'
   ): Promise<TicketComment> => {

@@ -80,7 +80,9 @@ export function Dashboard({ tickets = [], onTicketClick, onViewAllClick }: Dashb
                   <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 capitalize">
                     {ticket.status}
                   </Badge>
-                  <span className="text-xs font-mono text-slate-400">{ticket.id}</span>
+                  <span className="text-xs font-mono text-slate-400">
+                    T{ticket.id}
+                  </span>
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 mb-1">{ticket.title}</h3>
                 <div className="flex items-center gap-1 text-sm text-slate-600 mb-3">

@@ -3,8 +3,7 @@ package com.igreen.domain.dto;
 import java.util.List;
 
 public record TicketResponse(
-        String id,
-        String ticketNumber,
+        Long id,
         String title,
         String description,
         String type,

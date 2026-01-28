@@ -141,24 +141,30 @@ function AppContent() {
     }
   }, [isAuthenticated, currentView]);
 
-  const handleTicketClick = (ticket: Ticket) => {
-    // TODO: Backend Integration - Ticket Details
-    // If the list only contains summary data, fetch full details here.
-    // Example: const fullTicket = await api.getTicketDetails(ticket.id);
-    setSelectedTicket(ticket);
+  const handleTicketClick = async (ticket: Ticket) => {
+    try {
+      // Fetch full ticket details from backend
+      const fullTicket = await api.getTicket(ticket.id);
+      setSelectedTicket(fullTicket);
+    } catch (error) {
+      console.error("Failed to fetch ticket details:", error);
+      // Fall back to list data if API fails
+      setSelectedTicket(ticket);
+    }
   };
 
   const handleCloseDetail = () => {
     setSelectedTicket(null);
   };
 
-  const handleUpdateTicket = async (id: string, updates: Partial<Ticket>) => {
+  const handleUpdateTicket = async (id: number, updates: Partial<Ticket>) => {
     const previousTickets = [...tickets];
     const targetTicket = tickets.find(t => t.id === id);
     
     if (!targetTicket) return;
 
     const statusActions: Record<string, () => Promise<any>> = {
+      'assigned': () => Promise.resolve(), // accept 后状态更新由 acceptTicket 处理
       'departed': () => api.departTicket(id),
       'arrived': () => api.arriveTicket(id),
       'completed': () => api.completeTicket(id),
@@ -188,7 +194,7 @@ function AppContent() {
     }
   };
 
-  const handleStatusChange = (id: string, newStatus: string) => {
+  const handleStatusChange = (id: number, newStatus: string) => {
      handleUpdateTicket(id, { status: newStatus as TicketStatus });
   };
 
@@ -224,7 +230,7 @@ function AppContent() {
     toast.success("Profile updated successfully");
   };
 
-  const handleViewRelatedTicket = (ticketId: string) => {
+  const handleViewRelatedTicket = (ticketId: number) => {
     const targetTicket = tickets.find(t => t.id === ticketId);
     if (targetTicket) {
       setSelectedTicket(targetTicket);
@@ -235,18 +241,9 @@ function AppContent() {
     }
   };
 
-  // Filter tickets based on view
+  // 不同视图使用不同 API 获取数据，无需本地筛选
   const getFilteredTickets = () => {
-    switch (currentView) {
-      case 'queue':
-        return tickets.filter(t => t.status === 'open');
-      case 'my-work':
-        return tickets.filter(t => ['assigned', 'departed', 'arrived', 'review'].includes(t.status));
-      case 'history':
-        return tickets.filter(t => t.status === 'completed');
-      default:
-        return [];
-    }
+    return tickets;
   };
 
   // Show loading while checking authentication

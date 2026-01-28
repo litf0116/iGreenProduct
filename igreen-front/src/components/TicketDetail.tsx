@@ -259,7 +259,7 @@ export function TicketDetail({
     : 0;
 
   const daysUntilDue = Math.ceil(
-    (ticket.dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (new Date(ticket.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
   const isOverdue = daysUntilDue < 0;
   const isDueSoon = daysUntilDue >= 0 && daysUntilDue <= 3;

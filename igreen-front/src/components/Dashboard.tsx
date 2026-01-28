@@ -590,7 +590,7 @@ export function Dashboard() {
                         }}
                       >
                         <TableCell className="font-medium">
-                          {ticket.ticketNumber ? `T${ticket.ticketNumber}` : ticket.id}
+                          T{ticket.id}
                         </TableCell>
                         <TableCell>
                           <div>
