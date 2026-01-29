@@ -63,10 +63,10 @@ export const api = {
   register: async (data: {
     name: string;
     username: string;
-    email: string;
     password: string;
+    confirmPassword: string;
+    country: string;
     role?: string;
-    country?: string;
   }): Promise<TokenResponse> => {
     const response = await kyInstance.post('api/auth/register', {
       json: data,
@@ -180,6 +180,33 @@ export const api = {
 
   getSiteStats: async (): Promise<{ totalSites: number; onlineSites: number; offlineSites: number; vipSites: number }> => {
     return kyInstance.get('api/sites/stats').json();
+  },
+
+  // Site Import/Export APIs
+  exportSites: async (params?: { keyword?: string; level?: string; status?: string }): Promise<Blob> => {
+    const searchParams = new URLSearchParams();
+    if (params?.keyword) searchParams.set('keyword', params.keyword);
+    if (params?.level) searchParams.set('level', params.level);
+    if (params?.status) searchParams.set('status', params.status);
+
+    const response = await kyInstance.get(`api/sites/export?${searchParams}`);
+    return response.blob();
+  },
+
+  downloadSiteTemplate: async (): Promise<Blob> => {
+    const response = await kyInstance.get('api/sites/export/template');
+    return response.blob();
+  },
+
+  importSites: async (file: File): Promise<{ success: boolean; message: string; importedCount: number; errorCount: number; errors?: Array<{ row: number; message: string }> }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await kyInstance.post('api/sites/import', {
+      body: formData,
+    });
+
+    return response.json();
   },
 
   getTemplates: async (): Promise<Template[]> => {
