@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TicketService {
 
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final TicketMapper ticketMapper;
     private final TicketCommentMapper ticketCommentMapper;
@@ -512,7 +513,7 @@ public class TicketService {
                 userId,
                 user != null ? user.getName() : null,
                 ticketId,
-                comment.getCreatedAt() != null ? comment.getCreatedAt().toString() : null
+                comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null
         );
     }
 
@@ -528,7 +529,7 @@ public class TicketService {
                             comment.getUserId(),
                             user != null ? user.getName() : null,
                             ticketId,
-                            comment.getCreatedAt() != null ? comment.getCreatedAt().toString() : null
+                            comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null
                     );
                 })
                 .collect(Collectors.toList());
@@ -680,16 +681,16 @@ public class TicketService {
                 assignee != null ? assignee.getName() : null,
                 ticket.getCreatedBy(),
                 creator != null ? creator.getName() : null,
-                ticket.getCreatedAt() != null ? ticket.getCreatedAt().toString() : null,
-                ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().toString() : null,
-                ticket.getDueDate() != null ? ticket.getDueDate().toString() : null,
+                ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null,
+                ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null,
+                ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null,
                 completedSteps,
                 stepData,
                 ticket.getAccepted(),
-                ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().toString() : null,
-                ticket.getDepartureAt() != null ? ticket.getDepartureAt().toString() : null,
+                ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null,
+                ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null,
                 ticket.getDeparturePhoto(),
-                ticket.getArrivalAt() != null ? ticket.getArrivalAt().toString() : null,
+                ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null,
                 ticket.getArrivalPhoto(),
                 ticket.getCompletionPhoto(),
                 ticket.getCause(),

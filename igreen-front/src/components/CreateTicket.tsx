@@ -70,10 +70,10 @@ export function CreateTicket({
   const [openCombobox, setOpenCombobox] = useState(false);
 
   const selectedTemplate = templates.find((t) => t.id === templateId);
-  
+
   // Filter only corrective tickets for relation
   const correctiveTickets = tickets.filter(t => t.type === "corrective");
-  
+
   const isProblemTicket = ticketType === "problem";
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -98,7 +98,7 @@ export function CreateTicket({
   };
 
   const toggleRelatedTicket = (ticketId: string) => {
-    setRelatedTicketIds(current => 
+    setRelatedTicketIds(current =>
       current.includes(ticketId)
         ? current.filter(id => id !== ticketId)
         : [...current, ticketId]
@@ -196,7 +196,7 @@ export function CreateTicket({
                 </Select>
               </div>
             )}
-            
+
             {isProblemTicket && (
               <>
                 <div className="space-y-2">
@@ -271,11 +271,11 @@ export function CreateTicket({
                           <span className="text-muted-foreground truncate max-w-[150px]">
                             {ticket?.title}
                           </span>
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-4 w-4 ml-1" 
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 ml-1"
                             onClick={() => toggleRelatedTicket(id)}
                           >
                             <span className="sr-only">Remove</span>
@@ -329,12 +329,12 @@ export function CreateTicket({
                 <Label>{t("priority")}</Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder={t("priority")}/>
                   </SelectTrigger>
                   <SelectContent>
                     {priorities.map((p) => (
                       <SelectItem key={p} value={p}>
-                        {t(p as TranslationKey)}
+                        {t(p)}
                       </SelectItem>
                     ))}
                   </SelectContent>

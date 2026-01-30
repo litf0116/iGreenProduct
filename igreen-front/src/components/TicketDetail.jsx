@@ -48,6 +48,30 @@ export function TicketDetail({
   onEdit,
 }) {
   const t = (key) => translations[language][key];
+
+  // 格式化日期（年月日）
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    // 如果已经是 Date 对象，直接使用
+    if (dateStr instanceof Date) {
+      return isNaN(dateStr.getTime()) ? "-" : dateStr.toLocaleDateString();
+    }
+    // 字符串转 Date
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? dateStr : date.toLocaleDateString();
+  };
+
+  // 格式化日期时间
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "-";
+    // 如果已经是 Date 对象，直接使用
+    if (dateStr instanceof Date) {
+      return isNaN(dateStr.getTime()) ? "-" : dateStr.toLocaleString();
+    }
+    // 字符串转 Date
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? dateStr : date.toLocaleString();
+  };
   
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
@@ -135,9 +159,11 @@ export function TicketDetail({
     ? (ticket.completedSteps.length / template.steps.length) * 100
     : 0;
 
-  const daysUntilDue = Math.ceil(
-    (ticket.dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysUntilDue = ticket.dueDate
+    ? Math.ceil(
+        (new Date(ticket.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      )
+    : 0;
   const isOverdue = daysUntilDue < 0;
   const isDueSoon = daysUntilDue >= 0 && daysUntilDue <= 3;
 
@@ -268,7 +294,7 @@ export function TicketDetail({
             <div className="flex-1 min-w-0">
               <p className="text-muted-foreground">{t("dueDate")}</p>
               <p className={`mt-1 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
-                {ticket.dueDate.toLocaleDateString()}
+                {formatDate(ticket.dueDate)}
               </p>
               {isOverdue && (
                 <p className="text-red-600">{t("overdueDays").replace("{days}", Math.abs(daysUntilDue).toString())}</p>
@@ -290,7 +316,7 @@ export function TicketDetail({
               <p className="text-muted-foreground">{t("createdBy")}</p>
               <p className="text-foreground mt-1 truncate">{ticket.createdByName}</p>
               <p className="text-muted-foreground">
-                {ticket.createdAt.toLocaleDateString()}
+                {formatDate(ticket.createdAt)}
               </p>
             </div>
           </div>
@@ -419,7 +445,7 @@ export function TicketDetail({
                     </div>
                     <p className="text-muted-foreground mt-1 break-words">{comment.comment}</p>
                     <p className="text-muted-foreground mt-1">
-                      {comment.createdAt.toLocaleString()}
+                      {formatDateTime(comment.createdAt)}
                     </p>
                   </div>
                 </div>

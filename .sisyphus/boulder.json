@@ -1,10 +1,8 @@
 {
-  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/easypoi-migration.md",
-  "started_at": "2026-01-30T11:18:00+08:00",
-  "completed_at": "2026-01-30T19:30:00+08:00",
-  "session_ids": [
-    "ses_3f2e51effffeviNJBDhEZtBlbW"
-  ],
-  "plan_name": "easypoi-migration",
+  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/backend-date-serialization.md",
+  "started_at": "2026-01-30T18:10:00.000Z",
+  "completed_at": "2026-01-31T02:11:00.000Z",
+  "session_ids": ["ses_3effb6871ffeGkl1waESG7OgGc"],
+  "plan_name": "backend-date-serialization",
   "status": "completed"
 }

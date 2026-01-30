@@ -13,7 +13,7 @@ import { format } from "date-fns";
 
 export function CreateTicket({
   templates,
-  users,
+  groups,
   language,
   onSubmit,
   onCancel,
@@ -77,11 +77,11 @@ export function CreateTicket({
           </div>
 
           <div className="space-y-2">
-            <Label>{t("description")}</Label>
+            <Label>{t("ticketDescription")}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("description")}
+              placeholder={t("ticketDescription")}
               rows={4}
             />
           </div>
@@ -141,11 +141,11 @@ export function CreateTicket({
                   <SelectValue placeholder={t("assignTo")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {users
-                    .filter((u) => u.role === "ENGINEER")
-                    .map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
+                  {groups
+                    .filter((g) => g.status === "active")
+                    .map((group) => (
+                      <SelectItem key={group.id} value={group.id}>
+                        {group.name}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -156,12 +156,12 @@ export function CreateTicket({
               <Label>{t("priority")}</Label>
               <Select value={priority} onValueChange={(v) => setPriority(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t("priority")}/>
                 </SelectTrigger>
                 <SelectContent>
                   {priorities.map((p) => (
                     <SelectItem key={p} value={p}>
-                      {t(p)}
+                      {{t(p)}
                     </SelectItem>
                   ))}
                 </SelectContent>

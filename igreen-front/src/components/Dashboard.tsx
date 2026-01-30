@@ -357,10 +357,10 @@ export function Dashboard() {
       {/* Tabs for Ticket Types */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TicketType)} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="CORRECTIVE">{t("correctiveTickets")}</TabsTrigger>
-          <TabsTrigger value="PREVENTIVE">{t("preventiveTickets")}</TabsTrigger>
-          <TabsTrigger value="PLANNED">{t("plannedTickets")}</TabsTrigger>
-          <TabsTrigger value="PROBLEM">{t("problemTickets")}</TabsTrigger>
+          <TabsTrigger value="corrective">{t("correctiveTickets")}</TabsTrigger>
+          <TabsTrigger value="preventive">{t("preventiveTickets")}</TabsTrigger>
+          <TabsTrigger value="planned">{t("plannedTickets")}</TabsTrigger>
+          <TabsTrigger value="problem">{t("problemTickets")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-6">

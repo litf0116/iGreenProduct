@@ -43,6 +43,29 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 
+// Helper functions for date formatting to handle both string and Date inputs
+function formatDate(date: Date | string | undefined | null): string {
+  if (!date) return "-";
+  if (typeof date === "string") {
+    // Handle format: 2025-01-20 10:00:00 or 2025-01-20T10:00:00.000Z
+    const dateObj = new Date(date.replace(" ", "T"));
+    if (isNaN(dateObj.getTime())) return date;
+    return dateObj.toLocaleDateString();
+  }
+  return date.toLocaleDateString();
+}
+
+function formatDateTime(date: Date | string | undefined | null): string {
+  if (!date) return "-";
+  if (typeof date === "string") {
+    // Handle format: 2025-01-20 10:00:00 or 2025-01-20T10:00:00.000Z
+    const dateObj = new Date(date.replace(" ", "T"));
+    if (isNaN(dateObj.getTime())) return date;
+    return dateObj.toLocaleString();
+  }
+  return date.toLocaleString();
+}
+
 interface TicketDetailProps {
   ticket: Ticket;
   template: Template | undefined;
@@ -96,6 +119,11 @@ export function TicketDetail({
   const [causeText, setCauseText] = useState("");
   const [solutionText, setSolutionText] = useState("");
   const [selectedAssignee, setSelectedAssignee] = useState("");
+  
+  // Guard clause: if ticket is undefined, return null or a loading state
+  if (!ticket) {
+    return null;
+  }
   
   const isCreator = ticket.createdBy === currentUserId;
   const isAssigned = ticket.assignedTo === currentUserId;
@@ -475,7 +503,7 @@ export function TicketDetail({
             <div className="flex-1 min-w-0">
               <p className="text-muted-foreground">{t("dueDate")}</p>
               <p className={`mt-1 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
-                {ticket.dueDate.toLocaleDateString()}
+                {formatDate(ticket.dueDate)}
               </p>
               {isOverdue && (
                 <p className="text-red-600">{t("overdueDays").replace("{days}", Math.abs(daysUntilDue).toString())}</p>
@@ -497,7 +525,7 @@ export function TicketDetail({
               <p className="text-muted-foreground">{t("createdBy")}</p>
               <p className="text-foreground mt-1 truncate">{ticket.createdByName}</p>
               <p className="text-muted-foreground">
-                {ticket.createdAt.toLocaleDateString()}
+                {formatDate(ticket.createdAt)}
               </p>
             </div>
           </div>
@@ -541,7 +569,7 @@ export function TicketDetail({
                 {ticket.departureAt ? (
                   <div className="pl-7">
                     <p className="text-muted-foreground">
-                      {ticket.departureAt.toLocaleString()}
+                      {formatDateTime(ticket.departureAt)}
                     </p>
                     {ticket.departurePhoto && (
                       <img
@@ -569,7 +597,7 @@ export function TicketDetail({
                 {ticket.arrivalAt ? (
                   <div className="pl-7">
                     <p className="text-muted-foreground">
-                      {ticket.arrivalAt.toLocaleString()}
+                      {formatDateTime(ticket.arrivalAt)}
                     </p>
                     {ticket.arrivalPhoto && (
                       <img
@@ -740,7 +768,7 @@ export function TicketDetail({
                     </div>
                     <p className="text-muted-foreground mt-1 break-words">{comment.comment}</p>
                     <p className="text-muted-foreground mt-1">
-                      {comment.createdAt.toLocaleString()}
+                      {formatDateTime(comment.createdAt)}
                     </p>
                   </div>
                 </div>

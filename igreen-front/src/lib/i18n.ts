@@ -170,6 +170,7 @@ export const translations = {
 
     // Create Ticket
     pleaseSelectTemplate: "Please select a template",
+    description:  "Description",
 
     // Ticket Detail
     done: "Done",
