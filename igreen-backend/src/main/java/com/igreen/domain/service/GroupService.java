@@ -72,12 +72,23 @@ public class GroupService {
     @Transactional(readOnly = true)
     public List<Group> searchGroups(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
+            System.out.println("[DEBUG searchGroups] Keyword is empty, returning all groups");
             return getAllGroups();
         }
-        System.out.println("[DEBUG searchGroups] Searching with keyword: " + keyword);
-        List<Group> groups = groupMapper.selectList(new LambdaQueryWrapper<Group>().like(Group::getName, keyword.trim()).or().like(Group::getDescription, keyword.trim())
-        );
+        String searchKeyword = keyword.trim();
+        System.out.println("[DEBUG searchGroups] Searching with keyword: " + searchKeyword);
+        
+        // 构建查询条件
+        LambdaQueryWrapper<Group> wrapper = new LambdaQueryWrapper<Group>();
+        wrapper.like(Group::getName, searchKeyword)
+               .or()
+               .like(Group::getDescription, searchKeyword);
+        
+        System.out.println("[DEBUG searchGroups] SQL condition: name LIKE %" + searchKeyword + "% OR description LIKE %" + searchKeyword + "%");
+        
+        List<Group> groups = groupMapper.selectList(wrapper);
         System.out.println("[DEBUG searchGroups] Found groups: " + groups.size());
+        
         for (Group group : groups) {
             Integer memberCount = userMapper.countByGroupId(group.getId());
             group.setMemberCount(memberCount != null ? memberCount : 0);

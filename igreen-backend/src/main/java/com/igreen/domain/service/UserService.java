@@ -38,12 +38,7 @@ public class UserService {
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
-
-        wrapper = new LambdaQueryWrapper<>();
-        if (userMapper.selectCount(wrapper) > 0) {
-            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
-        }
-
+        
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
