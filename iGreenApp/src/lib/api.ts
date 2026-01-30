@@ -213,12 +213,26 @@ export const api = {
   },
 
   updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
-    // 删除 id 字段，因为后端 TicketUpdateRequest 不接受 id 字段
-    // id 已经在 URL 路径中传递
-    const { id: _, ...updatesWithoutId } = updates;
+    // 后端 TicketUpdateRequest 只接受特定字段，需要过滤掉其他字段
+    // 允许的字段列表：relatedTicketIds, dueDate, priority, site, assignedTo, arrivalAt, 
+    // status, stepData, title, arrivalPhoto, type, description, departurePhoto, 
+    // departureAt, cause, completionPhoto, solution, completedSteps
+    const allowedFields = [
+      'relatedTicketIds', 'dueDate', 'priority', 'site', 'assignedTo', 'arrivalAt',
+      'status', 'stepData', 'title', 'arrivalPhoto', 'type', 'description',
+      'departurePhoto', 'departureAt', 'cause', 'completionPhoto', 'solution', 'completedSteps'
+    ];
+    
+    const filteredUpdates: Record<string, any> = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedFields.includes(key) && value !== undefined) {
+        filteredUpdates[key] = value;
+      }
+    }
+    
     return fetchWithAuth(`/api/tickets/${id}`, {
       method: 'POST',
-      body: JSON.stringify(updatesWithoutId),
+      body: JSON.stringify(filteredUpdates),
     });
   },
 
