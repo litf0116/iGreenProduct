@@ -213,9 +213,12 @@ export const api = {
   },
 
   updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
+    // 删除 id 字段，因为后端 TicketUpdateRequest 不接受 id 字段
+    // id 已经在 URL 路径中传递
+    const { id: _, ...updatesWithoutId } = updates;
     return fetchWithAuth(`/api/tickets/${id}`, {
       method: 'POST',
-      body: JSON.stringify(updates),
+      body: JSON.stringify(updatesWithoutId),
     });
   },
 

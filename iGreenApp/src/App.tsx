@@ -164,7 +164,7 @@ function AppContent() {
     if (!targetTicket) return;
 
     const statusActions: Record<string, () => Promise<any>> = {
-      'assigned': () => Promise.resolve(), // accept 后状态更新由 acceptTicket 处理
+      'assigned': () => api.acceptTicket(id),
       'departed': () => api.departTicket(id),
       'arrived': () => api.arriveTicket(id),
       'completed': () => api.completeTicket(id),
