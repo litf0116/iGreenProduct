@@ -6,6 +6,6 @@ public record TicketCommentResponse(
         String type,
         String userId,
         String userName,
-        String ticketId,
+        Long ticketId,
         String createdAt
 ) {}

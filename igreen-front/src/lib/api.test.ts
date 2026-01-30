@@ -3,7 +3,16 @@ import { api } from './api';
 import { server } from '../test/mocks/server';
 import { http } from 'msw';
 
-// Setup MSW server
+vi.mock('./kyInstance', async () => {
+  const actual = await vi.importActual('./kyInstance');
+  return {
+    ...actual,
+    kyInstance: actual.kyInstance.extend({
+      prefixUrl: 'http://localhost:8000',
+    }),
+  };
+});
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

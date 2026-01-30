@@ -1,44 +1,25 @@
 export type TicketStatus =
-  | 'OPEN'
-  | 'ASSIGNED'
-  | 'ACCEPTED'
-  | 'IN_PROGRESS'
-  | 'COMPLETED'
-  | 'ON_HOLD'
-  | 'CANCELLED';
+  | 'open' | 'assigned' | 'accepted' | 'in_progress' | 'departed'
+  | 'arrived' | 'submitted' | 'review' | 'completed' | 'on_hold' 
+  | 'cancelled' | 'declined';
 
-export type TicketType =
-  | 'PLANNED'
-  | 'PREVENTIVE'
-  | 'CORRECTIVE'
-  | 'PROBLEM';
+export type TicketType = 'planned' | 'preventive' | 'corrective' | 'problem';
 
 export type Priority = 'P1' | 'P2' | 'P3' | 'P4';
 
-export type UserRole = 'ADMIN' | 'MANAGER' | 'ENGINEER';
+export type UserRole = 'admin' | 'manager' | 'engineer';
 
-export type UserStatus = 'ACTIVE' | 'INACTIVE';
+export type UserStatus = 'active' | 'inactive';
 
 export type CommentType =
-  | 'GENERAL'
-  | 'COMMENT'
-  | 'ACCEPT'
-  | 'DECLINE'
-  | 'CANCEL'
-  | 'SYSTEM';
+  | 'general' | 'comment' | 'accept' | 'decline' | 'cancel' | 'system';
 
-export type SiteStatus = 'ONLINE' | 'OFFLINE' | 'UNDER_CONSTRUCTION';
+export type SiteStatus = 'online' | 'offline' | 'under_construction';
 
-export type GroupStatus = 'ACTIVE' | 'INACTIVE';
+export type GroupStatus = 'active' | 'inactive';
 
 export type FieldType =
-  | 'TEXT'
-  | 'NUMBER'
-  | 'DATE'
-  | 'LOCATION'
-  | 'PHOTO'
-  | 'SIGNATURE'
-  | 'FACE_RECOGNITION';
+  | 'text' | 'number' | 'date' | 'location' | 'photo' | 'signature' | 'face_recognition';
 
 export type SiteLevel = 'A' | 'B' | 'C' | string;
 
@@ -67,14 +48,12 @@ export interface SiteLevelConfig {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
-  escalationTimeHours: number;
 }
 
 export interface SiteLevelConfigRequest {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
-  escalationTimeHours: number;
 }
 
 export interface TicketComment {
@@ -118,7 +97,7 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
-  tags?: string;
+  tags?: string[];
   status: GroupStatus;
   memberCount?: number;
   createdAt: string;
@@ -155,6 +134,7 @@ export interface Ticket {
   solution?: string;
   comments?: TicketComment[];
   relatedTicketIds?: string[];
+  problemType?: string;
 }
 
 export interface User {
@@ -209,9 +189,10 @@ export interface LoginRequest {
 export interface RegisterRequest {
   name: string;
   username: string;
-  email: string;
   password: string;
-  role?: UserRole;
+  confirmPassword: string;
+  country: string;
+  role?: string;
 }
 
 export interface TokenResponse {
@@ -263,6 +244,7 @@ export interface TicketResponse {
   solution?: string;
   comments?: TicketComment[];
   relatedTicketIds?: string[];
+  problemType?: string;
 }
 
 export interface TicketCreateRequest {

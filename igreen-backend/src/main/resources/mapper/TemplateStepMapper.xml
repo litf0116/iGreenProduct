@@ -6,24 +6,12 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="description" column="description"/>
-        <result property="order" column="order"/>
+        <result property="sortOrder" column="sort_order"/>
         <result property="templateId" column="template_id"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, description, `order`, template_id
+        id, name, description, sort_order, template_id
     </sql>
-
-    <select id="selectByTemplateIdOrderByOrderAsc" resultMap="BaseResultMap">
-        SELECT <include refid="Base_Column_List"/>
-        FROM template_steps
-        WHERE template_id = #{templateId}
-        ORDER BY `order` ASC
-    </select>
-
-    <delete id="deleteByTemplateId">
-        DELETE FROM template_steps
-        WHERE template_id = #{templateId}
-    </delete>
 
 </mapper>

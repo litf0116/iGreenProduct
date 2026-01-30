@@ -14,7 +14,17 @@ import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
 import com.igreen.domain.mapper.TicketCommentMapper;
 import com.igreen.domain.mapper.TicketMapper;
+import com.igreen.domain.dto.TicketCancelRequest;
+import com.igreen.domain.dto.TicketCommentCreateRequest;
+import com.igreen.domain.dto.TicketCommentResponse;
+import com.igreen.domain.dto.TicketDeclineRequest;
+import com.igreen.domain.dto.TicketStatsResponse;
+import com.igreen.domain.dto.TicketUpdateRequest;
+import com.igreen.domain.dto.StepData;
+import com.igreen.domain.entity.TicketComment;
+import com.igreen.domain.enums.CommentType;
 import com.igreen.domain.mapper.TicketStatusCount;
+import com.igreen.domain.mapper.TicketMapper;
 import com.igreen.domain.mapper.UserMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,10 +42,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,12 +96,12 @@ class TicketServiceTest {
                 .build();
 
         testTicket = Ticket.builder()
-                .id("ticket-id")
+                .id(202601200001L)
                 .title("Test Ticket")
                 .description("Test Description")
-                .type(TicketType.PLANNED)
-                .status(TicketStatus.OPEN)
-                .priority(Priority.P2)
+                .type("PLANNED")
+                .status("OPEN")
+                .priority("P2")
                 .site("Shanghai Office")
                 .assignedTo("assignee-id")
                 .createdBy("creator-id")
@@ -127,7 +139,7 @@ class TicketServiceTest {
         assertNotNull(response);
         assertEquals("New Ticket", response.title());
         assertEquals("Description", response.description());
-        assertEquals("preventive", response.type());
+        assertEquals("PREVENTIVE", response.type());
         assertEquals("P1", response.priority());
     }
 
@@ -188,7 +200,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("preventive", response.type());
+        assertEquals("PREVENTIVE", response.type());
     }
 
     @Test
@@ -278,7 +290,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("problem", response.type());
+        assertEquals("PROBLEM", response.type());
         assertEquals("pt-thermal-issue", response.problemType());
         assertNotNull(response.relatedTicketIds());
         assertTrue(response.relatedTicketIds().isEmpty());
@@ -556,7 +568,7 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("open", response.status());
+        assertEquals("OPEN", response.status());
     }
 
     @Test
@@ -589,9 +601,9 @@ class TicketServiceTest {
         TicketResponse response = ticketService.createTicket(request, "creator-id");
 
         assertNotNull(response);
-        assertEquals("problem", response.type());
+        assertEquals("PROBLEM", response.type());
         verify(ticketMapper).insert(argThat(ticket ->
-            ticket.getType() == TicketType.PROBLEM
+            "PROBLEM".equals(ticket.getType())
         ));
     }
 
@@ -622,7 +634,7 @@ class TicketServiceTest {
         ticketService.createTicket(request, "creator-id");
 
         verify(ticketMapper).insert(argThat(ticket ->
-            ticket.getPriority() == Priority.P3
+            "P3".equals(ticket.getPriority())
         ));
     }
 
@@ -680,5 +692,633 @@ class TicketServiceTest {
                 () -> ticketService.createTicket(request, "creator-id"));
 
         assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    // ==================== Decline Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should decline ticket successfully")
+    void declineTicket_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        testTicket.setAssignedTo("assignee-id");
+
+        TicketDeclineRequest request = new TicketDeclineRequest("Cannot complete this task");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.declineTicket("ticket-1", request, "assignee-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "CANCELLED".equals(ticket.getStatus()) &&
+            Boolean.FALSE.equals(ticket.getAccepted())
+        ));
+        verify(ticketCommentMapper).insert(argThat(comment ->
+            "Cannot complete this task".equals(comment.getComment()) &&
+            CommentType.DECLINE.equals(comment.getType())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when declining ticket as non-assignee")
+    void declineTicket_NotAssignee_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        TicketDeclineRequest request = new TicketDeclineRequest("Reason");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.declineTicket("ticket-1", request, "other-user-id"));
+
+        assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
+    }
+
+    // ==================== Cancel Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should cancel ticket successfully as creator")
+    void cancelTicket_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        TicketCancelRequest request = new TicketCancelRequest("No longer needed");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.cancelTicket("ticket-1", request, "creator-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "CANCELLED".equals(ticket.getStatus())
+        ));
+        verify(ticketCommentMapper).insert(argThat(comment ->
+            "No longer needed".equals(comment.getComment()) &&
+            CommentType.CANCEL.equals(comment.getType())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when canceling ticket as non-creator")
+    void cancelTicket_NotCreator_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        TicketCancelRequest request = new TicketCancelRequest("Reason");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.cancelTicket("ticket-1", request, "other-user-id"));
+
+        assertEquals(ErrorCode.NOT_CREATOR.getCode(), exception.getCode());
+    }
+
+    // ==================== Submit Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should submit ticket with step data successfully")
+    void submitTicket_WithStepData_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        testTicket.setStepData(null);
+
+        Map<String, Object> stepDataMap = new HashMap<>();
+        stepDataMap.put("step1", "value1");
+        StepData stepData = new StepData(stepDataMap);
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.submitTicket("ticket-1", stepData, "assignee-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(any(Ticket.class));
+    }
+
+    @Test
+    @DisplayName("Should handle null step data gracefully")
+    void submitTicket_NullStepData_ShouldNotThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        assertDoesNotThrow(() -> ticketService.submitTicket("ticket-1", null, "assignee-id"));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when submitting as non-assignee")
+    void submitTicket_NotAssignee_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        StepData stepData = new StepData(new HashMap<>());
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.submitTicket("ticket-1", stepData, "other-user-id"));
+
+        assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
+    }
+
+    // ==================== Review Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should review ticket with cause and reopen it")
+    void reviewTicket_WithCause_ShouldReopen() {
+        Ticket testTicket = createTestTicket("ticket-1", "COMPLETED", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.reviewTicket("ticket-1", "Needs more work", "reviewer-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "Needs more work".equals(ticket.getCause()) &&
+            "OPEN".equals(ticket.getStatus())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should review ticket without cause and keep completed")
+    void reviewTicket_WithoutCause_ShouldKeepCompleted() {
+        Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.reviewTicket("ticket-1", null, "reviewer-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "COMPLETED".equals(ticket.getStatus())
+        ));
+    }
+
+    // ==================== Add Ticket Comment Tests ====================
+
+    @Test
+    @DisplayName("Should add comment to ticket successfully")
+    void addTicketComment_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        User testUser = User.builder().id("user-1").name("Test User").build();
+
+        TicketCommentCreateRequest request = new TicketCommentCreateRequest("This is a comment", CommentType.GENERAL);
+
+        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
+        when(userMapper.selectById("user-1")).thenReturn(testUser);
+        when(ticketCommentMapper.insert(any(TicketComment.class))).thenAnswer(invocation -> {
+            TicketComment comment = invocation.getArgument(0);
+            comment.setId("comment-1");
+            comment.setCreatedAt(LocalDateTime.now());
+            return 1;
+        });
+
+        TicketCommentResponse response = ticketService.addTicketComment("ticket-1", request, "user-1");
+
+        assertNotNull(response);
+        assertEquals("This is a comment", response.comment());
+        assertEquals("GENERAL", response.type());
+        assertEquals("user-1", response.userId());
+        verify(ticketCommentMapper).insert(argThat(comment ->
+            "This is a comment".equals(comment.getComment()) &&
+            CommentType.GENERAL.equals(comment.getType()) &&
+            "ticket-1".equals(comment.getTicketId())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should add comment with default type when type is null")
+    void addTicketComment_NullType_UsesDefault() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        User testUser = User.builder().id("user-1").name("Test User").build();
+
+        TicketCommentCreateRequest request = new TicketCommentCreateRequest("Comment", null);
+
+        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
+        when(userMapper.selectById("user-1")).thenReturn(testUser);
+        when(ticketCommentMapper.insert(any(TicketComment.class))).thenReturn(1);
+
+        ticketService.addTicketComment("ticket-1", request, "user-1");
+
+        verify(ticketCommentMapper).insert(argThat(comment ->
+            CommentType.GENERAL.equals(comment.getType())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when adding comment to non-existent ticket")
+    void addTicketComment_TicketNotFound_ShouldThrow() {
+        TicketCommentCreateRequest request = new TicketCommentCreateRequest("Comment", CommentType.GENERAL);
+
+        when(ticketMapper.selectById("non-existent-ticket")).thenReturn(null);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.addTicketComment("non-existent-ticket", request, "user-1"));
+
+        assertEquals(ErrorCode.TICKET_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    // ==================== Get Ticket Comments Tests ====================
+
+    @Test
+    @DisplayName("Should get all comments for a ticket")
+    void getTicketComments_Success() {
+        TicketComment comment1 = TicketComment.builder()
+                .id("comment-1")
+                .comment("First comment")
+                .type(CommentType.GENERAL)
+                .ticketId("ticket-1")
+                .userId("user-1")
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        TicketComment comment2 = TicketComment.builder()
+                .id("comment-2")
+                .comment("Second comment")
+                .type(CommentType.ACCEPT)
+                .ticketId("ticket-1")
+                .userId("user-2")
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        User user1 = User.builder().id("user-1").name("User One").build();
+        User user2 = User.builder().id("user-2").name("User Two").build();
+
+        when(ticketCommentMapper.selectByTicketIdWithUser("ticket-1"))
+                .thenReturn(Arrays.asList(comment1, comment2));
+        when(userMapper.selectById("user-1")).thenReturn(user1);
+        when(userMapper.selectById("user-2")).thenReturn(user2);
+
+        List<TicketCommentResponse> comments = ticketService.getTicketComments("ticket-1");
+
+        assertEquals(2, comments.size());
+        assertEquals("First comment", comments.get(0).comment());
+        assertEquals("Second comment", comments.get(1).comment());
+        assertEquals("User One", comments.get(0).userName());
+        assertEquals("User Two", comments.get(1).userName());
+    }
+
+    @Test
+    @DisplayName("Should return empty list when ticket has no comments")
+    void getTicketComments_NoComments_ReturnsEmpty() {
+        when(ticketCommentMapper.selectByTicketIdWithUser("ticket-1"))
+                .thenReturn(Collections.emptyList());
+
+        List<TicketCommentResponse> comments = ticketService.getTicketComments("ticket-1");
+
+        assertTrue(comments.isEmpty());
+    }
+
+    // ==================== Get My Tickets Tests ====================
+
+    @Test
+    @DisplayName("Should get tickets assigned to user")
+    void getMyTickets_Success() {
+        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "user-1", "creator-1");
+        Ticket ticket2 = createTestTicket("ticket-2", "IN_PROGRESS", "user-1", "creator-2");
+
+        when(ticketMapper.selectByAssignedTo("user-1"))
+                .thenReturn(Arrays.asList(ticket1, ticket2));
+        when(userMapper.selectById("creator-1")).thenReturn(testCreator);
+        when(userMapper.selectById("creator-2")).thenReturn(testCreator);
+        when(userMapper.selectById("user-1")).thenReturn(testAssignee);
+
+        PageResult<TicketResponse> result = ticketService.getMyTickets(1, 10, null, "user-1");
+
+        assertNotNull(result);
+        assertEquals(2, result.records().size());
+    }
+
+    @Test
+    @DisplayName("Should get my tickets filtered by status")
+    void getMyTickets_WithStatusFilter_Success() {
+        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "user-1", "creator-1");
+        Ticket ticket2 = createTestTicket("ticket-2", "COMPLETED", "user-1", "creator-2");
+
+        when(ticketMapper.selectByAssignedTo("user-1"))
+                .thenReturn(Arrays.asList(ticket1, ticket2));
+        when(userMapper.selectById(any())).thenReturn(testCreator, testCreator, testAssignee);
+
+        PageResult<TicketResponse> result = ticketService.getMyTickets(1, 10, "OPEN", "user-1");
+
+        assertEquals(1, result.records().size());
+        assertEquals("OPEN", result.records().get(0).status());
+    }
+
+    // ==================== Get Pending Tickets Tests ====================
+
+    @Test
+    @DisplayName("Should get all pending tickets (OPEN and ASSIGNED)")
+    void getPendingTickets_Success() {
+        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "assignee-1", "creator-1");
+        Ticket ticket2 = createTestTicket("ticket-2", "ASSIGNED", "assignee-2", "creator-2");
+        Ticket ticket3 = createTestTicket("ticket-3", "IN_PROGRESS", "assignee-3", "creator-3");
+
+        when(ticketMapper.selectByStatusIn(Arrays.asList("OPEN", "ASSIGNED")))
+                .thenReturn(Arrays.asList(ticket1, ticket2, ticket3));
+        when(userMapper.selectById(any())).thenReturn(testCreator, testAssignee);
+
+        List<TicketResponse> pendingTickets = ticketService.getPendingTickets();
+
+        assertEquals(3, pendingTickets.size());
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no pending tickets")
+    void getPendingTickets_NoPending_ReturnsEmpty() {
+        when(ticketMapper.selectByStatusIn(any())).thenReturn(Collections.emptyList());
+
+        List<TicketResponse> pendingTickets = ticketService.getPendingTickets();
+
+        assertTrue(pendingTickets.isEmpty());
+    }
+
+    // ==================== Get Completed Tickets Tests ====================
+
+    @Test
+    @DisplayName("Should get completed tickets with pagination")
+    void getCompletedTickets_Success() {
+        Ticket ticket1 = createTestTicket("ticket-1", "COMPLETED", "assignee-1", "creator-1");
+        Ticket ticket2 = createTestTicket("ticket-2", "COMPLETED", "assignee-2", "creator-2");
+
+        when(ticketMapper.selectByStatus("COMPLETED"))
+                .thenReturn(Arrays.asList(ticket1, ticket2));
+        when(userMapper.selectById(any())).thenReturn(testCreator, testAssignee);
+
+        PageResult<TicketResponse> result = ticketService.getCompletedTickets(1, 10);
+
+        assertNotNull(result);
+        assertEquals(2, result.records().size());
+        assertTrue(result.records().stream().allMatch(t -> "COMPLETED".equals(t.status())));
+    }
+
+    // ==================== Get Ticket Stats Tests ====================
+
+    @Test
+    @DisplayName("Should get ticket statistics for all types")
+    void getTicketStats_AllTypes_Success() {
+        TicketStatusCount count1 = createStatusCount("OPEN", 10);
+        TicketStatusCount count2 = createStatusCount("IN_PROGRESS", 5);
+        TicketStatusCount count3 = createStatusCount("COMPLETED", 15);
+        TicketStatusCount count4 = createStatusCount("ACCEPTED", 3);
+
+        when(ticketMapper.countByStatusGroup(null))
+                .thenReturn(Arrays.asList(count1, count2, count3, count4));
+
+        TicketStatsResponse stats = ticketService.getTicketStats("all");
+
+        assertEquals(33, stats.total()); // 10 + 5 + 15 + 3
+        assertEquals(10, stats.open());
+        assertEquals(8, stats.inProgress()); // 5 + 3
+        assertEquals(15, stats.completed());
+    }
+
+    @Test
+    @DisplayName("Should get ticket statistics filtered by type")
+    void getTicketStats_WithFilter_Success() {
+        TicketStatusCount count1 = createStatusCount("OPEN", 5);
+        TicketStatusCount count2 = createStatusCount("COMPLETED", 8);
+
+        when(ticketMapper.countByStatusGroup("CORRECTIVE"))
+                .thenReturn(Arrays.asList(count1, count2));
+
+        TicketStatsResponse stats = ticketService.getTicketStats("CORRECTIVE");
+
+        assertEquals(13, stats.total());
+        assertEquals(5, stats.open());
+        assertEquals(8, stats.completed());
+    }
+
+    @Test
+    @DisplayName("Should handle empty stats gracefully")
+    void getTicketStats_NoData_ReturnsZeros() {
+        when(ticketMapper.countByStatusGroup(any())).thenReturn(Collections.emptyList());
+
+        TicketStatsResponse stats = ticketService.getTicketStats("all");
+
+        assertEquals(0, stats.total());
+        assertEquals(0, stats.open());
+        assertEquals(0, stats.inProgress());
+        assertEquals(0, stats.completed());
+    }
+
+    @Test
+    @DisplayName("Should aggregate multiple status counts correctly")
+    void getTicketStats_MultipleCountsPerStatus_AggregatesCorrectly() {
+        TicketStatusCount count1 = createStatusCount("OPEN", 5);
+        TicketStatusCount count2 = createStatusCount("OPEN", 3);
+        TicketStatusCount count3 = createStatusCount("IN_PROGRESS", 2);
+        TicketStatusCount count4 = createStatusCount("ACCEPTED", 4);
+
+        when(ticketMapper.countByStatusGroup(null))
+                .thenReturn(Arrays.asList(count1, count2, count3, count4));
+
+        TicketStatsResponse stats = ticketService.getTicketStats("all");
+
+        assertEquals(8, stats.open()); // 5 + 3
+        assertEquals(6, stats.inProgress()); // 2 + 4
+    }
+
+    // ==================== Update Ticket Edge Cases ====================
+
+    @Test
+    @DisplayName("Should update ticket with all nullable fields")
+    void updateTicket_AllNullableFields_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        TicketUpdateRequest request = new TicketUpdateRequest(
+                "Updated Title",
+                "Updated Description",
+                "CORRECTIVE",
+                "site-002",
+                "IN_PROGRESS",
+                "P1",
+                "new-assignee-id",
+                LocalDateTime.now().plusDays(10),
+                List.of("step1", "step2"),
+                new StepData(Map.of("key", "value")),
+                LocalDateTime.now(),
+                "photo-url-1",
+                LocalDateTime.now(),
+                "photo-url-2",
+                "completion-photo",
+                "Root cause identified",
+                "Solution implemented",
+                List.of("related-1", "related-2")
+        );
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.updateTicket("ticket-1", request);
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "Updated Title".equals(ticket.getTitle()) &&
+            "Updated Description".equals(ticket.getDescription()) &&
+            "CORRECTIVE".equals(ticket.getType()) &&
+            "site-002".equals(ticket.getSite()) &&
+            "IN_PROGRESS".equals(ticket.getStatus()) &&
+            "P1".equals(ticket.getPriority()) &&
+            "new-assignee-id".equals(ticket.getAssignedTo()) &&
+            "Root cause identified".equals(ticket.getCause()) &&
+            "Solution implemented".equals(ticket.getSolution())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should handle JSON processing error in completed steps")
+    void updateTicket_InvalidCompletedStepsJson_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        TicketUpdateRequest request = new TicketUpdateRequest(
+                null, null, null, null, null, null, null, null,
+                List.of("step1"), null, null, null, null, null, null, null, null, null
+        );
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        // Should not throw with valid input
+        assertDoesNotThrow(() -> ticketService.updateTicket("ticket-1", request));
+    }
+
+    // ==================== Delete Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should delete existing ticket")
+    void deleteTicket_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
+        when(ticketMapper.deleteById("ticket-1")).thenReturn(1);
+
+        assertDoesNotThrow(() -> ticketService.deleteTicket("ticket-1"));
+        verify(ticketMapper).deleteById("ticket-1");
+    }
+
+    @Test
+    @DisplayName("Should throw exception when deleting non-existent ticket")
+    void deleteTicket_NotFound_ShouldThrow() {
+        when(ticketMapper.selectById("non-existent-ticket")).thenReturn(null);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.deleteTicket("non-existent-ticket"));
+
+        assertEquals(ErrorCode.TICKET_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    // ==================== Arrive Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should arrive ticket with photo")
+    void arriveTicket_WithPhoto_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.arriveTicket("ticket-1", "arrival-photo.jpg", "assignee-id");
+
+        assertNotNull(response);
+        verify(ticketMapper).updateById(argThat(ticket ->
+            ticket.getArrivalPhoto() != null &&
+            "arrival-photo.jpg".equals(ticket.getArrivalPhoto())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when arriving as non-assignee")
+    void arriveTicket_NotAssignee_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.arriveTicket("ticket-1", "photo.jpg", "other-user-id"));
+
+        assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
+    }
+
+    // ==================== Complete Ticket Tests ====================
+
+    @Test
+    @DisplayName("Should complete ticket with photo")
+    void completeTicket_WithPhoto_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.completeTicket("ticket-1", "completion-photo.jpg", "assignee-id");
+
+        assertNotNull(response);
+        assertEquals("COMPLETED", response.status());
+        verify(ticketMapper).updateById(argThat(ticket ->
+            "COMPLETED".equals(ticket.getStatus()) &&
+            "completion-photo.jpg".equals(ticket.getCompletionPhoto())
+        ));
+    }
+
+    @Test
+    @DisplayName("Should complete ticket without photo")
+    void completeTicket_WithoutPhoto_Success() {
+        Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+        when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
+
+        TicketResponse response = ticketService.completeTicket("ticket-1", null, "assignee-id");
+
+        assertNotNull(response);
+        assertEquals("COMPLETED", response.status());
+    }
+
+    @Test
+    @DisplayName("Should throw exception when completing as non-assignee")
+    void completeTicket_NotAssignee_ShouldThrow() {
+        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+
+        when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> ticketService.completeTicket("ticket-1", "photo.jpg", "other-user-id"));
+
+        assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
+    }
+
+    // ==================== Helper Methods ====================
+
+    private Ticket createTestTicket(String id, String status, String assignedTo, String createdBy) {
+        Ticket ticket = Ticket.builder()
+                .id(id)
+                .title("Test Ticket")
+                .description("Test Description")
+                .type("CORRECTIVE")
+                .status(status)
+                .priority("P2")
+                .site("site-001")
+                .templateId("template-001")
+                .assignedTo(assignedTo)
+                .createdBy(createdBy)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .dueDate(LocalDateTime.now().plusDays(7))
+                .build();
+
+        // Set related entities
+        ticket.setCreator(testCreator);
+        ticket.setAssignee(testAssignee);
+
+        return ticket;
+    }
+
+    private TicketStatusCount createStatusCount(String status, long count) {
+        TicketStatusCount statusCount = new TicketStatusCount();
+        statusCount.setStatus(status);
+        statusCount.setCount(count);
+        return statusCount;
     }
 }

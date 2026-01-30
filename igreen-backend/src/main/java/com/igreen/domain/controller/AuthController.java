@@ -37,20 +37,17 @@ public class AuthController {
     public ResponseEntity<Result<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse response = userService.login(request);
 
-        Optional<User> userOpt = userMapper.selectByUsernameAndCountry(request.username(), request.country());
-        if (userOpt.isEmpty()) {
-            userOpt = userMapper.selectByUsername(request.username());
-        }
+        // 生成 refresh token
+        String refreshToken = jwtUtils.generateRefreshToken(
+            jwtUtils.extractUserId(response.accessToken()),
+            jwtUtils.extractUsername(response.accessToken())
+        );
 
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            String refreshToken = jwtUtils.generateRefreshToken(user.getId(), user.getUsername());
-            response = new TokenResponse(
-                response.accessToken(),
-                refreshToken,
-                jwtUtils.getExpirationMs() / 1000
-            );
-        }
+        response = new TokenResponse(
+            response.accessToken(),
+            refreshToken,
+            jwtUtils.getExpirationMs() / 1000
+        );
 
         return ResponseEntity.ok(Result.success(response));
     }

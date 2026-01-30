@@ -99,15 +99,15 @@ export function TicketDetail({
   
   const isCreator = ticket.createdBy === currentUserId;
   const isAssigned = ticket.assignedTo === currentUserId;
-  const canAcceptOrDecline = isAssigned && !isCreator && ticket.status === "OPEN" && !ticket.accepted;
-  const canHold = isAssigned && (ticket.status === "ACCEPTED" || ticket.status === "IN_PROGRESS");
-  const canResume = isAssigned && ticket.status === "ON_HOLD";
-  const canReassign = isCreator && (ticket.status === "OPEN" || ticket.status === "ACCEPTED");
+  const canAcceptOrDecline = isAssigned && !isCreator && ticket.status === "open" && !ticket.accepted;
+  const canHold = isAssigned && (ticket.status === "accepted" || ticket.status === "in_progress");
+  const canResume = isAssigned && ticket.status === "on_hold";
+  const canReassign = isCreator && (ticket.status === "open" || ticket.status === "accepted");
   const canDeparture = isAssigned && ticket.accepted && !ticket.departureAt;
   const canArrival = isAssigned && ticket.departureAt && !ticket.arrivalAt;
-  const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "COMPLETED" && ticket.status !== "SUBMITTED";
-  const canConfirm = ticket.status === "SUBMITTED";
-  const canReject = ticket.status === "SUBMITTED";
+  const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "completed" && ticket.status !== "submitted";
+  const canConfirm = ticket.status === "submitted";
+  const canReject = ticket.status === "submitted";
 
   const handleAccept = () => {
     if (onAccept) {
@@ -206,15 +206,17 @@ export function TicketDetail({
     switch (status) {
       case "open":
         return "bg-blue-500";
+      case "assigned":
+        return "bg-indigo-500";
       case "accepted":
         return "bg-cyan-500";
-      case "inProgress":
+      case "in_progress":
         return "bg-orange-500";
       case "submitted":
         return "bg-purple-500";
-      case "closed":
+      case "completed":
         return "bg-green-500";
-      case "onHold":
+      case "on_hold":
         return "bg-yellow-500";
       case "cancelled":
         return "bg-gray-500";
@@ -227,15 +229,17 @@ export function TicketDetail({
     switch (status) {
       case "open":
         return "text-blue-500";
+      case "assigned":
+        return "text-indigo-500";
       case "accepted":
         return "text-cyan-500";
-      case "inProgress":
+      case "in_progress":
         return "text-orange-500";
       case "submitted":
         return "text-purple-500";
-      case "closed":
+      case "completed":
         return "text-green-500";
-      case "onHold":
+      case "on_hold":
         return "text-yellow-500";
       case "cancelled":
         return "text-gray-500";
@@ -259,7 +263,7 @@ export function TicketDetail({
     : 0;
 
   const daysUntilDue = Math.ceil(
-    (ticket.dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (new Date(ticket.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
   const isOverdue = daysUntilDue < 0;
   const isDueSoon = daysUntilDue >= 0 && daysUntilDue <= 3;
@@ -580,17 +584,17 @@ export function TicketDetail({
                 )}
               </div>
 
-              {/* Completion Status */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  {ticket.status === "COMPLETED" ? (
+                {/* Completion Status */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    {ticket.status === "completed" ? (
                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                   ) : (
                     <Circle className="h-5 w-5 text-gray-300" />
                   )}
                   <span className="font-medium">{t("complete")}</span>
                 </div>
-                {ticket.status === "COMPLETED" && ticket.completionPhoto ? (
+                {ticket.status === "completed" && ticket.completionPhoto ? (
                   <div className="pl-7">
                     <img
                       src={ticket.completionPhoto}

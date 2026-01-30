@@ -245,8 +245,7 @@ class ConfigServiceTest {
         SiteLevelConfigRequest request = new SiteLevelConfigRequest(
                 "普通站点",
                 "普通站点描述",
-                5,
-                4
+                5
         );
 
         when(siteLevelConfigMapper.countByLevelName("普通站点")).thenReturn(0);
@@ -265,8 +264,7 @@ class ConfigServiceTest {
         SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
                 "更新后VIP",
                 "更新后描述",
-                3,
-                2
+                3
         );
 
         when(siteLevelConfigMapper.selectById("level-1")).thenReturn(testSiteLevelConfig);
@@ -288,5 +286,119 @@ class ConfigServiceTest {
         configService.deleteSiteLevelConfig("level-1");
 
         verify(siteLevelConfigMapper).deleteById("level-1");
+    }
+
+    @Test
+    @DisplayName("更新SLA配置成功")
+    void updateSLAConfig_Success() {
+        SLAConfigRequest request = new SLAConfigRequest(
+                "sla-1",
+                Priority.P3,
+                180,
+                12
+        );
+
+        when(slaConfigMapper.selectById("sla-1")).thenReturn(testSLAConfig);
+        when(slaConfigMapper.updateById(any(SLAConfig.class))).thenReturn(1);
+
+        SLAConfigResponse result = configService.createOrUpdateSLAConfig(request);
+
+        assertNotNull(result);
+        assertEquals(Priority.P3, result.priority());
+        verify(slaConfigMapper).updateById(any(SLAConfig.class));
+    }
+
+    @Test
+    @DisplayName("删除不存在的站点级别配置应抛出异常")
+    void deleteSiteLevelConfig_NotFound() {
+        when(siteLevelConfigMapper.selectById("nonexistent")).thenReturn(null);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.deleteSiteLevelConfig("nonexistent"));
+
+        assertEquals(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("删除不存在的问题类型应抛出异常")
+    void deleteProblemType_NotFound() {
+        when(problemTypeMapper.selectById("nonexistent")).thenReturn(null);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.deleteProblemType("nonexistent"));
+
+        assertEquals(ErrorCode.PROBLEM_TYPE_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("更新不存在的问题类型应抛出异常")
+    void updateProblemType_NotFound() {
+        ProblemTypeUpdateRequest request = new ProblemTypeUpdateRequest("新名称", "新描述");
+
+        when(problemTypeMapper.selectById("nonexistent")).thenReturn(null);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.updateProblemType("nonexistent", request));
+
+        assertEquals(ErrorCode.PROBLEM_TYPE_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("更新问题类型时名称重复应抛出异常")
+    void updateProblemType_NameExists() {
+        ProblemTypeUpdateRequest request = new ProblemTypeUpdateRequest("已存在名称", "描述");
+
+        when(problemTypeMapper.selectById("problem-1")).thenReturn(testProblemType);
+        when(problemTypeMapper.countByNameAndIdNot("已存在名称", "problem-1")).thenReturn(1);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.updateProblemType("problem-1", request));
+
+        assertEquals(ErrorCode.PROBLEM_TYPE_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("创建重复名称的站点级别配置应抛出异常")
+    void createSiteLevelConfig_NameExists() {
+        SiteLevelConfigRequest request = new SiteLevelConfigRequest(
+                "VIP",
+                "描述",
+                5
+        );
+
+        when(siteLevelConfigMapper.countByLevelName("VIP")).thenReturn(1);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.createSiteLevelConfig(request));
+
+        assertEquals(ErrorCode.SITE_LEVEL_CONFIG_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("更新站点级别配置时名称重复应抛出异常")
+    void updateSiteLevelConfig_NameExists() {
+        SiteLevelConfigUpdateRequest request = new SiteLevelConfigUpdateRequest(
+                "已存在名称", "描述", 5
+        );
+
+        when(siteLevelConfigMapper.selectById("level-1")).thenReturn(testSiteLevelConfig);
+        when(siteLevelConfigMapper.countByLevelNameAndIdNot("已存在名称", "level-1")).thenReturn(1);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> configService.updateSiteLevelConfig("level-1", request));
+
+        assertEquals(ErrorCode.SITE_LEVEL_CONFIG_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("获取空的问题类型列表")
+    void getAllProblemTypes_EmptyList() {
+        when(problemTypeMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Arrays.asList());
+
+        List<ProblemTypeResponse> result = configService.getAllProblemTypes();
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
     }
 }

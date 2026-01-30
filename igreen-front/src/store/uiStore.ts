@@ -23,7 +23,7 @@ interface UIState {
   };
 
   // 当前语言
-  language: 'en' | 'zh';
+  language: 'en' | 'th';
 
   // Actions
   openModal: (name: keyof UIState['modals']) => void;
@@ -31,7 +31,7 @@ interface UIState {
   setSelectedTicket: (ticket: Ticket | null) => void;
   setTicketFilters: (filters: Partial<UIState['ticketFilters']>) => void;
   resetTicketFilters: () => void;
-  setLanguage: (lang: 'en' | 'zh') => void;
+  setLanguage: (lang: 'en' | 'th') => void;
 }
 
 const defaultFilters = {

@@ -1,0 +1,42 @@
+<testsuites id="" name="" tests="12" failures="0" skipped="2" errors="0" time="12.665488000000002">
+<testsuite name="groups.spec.ts" timestamp="2026-01-20T16:27:04.122Z" hostname="chromium" tests="11" failures="0" skipped="2" time="36.942" errors="0">
+<testcase name="Groups Page › should display groups page UI elements" classname="groups.spec.ts" time="3.8">
+</testcase>
+<testcase name="Groups Page › should switch to users tab" classname="groups.spec.ts" time="4.119">
+</testcase>
+<testcase name="Groups Page › should load and display groups data" classname="groups.spec.ts" time="3.532">
+</testcase>
+<testcase name="Groups Page › should switch between groups and users tabs" classname="groups.spec.ts" time="3.736">
+</testcase>
+<testcase name="Groups Page › should open create group dialog" classname="groups.spec.ts" time="3.416">
+</testcase>
+<testcase name="Groups Page › should create new group" classname="groups.spec.ts" time="3.584">
+</testcase>
+<testcase name="Groups Page › should edit existing group" classname="groups.spec.ts" time="2.886">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Groups Page › should delete group with confirmation" classname="groups.spec.ts" time="2.892">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Groups Page › should display users list in users tab" classname="groups.spec.ts" time="2.449">
+</testcase>
+<testcase name="Groups Page › should open create user dialog" classname="groups.spec.ts" time="3.181">
+</testcase>
+<testcase name="Groups Page › should search users" classname="groups.spec.ts" time="3.347">
+</testcase>
+</testsuite>
+<testsuite name="integration.spec.ts" timestamp="2026-01-20T16:27:04.122Z" hostname="chromium" tests="1" failures="0" skipped="0" time="0.305" errors="0">
+<testcase name="Integration Tests - Real API › should fetch groups from real API" classname="integration.spec.ts" time="0.305">
+</testcase>
+</testsuite>
+</testsuites>

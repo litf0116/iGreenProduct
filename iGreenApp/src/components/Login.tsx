@@ -6,6 +6,7 @@ import { User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { toast } from "sonner@2.0.3";
 import logoImage from "figma:asset/e827750074831b7c0b1fd927cc5b318bf0bb80ab.png";
+import { api } from '../lib/api';
 
 interface LoginProps {
   onLogin: () => void;
@@ -13,31 +14,29 @@ interface LoginProps {
 
 export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [account, setAccount] = useState("mike.tech");
-  const [password, setPassword] = useState("password");
+  const [account, setAccount] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!account || !password) {
+      toast.error("请输入账号和密码");
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: Backend Integration - Sign In
-    // Implement authentication logic here
-    // Example:
-    // const { data, error } = await supabase.auth.signInWithPassword({
-    //   email: account + "@igreenplus.com", // transform account to email if needed internally
-    //   password,
-    // });
-    
-    // Simulate network delay
-    setTimeout(() => {
+    try {
+      const data = await api.login(account, password);
+      toast.success("登录成功");
+      onLogin();
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      toast.error(error.message || "登录失败，请检查账号和密码");
+    } finally {
       setIsLoading(false);
-      if (account && password) {
-        onLogin();
-        toast.success("Welcome back, Mike!");
-      } else {
-        toast.error("Please enter valid credentials");
-      }
-    }, 1500);
+    }
   };
 
   return (

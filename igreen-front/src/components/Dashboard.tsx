@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -39,6 +39,47 @@ import {
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
+const TIME_FILTER_LABELS: Record<TimeFilter, TranslationKey> = {
+  "all": "allTime",
+  "8hours": "within8Hours",
+  "today": "today",
+  "week": "thisWeek",
+  "month": "thisMonth",
+  "3months": "within3Months",
+};
+
+function getCreatedAfter(filter: TimeFilter): string | null {
+  if (filter === "all") return null;
+
+  const now = new Date();
+  let start: Date;
+
+  switch (filter) {
+    case "8hours":
+      start = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+      break;
+    case "today":
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "week":
+      start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case "month":
+      start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case "3months":
+      start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      return null;
+  }
+
+  const format = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+
+  return format(start);
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
 
@@ -49,7 +90,7 @@ export function Dashboard() {
   const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
   const openModal = useUIStore((state) => state.openModal);
 
-  const t = (key: TranslationKey) => translations[language][key];
+  const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +104,48 @@ export function Dashboard() {
     onHold: 0,
   });
 
+  const [activeTab, setActiveTab] = useState<TicketType>("corrective");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("type") as TicketType;
+    const time = searchParams.get("time") as TimeFilter;
+    const status = searchParams.get("status") as TicketStatus | "all";
+    const priority = searchParams.get("priority");
+    const query = searchParams.get("q");
+
+    if (tab && ["corrective", "preventive", "planned", "problem"].includes(tab)) {
+      setActiveTab(tab);
+    }
+    if (time && ["8hours", "today", "week", "month", "3months", "all"].includes(time)) {
+      setTimeFilter(time);
+    }
+    if (status && ["open", "assigned", "accepted", "in_progress", "submitted", "completed", "on_hold", "cancelled", "all"].includes(status)) {
+      setStatusFilter(status);
+    }
+    if (priority) {
+      setPriorityFilter(priority);
+    }
+    if (query) {
+      setSearchQuery(query);
+    }
+  }, []);
+
+  const updateSearchParams = useCallback(() => {
+    const params: Record<string, string> = {};
+    if (activeTab !== "corrective") params.type = activeTab;
+    if (timeFilter !== "all") params.time = timeFilter;
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (priorityFilter !== "all") params.priority = priorityFilter;
+    if (searchQuery) params.q = searchQuery;
+    setSearchParams(params, { replace: true });
+  }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, setSearchParams]);
+
   // 加载统计数据
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
@@ -71,11 +154,11 @@ export function Dashboard() {
       setStats(data);
     } catch (error) {
       console.error("Failed to load stats:", error);
-      toast.error(t("errorOccurred") || "Failed to load statistics");
+      toast.error(t("failedToLoadStats") || "Failed to load statistics");
     } finally {
       setStatsLoading(false);
     }
-  }, [activeTab, t]);
+  }, [activeTab]);
 
   // 组件挂载时从 API 加载数据
   const loadTickets = useCallback(async () => {
@@ -84,27 +167,25 @@ export function Dashboard() {
       const response = await api.getTickets({ 
         page: 0, 
         size: 100,
-        type: activeTab 
+        type: activeTab,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        priority: priorityFilter !== "all" ? priorityFilter : undefined,
+        keyword: searchQuery || undefined,
+        createdAfter: getCreatedAfter(timeFilter)
       });
       setTickets(response.records || response || []);
     } catch (error) {
       console.error("Failed to load tickets:", error);
-      toast.error(t("errorOccurred") || "Failed to load tickets");
+      toast.error(t("failedToLoadTickets") || "Failed to load tickets");
     } finally {
       setIsLoading(false);
     }
-  }, [setTickets, t, activeTab]);
+  }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
 
   useEffect(() => {
     loadTickets();
     loadStats();
   }, [loadTickets, loadStats]);
-
-  const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
 
   // Filter tickets by time
   const filterByTime = (ticket: Ticket): boolean => {
@@ -163,21 +244,21 @@ export function Dashboard() {
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "bg-blue-500";
-      case "ASSIGNED":
+      case "assigned":
         return "bg-indigo-500";
-      case "ACCEPTED":
+      case "accepted":
         return "bg-cyan-500";
-      case "IN_PROGRESS":
+      case "in_progress":
         return "bg-orange-500";
-      case "SUBMITTED":
+      case "submitted":
         return "bg-purple-500";
-      case "COMPLETED":
+      case "completed":
         return "bg-green-500";
-      case "ON_HOLD":
+      case "on_hold":
         return "bg-yellow-500";
-      case "CANCELLED":
+      case "cancelled":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -186,19 +267,19 @@ export function Dashboard() {
 
   const getStatusBadgeVariant = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "default";
-      case "ASSIGNED":
-      case "ACCEPTED":
-      case "IN_PROGRESS":
+      case "assigned":
+      case "accepted":
+      case "in_progress":
         return "secondary";
-      case "SUBMITTED":
+      case "submitted":
         return "default";
-      case "COMPLETED":
+      case "completed":
         return "outline";
-      case "ON_HOLD":
+      case "on_hold":
         return "default";
-      case "CANCELLED":
+      case "cancelled":
         return "destructive";
       default:
         return "default";
@@ -224,8 +305,35 @@ export function Dashboard() {
     }
   };
 
+  const getStatusTranslationKey = (status: string): TranslationKey => {
+    const statusMap: Record<string, TranslationKey> = {
+      "open": "open",
+      "assigned": "assigned",
+      "accepted": "accepted",
+      "in_progress": "inProgress",
+      "submitted": "submitted",
+      "completed": "closed",
+      "on_hold": "onHold",
+      "cancelled": "cancelled",
+    };
+    return statusMap[status] || status as TranslationKey;
+  };
+
+  const getPriorityTranslationKey = (priority: string): TranslationKey => {
+    if (priority === "P1" || priority === "P2" || priority === "P3" || priority === "P4") {
+      return priority as TranslationKey;
+    }
+    const priorityMap: Record<string, TranslationKey> = {
+      "urgent": "urgent",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+    };
+    return priorityMap[priority] || priority as TranslationKey;
+  };
+
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : language === "pt" ? "pt-BR" : "en-US", {
+    return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : "en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -260,11 +368,11 @@ export function Dashboard() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 flex-1">
               {/* Time Filter */}
-              <Select value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)}>
+              <Select value={timeFilter} onValueChange={(v) => { setTimeFilter(v as TimeFilter); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="truncate">{timeFilter === "all" ? t("allTime") : t("timeRange")}</span>
+                    <span className="truncate">{t(TIME_FILTER_LABELS[timeFilter])}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -278,7 +386,7 @@ export function Dashboard() {
               </Select>
 
               {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as TicketStatus | "all")}>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as TicketStatus | "all"); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -289,18 +397,18 @@ export function Dashboard() {
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="all">{t("allStatus")}</SelectItem>
-                  <SelectItem value="OPEN">{t("open")}</SelectItem>
-                  <SelectItem value="ASSIGNED">{t("assigned")}</SelectItem>
-                  <SelectItem value="ACCEPTED">{t("accepted")}</SelectItem>
-                  <SelectItem value="IN_PROGRESS">{t("inProgress")}</SelectItem>
-                  <SelectItem value="SUBMITTED">{t("submitted")}</SelectItem>
-                  <SelectItem value="ON_HOLD">{t("onHold")}</SelectItem>
-                  <SelectItem value="COMPLETED">{t("closed")}</SelectItem>
+                  <SelectItem value="open">{t("open")}</SelectItem>
+                  <SelectItem value="assigned">{t("assigned")}</SelectItem>
+                  <SelectItem value="accepted">{t("accepted")}</SelectItem>
+                  <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
+                  <SelectItem value="submitted">{t("submitted")}</SelectItem>
+                  <SelectItem value="on_hold">{t("onHold")}</SelectItem>
+                  <SelectItem value="completed">{t("closed")}</SelectItem>
                 </SelectContent>
               </Select>
 
               {/* Priority Filter */}
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <Select value={priorityFilter} onValueChange={(v) => { setPriorityFilter(v); updateSearchParams(); }}>
                 <SelectTrigger className="bg-white w-full">
                   <div className="flex items-center gap-2 truncate">
                     <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -325,7 +433,7 @@ export function Dashboard() {
                   type="text"
                   placeholder={t("searchTickets")}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); updateSearchParams(); }}
                   className="pl-8 bg-white w-full"
                 />
               </div>
@@ -440,7 +548,7 @@ export function Dashboard() {
                     <TableHead>{t("site")}</TableHead>
                     <TableHead>{t("status")}</TableHead>
                     <TableHead>{t("priority")}</TableHead>
-                    <TableHead>{t("assignedTo")}</TableHead>
+                    <TableHead>{t("assignedToName")}</TableHead>
                     <TableHead>{t("createdDate")}</TableHead>
                     <TableHead>{t("dueDate")}</TableHead>
                     <TableHead>{t("progress")}</TableHead>
@@ -481,7 +589,9 @@ export function Dashboard() {
                           openModal("ticketDetail");
                         }}
                       >
-                        <TableCell className="font-medium">{ticket.id}</TableCell>
+                        <TableCell className="font-medium">
+                          T{ticket.id}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{ticket.title}</p>
@@ -493,15 +603,15 @@ export function Dashboard() {
                         <TableCell>{ticket.site}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusBadgeVariant(ticket.status)}>
-                            {t(ticket.status as TranslationKey)}
+                            {t(getStatusTranslationKey(ticket.status))}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant={getPriorityBadge(ticket.priority)}>
-                            {t(ticket.priority as TranslationKey)}
+                            {t(getPriorityTranslationKey(ticket.priority))}
                           </Badge>
                         </TableCell>
-                        <TableCell>{ticket.assignedToName}</TableCell>
+                        <TableCell>{ticket.assignedToName || "-"}</TableCell>
                         <TableCell>{formatDate(ticket.createdAt)}</TableCell>
                         <TableCell>
                           <span className={new Date(ticket.dueDate) < new Date() && ticket.status !== "closed" ? "text-red-500 font-medium" : ""}>

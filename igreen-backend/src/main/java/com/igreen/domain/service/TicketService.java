@@ -1,46 +1,30 @@
 package com.igreen.domain.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
-import com.igreen.domain.dto.StepData;
-import com.igreen.domain.dto.TicketAcceptRequest;
-import com.igreen.domain.dto.TicketCancelRequest;
-import com.igreen.domain.dto.TicketCommentCreateRequest;
-import com.igreen.domain.dto.TicketCommentResponse;
-import com.igreen.domain.dto.TicketCreateRequest;
-import com.igreen.domain.dto.TicketDeclineRequest;
-import com.igreen.domain.dto.TicketResponse;
-import com.igreen.domain.dto.TicketStatsResponse;
-import com.igreen.domain.dto.TicketUpdateRequest;
+import com.igreen.domain.dto.*;
+import com.igreen.domain.entity.Site;
+import com.igreen.domain.entity.TemplateStep;
 import com.igreen.domain.entity.Ticket;
 import com.igreen.domain.entity.TicketComment;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.CommentType;
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketStatus;
-import com.igreen.domain.enums.TicketType;
-import com.igreen.domain.mapper.TicketCommentMapper;
-import com.igreen.domain.mapper.TicketMapper;
-import com.igreen.domain.mapper.TicketStatusCount;
-import com.igreen.domain.mapper.UserMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +36,8 @@ public class TicketService {
     private final TicketMapper ticketMapper;
     private final TicketCommentMapper ticketCommentMapper;
     private final UserMapper userMapper;
+    private final SiteMapper siteMapper;
+    private final TemplateStepMapper templateStepMapper;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -66,9 +52,6 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        TicketType ticketType = TicketType.valueOf(request.type());
-        Priority ticketPriority = request.priority() != null ? Priority.valueOf(request.priority()) : null;
-
         String relatedTicketIdsJson = null;
         if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
             try {
@@ -79,34 +62,35 @@ public class TicketService {
         }
 
         Ticket ticket = Ticket.builder()
-                .id(UUID.randomUUID().toString())
                 .title(request.title())
                 .description(request.description())
-                .type(ticketType)
+                .type(request.type())
                 .site(request.site())
-                .priority(ticketPriority)
+                .priority(request.priority())
                 .templateId(request.templateId())
                 .assignedTo(request.assignedTo())
                 .createdBy(currentUserId)
                 .dueDate(request.dueDate())
-                .status(TicketStatus.OPEN)
+                .status("OPEN")
                 .problemType(request.problemType())
                 .relatedTicketIds(relatedTicketIdsJson)
                 .build();
 
         ticketMapper.insert(ticket);
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional(readOnly = true)
-    public TicketResponse getTicketById(String id) {
+    public TicketResponse getTicketById(Long id) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
 
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional(readOnly = true)
@@ -114,19 +98,15 @@ public class TicketService {
             String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageHelper.startPage(page, size);
         try {
-            TicketType ticketType = type != null ? TicketType.valueOf(type) : null;
-            TicketStatus ticketStatus = status != null ? TicketStatus.valueOf(status) : null;
-            Priority ticketPriority = priority != null ? Priority.valueOf(priority) : null;
-
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
-            if (ticketType != null) {
-                wrapper.eq(Ticket::getType, ticketType);
+            if (type != null) {
+                wrapper.eq(Ticket::getType, type);
             }
-            if (ticketStatus != null) {
-                wrapper.eq(Ticket::getStatus, ticketStatus);
+            if (status != null) {
+                wrapper.eq(Ticket::getStatus, status);
             }
-            if (ticketPriority != null) {
-                wrapper.eq(Ticket::getPriority, ticketPriority);
+            if (priority != null) {
+                wrapper.eq(Ticket::getPriority, priority);
             }
             if (assignedTo != null) {
                 wrapper.eq(Ticket::getAssignedTo, assignedTo);
@@ -145,7 +125,8 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -157,7 +138,7 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse updateTicket(String id, TicketUpdateRequest request) {
+    public TicketResponse updateTicket(Long id, TicketUpdateRequest request) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -232,11 +213,12 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public void deleteTicket(String id) {
+    public void deleteTicket(Long id) {
         if (ticketMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
@@ -244,19 +226,23 @@ public class TicketService {
     }
 
     @Transactional
-    public TicketResponse acceptTicket(String id, TicketAcceptRequest request, String userId) {
+    public TicketResponse acceptTicket(Long id, TicketAcceptRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
-            throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
-        }
-
-        if (ticket.getStatus() != TicketStatus.OPEN) {
+        // OPEN tickets can be accepted by any engineer
+        // ASSIGNED tickets can only be accepted by the assigned engineer
+        if ("OPEN".equals(ticket.getStatus())) {
+            ticket.setAssignedTo(userId);
+        } else if ("ASSIGNED".equals(ticket.getStatus())) {
+            if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+                throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
+            }
+        } else {
             throw new BusinessException(ErrorCode.TICKET_ALREADY_ACCEPTED);
         }
 
-        ticket.setStatus(TicketStatus.ACCEPTED);
+        ticket.setStatus("ACCEPTED");
         ticket.setAccepted(true);
         ticket.setAcceptedAt(LocalDateTime.now());
 
@@ -275,19 +261,20 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse declineTicket(String id, TicketDeclineRequest request, String userId) {
+    public TicketResponse declineTicket(Long id, TicketDeclineRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.CANCELLED);
+        ticket.setStatus("CANCELLED");
         ticket.setAccepted(false);
 
         TicketComment comment = TicketComment.builder()
@@ -303,11 +290,12 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse cancelTicket(String id, TicketCancelRequest request, String userId) {
+    public TicketResponse cancelTicket(Long id, TicketCancelRequest request, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -315,7 +303,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_CREATOR);
         }
 
-        ticket.setStatus(TicketStatus.CANCELLED);
+        ticket.setStatus("CANCELLED");
 
         TicketComment comment = TicketComment.builder()
                 .id(UUID.randomUUID().toString())
@@ -330,19 +318,26 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse departTicket(String id, String departurePhoto, String userId) {
+    public TicketResponse departTicket(Long id, String departurePhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        // Check if user is the assigned engineer
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.IN_PROGRESS);
+        // Allow depart from ASSIGNED or ACCEPTED status
+        if (!"ASSIGNED".equals(ticket.getStatus()) && !"ACCEPTED".equals(ticket.getStatus())) {
+            throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
+        }
+
+        ticket.setStatus("IN_PROGRESS");
         ticket.setDepartureAt(LocalDateTime.now());
         if (departurePhoto != null) {
             ticket.setDeparturePhoto(departurePhoto);
@@ -352,15 +347,17 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse arriveTicket(String id, String arrivalPhoto, String userId) {
+    public TicketResponse arriveTicket(Long id, String arrivalPhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        // Check if user is the assigned engineer
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -369,19 +366,58 @@ public class TicketService {
             ticket.setArrivalPhoto(arrivalPhoto);
         }
 
+        // Initialize stepData from template if ticket has templateId and stepData is null/empty
+        if (ticket.getTemplateId() != null && (ticket.getStepData() == null || ticket.getStepData().isEmpty())) {
+            initializeStepDataFromTemplate(ticket);
+        }
+
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
+    }
+
+    private void initializeStepDataFromTemplate(Ticket ticket) {
+        try {
+            // Fetch template steps from database
+            LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
+            stepWrapper.eq(TemplateStep::getTemplateId, ticket.getTemplateId());
+            stepWrapper.orderByAsc(TemplateStep::getSortOrder);
+            List<TemplateStep> templateSteps = templateStepMapper.selectList(stepWrapper);
+
+            if (templateSteps != null && !templateSteps.isEmpty()) {
+                // Convert template steps to the format expected by frontend
+                List<Map<String, Object>> steps = new ArrayList<>();
+                for (TemplateStep step : templateSteps) {
+                    Map<String, Object> stepMap = new HashMap<>();
+                    stepMap.put("id", step.getId());
+                    stepMap.put("name", step.getName());
+                    stepMap.put("description", step.getDescription() != null ? step.getDescription() : "");
+                    stepMap.put("completed", false);
+                    stepMap.put("status", "pending");
+                    stepMap.put("sortOrder", step.getSortOrder());
+                    steps.add(stepMap);
+                }
+
+                Map<String, Object> stepDataMap = new HashMap<>();
+                stepDataMap.put("steps", steps);
+
+                ticket.setStepData(objectMapper.writeValueAsString(stepDataMap));
+                log.info("Initialized stepData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
+            }
+        } catch (JsonProcessingException e) {
+            log.error("Error initializing stepData from template for ticket {}", ticket.getId(), e);
+        }
     }
 
     @Transactional
-    public TicketResponse submitTicket(String id, StepData stepData, String userId) {
+    public TicketResponse submitTicket(Long id, StepData stepData, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -405,19 +441,20 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse completeTicket(String id, String completionPhoto, String userId) {
+    public TicketResponse completeTicket(Long id, String completionPhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (!ticket.getAssignedTo().equals(userId)) {
+        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus(TicketStatus.COMPLETED);
+        ticket.setStatus("COMPLETED");
         if (completionPhoto != null) {
             ticket.setCompletionPhoto(completionPhoto);
         }
@@ -426,30 +463,32 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketResponse reviewTicket(String id, String cause, String userId) {
+    public TicketResponse reviewTicket(Long id, String cause, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (cause != null) {
             ticket.setCause(cause);
-            ticket.setStatus(TicketStatus.OPEN);
+            ticket.setStatus("OPEN");
         } else {
-            ticket.setStatus(TicketStatus.COMPLETED);
+            ticket.setStatus("COMPLETED");
         }
 
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
         User assignee = ticket.getAssignee();
-        return toResponse(ticket, creator, assignee);
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
     }
 
     @Transactional
-    public TicketCommentResponse addTicketComment(String ticketId, TicketCommentCreateRequest request, String userId) {
+    public TicketCommentResponse addTicketComment(Long ticketId, TicketCommentCreateRequest request, String userId) {
         Ticket ticket = ticketMapper.selectById(ticketId);
         if (ticket == null) {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
@@ -478,7 +517,7 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public List<TicketCommentResponse> getTicketComments(String ticketId) {
+    public List<TicketCommentResponse> getTicketComments(Long ticketId) {
         return ticketCommentMapper.selectByTicketIdWithUser(ticketId).stream()
                 .map(comment -> {
                     User user = userMapper.selectById(comment.getUserId());
@@ -500,9 +539,9 @@ public class TicketService {
         PageHelper.startPage(page, size);
         try {
             List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
-            if (status != null) {
+            if (status != null && !status.isEmpty()) {
                 tickets = tickets.stream()
-                        .filter(t -> t.getStatus().name().equals(status))
+                        .filter(t -> status.equalsIgnoreCase(t.getStatus()))
                         .collect(Collectors.toList());
             }
 
@@ -510,7 +549,8 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -522,30 +562,35 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public List<TicketResponse> getPendingTickets() {
-        List<String> statuses = Arrays.asList(TicketStatus.OPEN.name(), TicketStatus.ASSIGNED.name());
+    public PageResult<TicketResponse> getPendingTickets() {
+        // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
+        List<String> statuses = Arrays.asList("OPEN");
         List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses);
 
-        return tickets.stream()
+        List<TicketResponse> ticketResponses = tickets.stream()
                 .map(ticket -> {
                     User creator = userMapper.selectById(ticket.getCreatedBy());
                     User assignee = userMapper.selectById(ticket.getAssignedTo());
-                    return toResponse(ticket, creator, assignee);
+                    Site site = siteMapper.selectById(ticket.getSite());
+                    return toResponse(ticket, creator, assignee, site);
                 })
                 .collect(Collectors.toList());
+
+        return new PageResult<>(ticketResponses, ticketResponses.size(), 0, ticketResponses.size(), false);
     }
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getCompletedTickets(int page, int size) {
         PageHelper.startPage(page, size);
         try {
-            List<Ticket> tickets = ticketMapper.selectByStatus(TicketStatus.COMPLETED.name());
+            List<Ticket> tickets = ticketMapper.selectByStatus("COMPLETED");
 
             List<TicketResponse> ticketResponses = tickets.stream()
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         User assignee = userMapper.selectById(ticket.getAssignedTo());
-                        return toResponse(ticket, creator, assignee);
+                        Site site = siteMapper.selectById(ticket.getSite());
+                        return toResponse(ticket, creator, assignee, site);
                     })
                     .collect(Collectors.toList());
 
@@ -589,7 +634,7 @@ public class TicketService {
         );
     }
 
-    private TicketResponse toResponse(Ticket ticket, User creator, User assignee) {
+    private TicketResponse toResponse(Ticket ticket, User creator, User assignee, Site site) {
         List<String> completedSteps = new ArrayList<>();
         if (ticket.getCompletedSteps() != null && !ticket.getCompletedSteps().isEmpty()) {
             try {
@@ -623,10 +668,12 @@ public class TicketService {
                 ticket.getId(),
                 ticket.getTitle(),
                 ticket.getDescription(),
-                ticket.getType(),
-                ticket.getStatus(),
+                ticket.getType() != null ? ticket.getType().toLowerCase() : null,
+                ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null,
                 ticket.getPriority(),
                 ticket.getSite(),
+                site != null ? site.getName() : null,       // siteName
+                site != null ? site.getAddress() : null,    // siteAddress
                 ticket.getTemplateId(),
                 null,
                 ticket.getAssignedTo(),
@@ -651,5 +698,87 @@ public class TicketService {
                 relatedTicketIds,
                 ticket.getProblemType()
         );
+    }
+
+    @Transactional
+    public TicketResponse updateTicketStep(Long ticketId, String stepId, TicketStepUpdateRequest request, String userId) {
+        Ticket ticket = ticketMapper.selectById(ticketId);
+        if (ticket == null) {
+            throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
+        }
+
+        // 解析现有的 stepData
+        Map<String, Object> stepDataMap = new HashMap<>();
+        if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
+            try {
+                stepDataMap = objectMapper.readValue(ticket.getStepData(), Map.class);
+            } catch (JsonProcessingException e) {
+                log.error("Error parsing step data", e);
+            }
+        }
+
+        // 更新步骤数据
+        Map<String, Object> stepData = new HashMap<>();
+        if (stepDataMap.containsKey("steps")) {
+            Object existingSteps = stepDataMap.get("steps");
+            if (existingSteps instanceof List) {
+                List<Map<String, Object>> steps = new ArrayList<>();
+                for (Object s : (List<?>) existingSteps) {
+                    if (s instanceof Map) {
+                        Map<String, Object> step = new HashMap<>((Map<String, Object>) s);
+                        if (stepId.equals(step.get("id"))) {
+                            // 更新当前步骤
+                            if (request.getCompleted() != null) {
+                                step.put("completed", request.getCompleted());
+                            }
+                            if (request.getDescription() != null) {
+                                step.put("description", request.getDescription());
+                            }
+                            if (request.getStatus() != null) {
+                                step.put("status", request.getStatus());
+                            }
+                            if (request.getCause() != null) {
+                                step.put("cause", request.getCause());
+                            }
+                            if (request.getPhotoUrl() != null) {
+                                step.put("photoUrl", request.getPhotoUrl());
+                            }
+                            if (request.getPhotoUrls() != null) {
+                                step.put("photoUrls", request.getPhotoUrls());
+                            }
+                            if (request.getBeforePhotoUrl() != null) {
+                                step.put("beforePhotoUrl", request.getBeforePhotoUrl());
+                            }
+                            if (request.getBeforePhotoUrls() != null) {
+                                step.put("beforePhotoUrls", request.getBeforePhotoUrls());
+                            }
+                            if (request.getAfterPhotoUrl() != null) {
+                                step.put("afterPhotoUrl", request.getAfterPhotoUrl());
+                            }
+                            if (request.getAfterPhotoUrls() != null) {
+                                step.put("afterPhotoUrls", request.getAfterPhotoUrls());
+                            }
+                            if (request.getTimestamp() != null) {
+                                step.put("timestamp", request.getTimestamp());
+                            }
+                        }
+                        steps.add(step);
+                    }
+                }
+                stepData.put("steps", steps);
+            }
+        }
+
+        // 保存更新后的 stepData
+        try {
+            String stepDataJson = objectMapper.writeValueAsString(stepData);
+            ticket.setStepData(stepDataJson);
+            ticketMapper.updateById(ticket);
+        } catch (JsonProcessingException e) {
+            log.error("Error saving step data", e);
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
+        }
+
+        return getTicketById(ticketId);
     }
 }

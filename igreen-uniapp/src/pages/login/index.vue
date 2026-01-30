@@ -13,47 +13,47 @@
 
       <view class="form-section">
         <text class="form-title">Sign in to your account</text>
-        <text class="form-subtitle">Enter your credentials</text>
+        <text class="form-subtitle">Enter your account and password</text>
 
         <view class="input-group">
           <text class="input-label">Account</text>
           <view class="input-wrapper">
-            <text class="input-icon">👤</text>
-            <input
-              class="input-field"
-              type="text"
-              placeholder="Username"
+            <Input
               v-model="account"
-            />
+              type="text"
+              placeholder="Username or Account ID"
+            >
+              <template #prefix>
+                <text class="input-icon">👤</text>
+              </template>
+            </Input>
           </view>
         </view>
 
         <view class="input-group">
-          <view class="input-header">
-            <text class="input-label">Password</text>
-          </view>
+          <text class="input-label">Password</text>
           <view class="input-wrapper">
-            <text class="input-icon">🔒</text>
-            <input
-              class="input-field"
+            <Input
+              v-model="password"
               type="password"
               placeholder="Enter your password"
-              v-model="password"
-            />
+            >
+              <template #prefix>
+                <text class="input-icon">🔒</text>
+              </template>
+            </Input>
           </view>
         </view>
 
-        <view class="submit-btn" @click="handleLogin" :class="{ loading: isLoading }">
-          <text class="btn-text">
-            {{ isLoading ? 'Signing in...' : 'Sign In' }}
-          </text>
-          <text class="btn-arrow" v-if="!isLoading">→</text>
-        </view>
+        <Button class="submit-btn" :loading="isLoading" @click="handleLogin">
+          {{ isLoading ? "Signing in..." : "Sign In" }}
+        </Button>
       </view>
 
       <view class="footer-section">
         <text class="footer-text">
-          By clicking continue, you agree to our Terms of Service and Privacy Policy.
+          By clicking continue, you agree to our Terms of Service and Privacy
+          Policy.
         </text>
       </view>
     </view>
@@ -61,20 +61,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useUserStore } from '@/store/modules/user';
+import { ref } from "vue";
+import { setUser, setAuthToken } from "@/store";
+import { api } from "@/utils/api";
+import { Button, Input } from "@/components/ui";
 
-const account = ref('');
-const password = ref('');
+const emit = defineEmits<{
+  (e: "login"): void;
+}>();
+
+const account = ref<string>("");
+const password = ref<string>("");
 const isLoading = ref(false);
-
-const userStore = useUserStore();
 
 async function handleLogin() {
   if (!account.value || !password.value) {
     uni.showToast({
-      title: 'Please enter credentials',
-      icon: 'none',
+      title: "Please enter credentials",
+      icon: "none",
     });
     return;
   }
@@ -82,18 +86,23 @@ async function handleLogin() {
   isLoading.value = true;
 
   try {
-    await userStore.login(account.value, password.value);
+    const result = await api.login(account.value, password.value);
+    setAuthToken(result.access_token);
+    setUser(result.user);
+
     uni.showToast({
-      title: 'Welcome!',
-      icon: 'success',
+      title: "Welcome!",
+      icon: "success",
     });
+
     setTimeout(() => {
-      uni.reLaunch({ url: '/pages/dashboard/index' });
+      emit("login");
     }, 500);
   } catch (error: any) {
+    console.error("Login error:", error);
     uni.showToast({
-      title: error.message || 'Login failed',
-      icon: 'none',
+      title: error.message || "Login failed",
+      icon: "none",
     });
   } finally {
     isLoading.value = false;
@@ -102,11 +111,11 @@ async function handleLogin() {
 </script>
 
 <style lang="scss" scoped>
-@import '@/uni.scss';
+@import "@/uni.scss";
 
 .login-container {
   min-height: 100vh;
-  background: $primary-bg;
+  background: $teal-50; // teal-50 - matches iGreenApp
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,8 +129,8 @@ async function handleLogin() {
   top: 0;
   left: 0;
   right: 0;
-  height: 256px;
-  background: $primary-color;
+  height: 256px; // ~40% of viewport height
+  background: $teal-600; // teal-600 - matches iGreenApp
   z-index: 0;
 }
 
@@ -134,7 +143,7 @@ async function handleLogin() {
   height: 800px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: $radius-full;
-  filter: blur(48px);
+  filter: blur(64px);
   z-index: 0;
   pointer-events: none;
 }
@@ -142,11 +151,39 @@ async function handleLogin() {
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: $white;
+  background: $card;
   border-radius: $radius-xl;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-  padding: $spacing-8;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1); // shadow-xl - matches iGreenApp
+  padding: $spacing-6; // p-6 (24px) - matches iGreenApp Card padding
+  padding-top: $spacing-6; // pt-6 - matches iGreenApp
   z-index: 1;
+  border: none;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: $spacing-6; // mb-6 (24px) - matches iGreenApp card-header gap
+}
+
+.form-section {
+  padding-top: $spacing-4; // pt-4 - matches iGreenApp
+  padding-bottom: 0; // Remove default padding
+}
+
+.input-group {
+  margin-bottom: $spacing-4; // space-y-4 - matches iGreenApp
+}
+
+.footer-section {
+  padding: $spacing-6; // p-6
+  margin: 0 -#{$spacing-6}; //抵消 card padding
+  margin-top: $spacing-4;
+  background: rgba($gray-50, 0.5); // bg-slate-50/50
+  border-top: 1px solid $border;
 }
 
 .logo-section {
@@ -161,7 +198,7 @@ async function handleLogin() {
   height: 80px;
   background: $white;
   border-radius: $radius-xl;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(19, 78, 74, 0.1); // teal-900 with opacity
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,8 +213,8 @@ async function handleLogin() {
 
 .app-title {
   font-size: 30px;
-  font-weight: $font-bold;
-  color: $primary-dark;
+  font-weight: $font-weight-bold;
+  color: $teal-900; // teal-900 - matches iGreenApp
   letter-spacing: -0.5px;
 }
 
@@ -187,8 +224,8 @@ async function handleLogin() {
 
 .form-title {
   font-size: $text-2xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $gray-900; // slate-900
   text-align: center;
   display: block;
   margin-bottom: $spacing-1;
@@ -196,96 +233,53 @@ async function handleLogin() {
 
 .form-subtitle {
   font-size: $text-sm;
-  color: $gray-500;
+  color: $gray-500; // slate-500
   text-align: center;
   display: block;
   margin-bottom: $spacing-6;
+  font-weight: $font-weight-normal;
 }
 
 .input-group {
   margin-bottom: $spacing-4;
 }
 
-.input-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.input-label {
+  font-size: $text-sm;
+  font-weight: $font-weight-medium;
+  color: $gray-700; // slate-700
+  display: block;
   margin-bottom: $spacing-2;
 }
 
-.input-label {
-  font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-700;
-}
-
 .input-wrapper {
+  width: 100%; // Full width - fills the row
   position: relative;
-  display: flex;
   align-items: center;
 }
 
 .input-icon {
-  position: absolute;
-  left: $spacing-3;
   font-size: 16px;
-  z-index: 1;
-}
-
-.input-field {
-  width: 100%;
-  height: 44px;
-  padding: $spacing-3 $spacing-4;
-  padding-left: 44px;
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-md;
-  font-size: $text-base;
-  color: $gray-900;
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-  }
-
-  &::placeholder {
-    color: $gray-400;
-  }
+  color: $gray-400; // slate-400
 }
 
 .submit-btn {
   width: 100%;
   height: 44px;
-  background: $primary-color;
-  border-radius: $radius-md;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $spacing-2;
-  cursor: pointer;
   margin-top: $spacing-6;
-  transition: background 0.2s ease;
+  background: $teal-600; // teal-600 - matches iGreenApp
+  color: $white;
+  border-radius: $radius-md;
+  font-size: $text-base;
+  font-weight: $font-weight-medium;
 
   &:hover {
-    background: $primary-dark;
+    background: $teal-700; // teal-700
   }
 
-  &.loading {
-    background: $gray-400;
-    cursor: not-allowed;
+  &:active {
+    background: $teal-700;
   }
-}
-
-.btn-text {
-  font-size: $text-base;
-  font-weight: $font-medium;
-  color: $white;
-}
-
-.btn-arrow {
-  font-size: $text-base;
-  color: $white;
 }
 
 .footer-section {
@@ -293,22 +287,16 @@ async function handleLogin() {
   margin: 0 -#{$spacing-8};
   margin-top: $spacing-4;
   background: rgba($gray-50, 0.5);
-  border-top: 1px solid $gray-100;
+  border-top: 1px solid $border;
+  border-bottom-left-radius: $radius-xl;
+  border-bottom-right-radius: $radius-xl;
 }
 
 .footer-text {
   font-size: 12px;
-  color: $gray-500;
+  color: $gray-500; // slate-500
   text-align: center;
   display: block;
-
-  a {
-    color: $gray-900;
-    text-decoration: underline;
-
-    &:hover {
-      color: $gray-700;
-    }
-  }
+  line-height: 1.5;
 }
 </style>

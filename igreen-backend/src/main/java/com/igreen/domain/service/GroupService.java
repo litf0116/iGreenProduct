@@ -36,10 +36,14 @@ public class GroupService {
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
                 .description(request.description())
-                .tags(request.tags())
                 .status(request.status() != null ? request.status() : GroupStatus.ACTIVE)
                 .memberCount(0)
                 .build();
+
+        // 设置 tags 数组
+        if (request.tags() != null && request.tags().length > 0) {
+            group.setTagsArray(request.tags());
+        }
 
         groupMapper.insert(group);
         return group;
@@ -57,7 +61,23 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public List<Group> getAllGroups() {
-        List<Group> groups = groupMapper.selectList(new LambdaQueryWrapper<>());
+        List<Group> groups = groupMapper.selectList(null);
+        for (Group group : groups) {
+            Integer memberCount = userMapper.countByGroupId(group.getId());
+            group.setMemberCount(memberCount != null ? memberCount : 0);
+        }
+        return groups;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Group> searchGroups(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllGroups();
+        }
+        System.out.println("[DEBUG searchGroups] Searching with keyword: " + keyword);
+        List<Group> groups = groupMapper.selectList(new LambdaQueryWrapper<Group>().like(Group::getName, keyword.trim()).or().like(Group::getDescription, keyword.trim())
+        );
+        System.out.println("[DEBUG searchGroups] Found groups: " + groups.size());
         for (Group group : groups) {
             Integer memberCount = userMapper.countByGroupId(group.getId());
             group.setMemberCount(memberCount != null ? memberCount : 0);
@@ -81,8 +101,9 @@ public class GroupService {
         if (request.description() != null) {
             existingGroup.setDescription(request.description());
         }
+        // 更新 tags 数组
         if (request.tags() != null) {
-            existingGroup.setTags(request.tags());
+            existingGroup.setTagsArray(request.tags());
         }
         if (request.status() != null) {
             existingGroup.setStatus(request.status());

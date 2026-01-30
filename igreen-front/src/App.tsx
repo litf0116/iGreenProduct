@@ -44,7 +44,7 @@ import {
 } from "./components/ui/dropdown-menu";
 import { toast } from "sonner@2.0.3";
 import { Toaster } from "./components/ui/sonner";
-import { useUIStore } from "./store";
+import { useUIStore, useDataStore } from "./store";
 
 // Layout component with navigation
 function AppLayout() {
@@ -56,15 +56,24 @@ function AppLayout() {
   const selectedTicket = useUIStore((state) => state.selectedTicket);
   const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
 
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [users, setUsers] = useState<UserType[]>([]);
+  // Use data store for tickets and other data
+  const tickets = useDataStore((state) => state.tickets);
+  const setTickets = useDataStore((state) => state.setTickets);
+  const templates = useDataStore((state) => state.templates);
+  const setTemplates = useDataStore((state) => state.setTemplates);
+  const sites = useDataStore((state) => state.sites);
+  const setSites = useDataStore((state) => state.setSites);
+  const groups = useDataStore((state) => state.groups);
+  const setGroups = useDataStore((state) => state.setGroups);
+  const users = useDataStore((state) => state.users);
+  const setUsers = useDataStore((state) => state.setUsers);
 
-  const [slaConfigs, setSlaConfigs] = useState<SLAConfig[]>([]);
-  const [problemTypes, setProblemTypes] = useState<ProblemType[]>([]);
-  const [siteLevelConfigs, setSiteLevelConfigs] = useState<SiteLevelConfig[]>([]);
+  const slaConfigs = useDataStore((state) => state.slaConfigs);
+  const setSLAConfigs = useDataStore((state) => state.setSLAConfigs);
+  const problemTypes = useDataStore((state) => state.problemTypes);
+  const setProblemTypes = useDataStore((state) => state.setProblemTypes);
+  const siteLevelConfigs = useDataStore((state) => state.siteLevelConfigs);
+  const setSiteLevelConfigs = useDataStore((state) => state.setSiteLevelConfigs);
 
   const t = (key: TranslationKey) => translations[language][key];
 
@@ -97,7 +106,7 @@ function AppLayout() {
         api.getSiteLevelConfigs().catch(() => []),
       ]);
 
-      setSlaConfigs(sla || []);
+      setSLAConfigs(sla || []);
       setProblemTypes(problems || []);
       setSiteLevelConfigs(levels || []);
     } catch (error) {
@@ -106,27 +115,29 @@ function AppLayout() {
   }, []);
 
   useEffect(() => {
-    loadInitialData();
-    loadConfigData();
-  }, [loadInitialData, loadConfigData]);
+    if (currentUser) {
+      loadInitialData();
+      loadConfigData();
+    }
+  }, [currentUser, loadInitialData, loadConfigData]);
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "bg-blue-500";
-      case "ASSIGNED":
+      case "assigned":
         return "bg-indigo-500";
-      case "ACCEPTED":
+      case "accepted":
         return "bg-cyan-500";
-      case "IN_PROGRESS":
+      case "in_progress":
         return "bg-orange-500";
-      case "SUBMITTED":
+      case "submitted":
         return "bg-purple-500";
-      case "COMPLETED":
+      case "completed":
         return "bg-green-500";
-      case "ON_HOLD":
+      case "on_hold":
         return "bg-yellow-500";
-      case "CANCELLED":
+      case "cancelled":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -145,9 +156,9 @@ function AppLayout() {
 
   const stats = {
     total: tickets.length,
-    pending: tickets.filter((t) => t.status === "OPEN").length,
-    inProgress: tickets.filter((t) => t.status === "IN_PROGRESS" || t.status === "ACCEPTED").length,
-    completed: tickets.filter((t) => t.status === "COMPLETED").length,
+    pending: tickets.filter((t) => t.status === "open").length,
+    inProgress: tickets.filter((t) => t.status === "in_progress" || t.status === "accepted").length,
+    completed: tickets.filter((t) => t.status === "completed").length,
   };
 
   const handleLogout = () => {
@@ -287,7 +298,7 @@ function AppLayout() {
         dueDate: ticketData.dueDate.toISOString(),
         relatedTicketIds: ticketData.relatedTicketIds,
       });
-      setTickets((prev) => [created, ...(prev.records || prev)]);
+      setTickets((prev) => Array.isArray(prev) ? [created, ...prev] : [created]);
       toast.success(t("ticketCreated"));
       navigate("/dashboard");
     } catch (error: any) {
@@ -382,7 +393,7 @@ function AppLayout() {
     try {
       const updated = await api.updateTicket(ticketId, {
         assignedTo: newAssigneeId,
-        status: "ASSIGNED" as TicketStatus,
+        status: "assigned" as TicketStatus,
       });
       await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
       setTickets((prev) => ({
@@ -471,7 +482,7 @@ function AppLayout() {
   const handleUpdateSLA = async (config: SLAConfig) => {
     try {
       const updated = await api.saveSLAConfig(config);
-      setSlaConfigs((prev) => {
+      setSLAConfigs((prev) => {
         const existing = prev.findIndex((c) => c.priority === config.priority);
         if (existing >= 0) {
           const newConfigs = [...prev];
@@ -785,13 +796,13 @@ function SignUpPage() {
   const handleSignUp = async (
     name: string,
     username: string,
-    email: string,
     password: string,
+    confirmPassword: string,
     role: string,
     country: string
   ) => {
     try {
-      await signUp(name, username, email, password, role, country);
+      await signUp(name, username, password, confirmPassword, role, country);
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
       throw new Error(error.message || "Registration failed");

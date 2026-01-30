@@ -40,7 +40,6 @@ public class UserService {
         }
 
         wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getEmail, request.email());
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.EMAIL_EXISTS);
         }
@@ -49,7 +48,6 @@ public class UserService {
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
                 .username(request.username())
-                .email(request.email())
                 .hashedPassword(passwordEncoder.encode(request.password()))
                 .role(request.role() != null ? request.role() : UserRole.ENGINEER)
                 .groupId(request.groupId())
@@ -87,8 +85,9 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_INACTIVE);
         }
 
+        // ADMIN 跳过国家校验，ENGINEER/MANAGER 使用账号自己的 country 属性
         if (matchedUser.getRole() != UserRole.ADMIN) {
-            if (request.country() == null || !request.country().equalsIgnoreCase(matchedUser.getCountry())) {
+            if (matchedUser.getCountry() == null || matchedUser.getCountry().isBlank()) {
                 throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
             }
         }
@@ -224,6 +223,27 @@ public class UserService {
         userMapper.deleteById(id);
     }
 
+    /**
+     * 用户更新自己的个人信息 (姓名和电话)
+     */
+    @Transactional
+    public UserResponse updateUserProfile(String id, UserProfileUpdateRequest request) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (request.name() != null && !request.name().isBlank()) {
+            user.setName(request.name());
+        }
+        if (request.phone() != null) {
+            user.setPhone(request.phone());
+        }
+
+        userMapper.updateById(user);
+        return toResponse(user);
+    }
+
     @Transactional(readOnly = true)
     public List<UserResponse> getEngineers() {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
@@ -292,10 +312,9 @@ public class UserService {
                 user.getName(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole(),
+                user.getPhone(), user.getRole() != null ? user.getRole().name().toLowerCase() : null,
                 user.getGroupId(),
-                groupName,
-                user.getStatus(),
+                groupName, user.getStatus() != null ? user.getStatus().name().toLowerCase() : null,
                 user.getCountry(),
                 user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
         );

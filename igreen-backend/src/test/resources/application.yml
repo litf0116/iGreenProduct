@@ -23,8 +23,9 @@ server:
 
 app:
   jwt:
-    secret: test-jwt-secret-key-for-unit-testing-purposes
-    expiration: 86400000
+    secret-key: test-jwt-secret-key-for-unit-testing-purposes
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000
   cors:
     allowed-origins: "*"
     allowed-methods: "*"

@@ -2,11 +2,7 @@ package com.igreen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.igreen.domain.enums.Priority;
-import com.igreen.domain.enums.TicketStatus;
-import com.igreen.domain.enums.TicketType;
 import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +14,12 @@ import java.util.List;
 @AllArgsConstructor
 public class Ticket {
 
-    private String id;
+    private Long id;
     private String title;
     private String description;
-    private TicketType type;
-    private TicketStatus status;
-    private Priority priority;
+    private String type;
+    private String status;
+    private String priority;
     private String site;
     private String templateId;
     private String assignedTo;

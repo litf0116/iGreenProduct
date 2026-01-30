@@ -1,26 +1,29 @@
 package com.igreen.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Locale;
+
 public enum UserRole {
-    ADMIN("admin"),
-    MANAGER("manager"),
-    ENGINEER("engineer");
+    ADMIN,
+    MANAGER,
+    ENGINEER;
 
-    private final String value;
-
-    UserRole(String value) {
-        this.value = value;
-    }
-
+    @JsonValue
     public String getValue() {
-        return value;
+        return name().toLowerCase();
     }
 
+    @JsonCreator
     public static UserRole fromValue(String value) {
-        for (UserRole role : values()) {
-            if (role.value.equals(value)) {
-                return role;
-            }
+        if (value == null) {
+            return ENGINEER;
         }
-        throw new IllegalArgumentException("Unknown role: " + value);
+        try {
+            return valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return ENGINEER;
+        }
     }
 }

@@ -83,7 +83,7 @@ class TemplateServiceTest {
             return 1;
         });
         when(templateFieldMapper.selectByStepId(anyString())).thenReturn(new ArrayList<>());
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
         lenient().when(templateMapper.selectById("new-template-id")).thenReturn(createdTemplate);
 
         Template result = templateService.createTemplate(request);
@@ -115,7 +115,7 @@ class TemplateServiceTest {
     @DisplayName("获取模板详情成功")
     void getTemplateById_Success() {
         when(templateMapper.selectById("template-1")).thenReturn(testTemplate);
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc("template-1")).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc("template-1")).thenReturn(new ArrayList<>());
 
         Template result = templateService.getTemplateById("template-1");
 
@@ -140,7 +140,7 @@ class TemplateServiceTest {
     void getAllTemplates_Success() {
         List<Template> templates = Arrays.asList(testTemplate);
         when(templateMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(templates);
-        when(templateStepMapper.selectByTemplateIdOrderByOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
 
         List<Template> result = templateService.getAllTemplates();
 
@@ -169,5 +169,109 @@ class TemplateServiceTest {
                 () -> templateService.deleteTemplate("nonexistent"));
 
         assertEquals(ErrorCode.TEMPLATE_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("获取空模板列表")
+    void getAllTemplates_EmptyList() {
+        when(templateMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Arrays.asList());
+
+        List<Template> result = templateService.getAllTemplates();
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    @DisplayName("获取多个模板")
+    void getAllTemplates_MultipleTemplates() {
+        Template template2 = new Template();
+        template2.setId("template-2");
+        template2.setName("模板2");
+
+        when(templateMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Arrays.asList(testTemplate, template2));
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
+                .thenReturn(new ArrayList<>());
+
+        List<Template> result = templateService.getAllTemplates();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    @DisplayName("创建模板时无步骤")
+    void createTemplate_NoSteps() {
+        CreateTemplateRequest request = new CreateTemplateRequest(
+                "新模板",
+                "描述",
+                null
+        );
+
+        when(templateMapper.countByName("新模板")).thenReturn(0);
+        when(templateMapper.insert(any(Template.class))).thenAnswer(invocation -> {
+            Template t = invocation.getArgument(0);
+            t.setId("new-template-id");
+            return 1;
+        });
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
+                .thenReturn(new ArrayList<>());
+        lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
+
+        Template result = templateService.createTemplate(request);
+
+        assertNotNull(result);
+        verify(templateStepMapper, never()).insert(any(TemplateStep.class));
+    }
+
+    @Test
+    @DisplayName("创建模板时无字段")
+    void createTemplate_NoFields() {
+        CreateTemplateRequest request = new CreateTemplateRequest(
+                "新模板",
+                "描述",
+                List.of(new TemplateStepRequest("步骤1", "描述", 1, null))
+        );
+
+        when(templateMapper.countByName("新模板")).thenReturn(0);
+        when(templateMapper.insert(any(Template.class))).thenAnswer(invocation -> {
+            Template t = invocation.getArgument(0);
+            t.setId("new-template-id");
+            return 1;
+        });
+        when(templateFieldMapper.selectByStepId(anyString())).thenReturn(new ArrayList<>());
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString())).thenReturn(new ArrayList<>());
+        lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
+
+        Template result = templateService.createTemplate(request);
+
+        assertNotNull(result);
+        verify(templateFieldMapper, never()).insert(any(TemplateField.class));
+    }
+
+    @Test
+    @DisplayName("创建模板时描述为null")
+    void createTemplate_NullDescription() {
+        CreateTemplateRequest request = new CreateTemplateRequest(
+                "新模板",
+                null,
+                null
+        );
+
+        when(templateMapper.countByName("新模板")).thenReturn(0);
+        when(templateMapper.insert(any(Template.class))).thenAnswer(invocation -> {
+            Template t = invocation.getArgument(0);
+            t.setId("new-template-id");
+            return 1;
+        });
+        when(templateStepMapper.selectByTemplateIdOrderBySortOrderAsc(anyString()))
+                .thenReturn(new ArrayList<>());
+        lenient().when(templateMapper.selectById("new-template-id")).thenReturn(testTemplate);
+
+        Template result = templateService.createTemplate(request);
+
+        assertNotNull(result);
     }
 }

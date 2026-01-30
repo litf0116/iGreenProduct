@@ -1,8 +1,10 @@
 import { http, HttpResponse } from 'msw';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api`;
 
-// Mock data
+const isTestEnvironment = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+
 const mockUser = {
   id: '1',
   name: 'Test User',
@@ -52,8 +54,20 @@ const mockTemplates = [
   },
 ];
 
+const createSuccessResponse = <T>(data: T) => ({
+  success: true,
+  message: 'Success',
+  data,
+  code: '200',
+});
+
+const createErrorResponse = (message: string, status: number = 400) =>
+  HttpResponse.json(
+    { success: false, message, code: String(status) },
+    { status }
+  );
+
 export const handlers = [
-  // ========== Auth Handlers ==========
   http.post(`${API_BASE}/auth/login`, async ({ request }) => {
     const body = await request.json() as { username: string; password: string };
     const { username, password } = body;
@@ -72,10 +86,7 @@ export const handlers = [
       });
     }
 
-    return HttpResponse.json(
-      { success: false, message: 'Invalid credentials', code: '401' },
-      { status: 401 }
-    );
+    return createErrorResponse('Invalid credentials', 401);
   }),
 
   http.post(`${API_BASE}/auth/register`, async ({ request }) => {
@@ -110,22 +121,15 @@ export const handlers = [
       });
     }
 
-    return HttpResponse.json(
-      { success: false, message: 'Invalid refresh token', code: '401' },
-      { status: 401 }
-    );
+    return createErrorResponse('Invalid refresh token', 401);
   }),
 
   http.get(`${API_BASE}/auth/me`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: mockUser,
-      code: '200',
-    });
+    return HttpResponse.json(
+      createSuccessResponse(mockUser)
+    );
   }),
 
-  // ========== Tickets Handlers ==========
   http.get(`${API_BASE}/tickets`, ({ request }) => {
     const url = new URL(request.url);
     const status = url.searchParams.get('status');
@@ -141,34 +145,23 @@ export const handlers = [
       );
     }
 
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: {
+    return HttpResponse.json(
+      createSuccessResponse({
         records: filteredTickets,
         total: filteredTickets.length,
         current: 1,
         size: 10,
         hasNext: false,
-      },
-      code: '200',
-    });
+      })
+    );
   }),
 
   http.get(`${API_BASE}/tickets/:id`, ({ params }) => {
     const ticket = mockTickets.find((t) => t.id === params.id);
     if (ticket) {
-      return HttpResponse.json({
-        success: true,
-        message: 'Success',
-        data: ticket,
-        code: '200',
-      });
+      return HttpResponse.json(createSuccessResponse(ticket));
     }
-    return HttpResponse.json(
-      { success: false, message: 'Ticket not found', code: '404' },
-      { status: 404 }
-    );
+    return createErrorResponse('Ticket not found', 404);
   }),
 
   http.post(`${API_BASE}/tickets`, async ({ request }) => {
@@ -190,89 +183,54 @@ export const handlers = [
 
   http.put(`${API_BASE}/tickets/:id`, async ({ params, request }) => {
     const body = await request.json();
-    return HttpResponse.json({
-      success: true,
-      message: 'Ticket updated',
-      data: { id: params.id, ...body },
-      code: '200',
-    });
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, ...body })
+    );
   }),
 
   http.post(`${API_BASE}/tickets/:id/accept`, async ({ params }) => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Ticket accepted',
-      data: { id: params.id, status: 'ACCEPTED' },
-      code: '200',
-    });
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'ACCEPTED' })
+    );
   }),
 
   http.post(`${API_BASE}/tickets/:id/complete`, async ({ params }) => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Ticket completed',
-      data: { id: params.id, status: 'COMPLETED' },
-      code: '200',
-    });
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'COMPLETED' })
+    );
   }),
 
-  // ========== Templates Handlers ==========
   http.get(`${API_BASE}/templates`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: mockTemplates,
-      code: '200',
-    });
+    return HttpResponse.json(createSuccessResponse(mockTemplates));
   }),
 
   http.get(`${API_BASE}/templates/:id`, ({ params }) => {
     const template = mockTemplates.find((t) => t.id === params.id);
     if (template) {
-      return HttpResponse.json({
-        success: true,
-        message: 'Success',
-        data: template,
-        code: '200',
-      });
+      return HttpResponse.json(createSuccessResponse(template));
     }
-    return HttpResponse.json(
-      { success: false, message: 'Template not found', code: '404' },
-      { status: 404 }
-    );
+    return createErrorResponse('Template not found', 404);
   }),
 
-  // ========== Users Handlers ==========
   http.get(`${API_BASE}/users`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: {
+    return HttpResponse.json(
+      createSuccessResponse({
         records: [mockUser],
         total: 1,
         current: 1,
         size: 10,
         hasNext: false,
-      },
-      code: '200',
-    });
+      })
+    );
   }),
 
   http.get(`${API_BASE}/users/engineers`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: [mockUser],
-      code: '200',
-    });
+    return HttpResponse.json(createSuccessResponse([mockUser]));
   }),
 
-  // ========== Groups Handlers ==========
   http.get(`${API_BASE}/groups`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: [
+    return HttpResponse.json(
+      createSuccessResponse([
         {
           id: 'group-1',
           name: 'Team A',
@@ -281,33 +239,26 @@ export const handlers = [
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
         },
-      ],
-      code: '200',
-    });
+      ])
+    );
   }),
 
   http.get(`${API_BASE}/groups/:id`, ({ params }) => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: {
+    return HttpResponse.json(
+      createSuccessResponse({
         id: params.id,
         name: 'Team A',
         description: 'Engineering Team A',
         status: 'ACTIVE' as const,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
-      },
-      code: '200',
-    });
+      })
+    );
   }),
 
-  // ========== Sites Handlers ==========
   http.get(`${API_BASE}/sites`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: {
+    return HttpResponse.json(
+      createSuccessResponse({
         records: [
           {
             id: 'site-1',
@@ -323,33 +274,26 @@ export const handlers = [
         current: 1,
         size: 10,
         hasNext: false,
-      },
-      code: '200',
-    });
+      })
+    );
   }),
 
-  // ========== Config Handlers ==========
   http.get(`${API_BASE}/configs/sla-configs`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: [
+    return HttpResponse.json(
+      createSuccessResponse([
         {
           id: 'sla-1',
           priority: 'P1' as const,
           responseTimeMinutes: 30,
           completionTimeHours: 4,
         },
-      ],
-      code: '200',
-    });
+      ])
+    );
   }),
 
   http.get(`${API_BASE}/configs/site-level-configs`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: [
+    return HttpResponse.json(
+      createSuccessResponse([
         {
           id: 'slc-1',
           levelName: 'A',
@@ -357,32 +301,239 @@ export const handlers = [
           maxConcurrentTickets: 10,
           escalationTimeHours: 4,
         },
-      ],
-      code: '200',
-    });
+      ])
+    );
   }),
 
   http.get(`${API_BASE}/configs/problem-types`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: [
+    return HttpResponse.json(
+      createSuccessResponse([
         {
           id: 'pt-1',
           name: 'Hardware Issue',
           description: 'Hardware related problems',
         },
-      ],
-      code: '200',
-    });
+      ])
+    );
   }),
 
   http.get(`${API_BASE}/health`, () => {
-    return HttpResponse.json({
-      success: true,
-      message: 'Success',
-      data: { status: 'UP', version: '1.0.0' },
-      code: '200',
-    });
+    return HttpResponse.json(
+      createSuccessResponse({ status: 'UP', version: '1.0.0' })
+    );
+  }),
+
+  http.delete(`${API_BASE}/users/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/users/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: '1', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/groups/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/groups/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'group-1', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/sites/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/sites/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'site-1', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/templates/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/templates/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'tpl-1', ...body }));
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/decline`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'DECLINED' })
+    );
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/cancel`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'CANCELLED' })
+    );
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/depart`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'IN_PROGRESS', departureAt: new Date().toISOString() })
+    );
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/arrive`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'IN_PROGRESS', arrivalAt: new Date().toISOString() })
+    );
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/submit`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'SUBMITTED' })
+    );
+  }),
+
+  http.post(`${API_BASE}/tickets/:id/review`, async ({ request, params }) => {
+    return HttpResponse.json(
+      createSuccessResponse({ id: params.id, status: 'COMPLETED' })
+    );
+  }),
+
+  http.get(`${API_BASE}/tickets/:ticketId/comments`, () => {
+    return HttpResponse.json(createSuccessResponse([]));
+  }),
+
+  http.post(`${API_BASE}/tickets/:ticketId/comments`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(
+      createSuccessResponse({
+        id: `comment-${Date.now()}`,
+        ...body,
+        userId: '1',
+        userName: 'Test User',
+        createdAt: new Date().toISOString(),
+      })
+    );
+  }),
+
+  http.get(`${API_BASE}/tickets/my`, () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        records: mockTickets,
+        total: mockTickets.length,
+        current: 1,
+        size: 20,
+        hasNext: false,
+      })
+    );
+  }),
+
+  http.get(`${API_BASE}/tickets/pending`, () => {
+    return HttpResponse.json(createSuccessResponse(mockTickets));
+  }),
+
+  http.get(`${API_BASE}/tickets/completed`, () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        records: [],
+        total: 0,
+        current: 1,
+        size: 20,
+        hasNext: false,
+      })
+    );
+  }),
+
+  http.get(`${API_BASE}/tickets/stats`, () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        total: 10,
+        open: 3,
+        inProgress: 4,
+        submitted: 1,
+        completed: 2,
+        onHold: 0,
+      })
+    );
+  }),
+
+  http.post(`${API_BASE}/files/upload`, async () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        id: 'file-1',
+        url: 'https://example.com/files/photo.jpg',
+        name: 'photo.jpg',
+        type: 'image/jpeg',
+        size: 102400,
+      })
+    );
+  }),
+
+  http.delete(`${API_BASE}/files/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API_BASE}/configs/sla-configs/:id`, () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        id: 'sla-1',
+        priority: 'P1' as const,
+        responseTimeMinutes: 30,
+        completionTimeHours: 4,
+      })
+    );
+  }),
+
+  http.post(`${API_BASE}/configs/sla-configs`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'sla-new', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/configs/sla-configs/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/configs/problem-types`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'pt-new', ...body }));
+  }),
+
+  http.post(`${API_BASE}/configs/problem-types/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'pt-1', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/configs/problem-types/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API_BASE}/configs/site-level-configs`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'slc-new', ...body }));
+  }),
+
+  http.post(`${API_BASE}/configs/site-level-configs/:id`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: 'slc-1', ...body }));
+  }),
+
+  http.delete(`${API_BASE}/configs/site-level-configs/:id`, () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.patch(`${API_BASE}/users/:id/countries`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(createSuccessResponse({ id: '1', ...body }));
+  }),
+
+  http.get(`${API_BASE}/groups/:groupId/members`, () => {
+    return HttpResponse.json(createSuccessResponse([mockUser]));
+  }),
+
+  http.get(`${API_BASE}/sites/stats`, () => {
+    return HttpResponse.json(
+      createSuccessResponse({
+        totalSites: 100,
+        onlineSites: 80,
+        offlineSites: 15,
+        vipSites: 5,
+      })
+    );
   }),
 ];

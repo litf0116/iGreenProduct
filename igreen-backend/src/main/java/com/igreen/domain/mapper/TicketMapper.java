@@ -15,7 +15,7 @@ import java.util.Optional;
 @Mapper
 public interface TicketMapper extends com.baomidou.mybatisplus.core.mapper.BaseMapper<Ticket> {
 
-    Optional<Ticket> selectByIdWithDetails(@Param("id") String id);
+    Optional<Ticket> selectByIdWithDetails(@Param("id") Long id);
 
     List<Ticket> selectByStatus(@Param("status") String status);
 

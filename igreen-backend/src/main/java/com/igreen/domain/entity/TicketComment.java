@@ -17,7 +17,7 @@ public class TicketComment {
     private String id;
     private String comment;
     private CommentType type;
-    private String ticketId;
+    private Long ticketId;
     private String userId;
     private LocalDateTime createdAt;
     @Builder.Default

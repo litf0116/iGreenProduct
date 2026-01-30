@@ -1,30 +1,32 @@
 package com.igreen.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Locale;
+
 public enum FieldType {
-    TEXT("text"),
-    NUMBER("number"),
-    DATE("date"),
-    LOCATION("location"),
-    PHOTO("photo"),
-    SIGNATURE("signature"),
-    FACE_RECOGNITION("faceRecognition");
+    TEXT,
+    NUMBER,
+    DATE,
+    LOCATION,
+    PHOTO,
+    SIGNATURE;
 
-    private final String value;
-
-    FieldType(String value) {
-        this.value = value;
-    }
-
+    @JsonValue
     public String getValue() {
-        return value;
+        return name().toLowerCase();
     }
 
+    @JsonCreator
     public static FieldType fromValue(String value) {
-        for (FieldType type : values()) {
-            if (type.value.equals(value)) {
-                return type;
-            }
+        if (value == null) {
+            return TEXT;
         }
-        throw new IllegalArgumentException("Unknown field type: " + value);
+        try {
+            return valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return TEXT;
+        }
     }
 }

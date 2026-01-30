@@ -25,13 +25,13 @@ import java.util.function.Function;
 public class JwtUtils {
 
 
-    @Value("${app.jwt.secret-key}")
+    @Value("${app.jwt.secret-key:aVeryLongAndSecureSecretKeyForJwtTokenGeneration2024}")
     private String secretKey;
 
-    @Value("${app.jwt.expiration-ms}")
+    @Value("${app.jwt.expiration-ms:7200000}")
     private long jwtExpirationMs;
 
-    @Value("${app.jwt.refresh-expiration-ms}")
+    @Value("${app.jwt.refresh-expiration-ms:604800000}")
     private long refreshExpirationMs;
 
     private SecretKey signingKey;

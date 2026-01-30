@@ -22,6 +22,7 @@ export function CreateTicket({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState("PLANNED");
   const [templateId, setTemplateId] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -36,6 +37,7 @@ export function CreateTicket({
     onSubmit({
       title,
       description,
+      type,
       templateId,
       assignedTo,
       priority,
@@ -45,6 +47,7 @@ export function CreateTicket({
     // Reset form after successful submission
     setTitle("");
     setDescription("");
+    setType("PLANNED");
     setTemplateId("");
     setAssignedTo("");
     setPriority("medium");
@@ -52,6 +55,12 @@ export function CreateTicket({
   };
 
   const priorities = ["low", "medium", "high", "urgent"];
+  const ticketTypes = [
+    { value: "PLANNED", label: t("planned") },
+    { value: "PREVENTIVE", label: t("preventive") },
+    { value: "CORRECTIVE", label: t("corrective") },
+    { value: "PROBLEM", label: t("problem") },
+  ];
 
   return (
     <div className="space-y-6">
@@ -75,6 +84,22 @@ export function CreateTicket({
               placeholder={t("description")}
               rows={4}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("ticketType") || "Ticket Type"}</Label>
+            <Select value={type} onValueChange={setType} required>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ticketTypes.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -117,7 +142,7 @@ export function CreateTicket({
                 </SelectTrigger>
                 <SelectContent>
                   {users
-                    .filter((u) => u.role === "engineer")
+                    .filter((u) => u.role === "ENGINEER")
                     .map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}

@@ -4,44 +4,32 @@
       <text class="page-title">{{ userProfileText }}</text>
     </view>
 
-    <view class="user-card">
-      <view class="user-avatar">
-        <text class="avatar-text">{{ userInitials }}</text>
+    <Card class="user-card">
+      <view class="user-avatar-wrap">
+        <Avatar :name="userName" size="lg" />
       </view>
       <text class="user-name">{{ userName }}</text>
-    </view>
+    </Card>
 
-    <view class="info-card">
-      <text class="card-title">{{ accountInfoText }}</text>
+    <Card class="info-card">
+      <template #header>
+        <text class="card-title">{{ accountInfoText }}</text>
+      </template>
+      <InfoRow label="Phone" :value="userPhone">
+        <template #icon>📱</template>
+      </InfoRow>
+      <InfoRow label="Login Name" :value="userUsername">
+        <template #icon>👤</template>
+      </InfoRow>
+      <InfoRow label="Group" :value="userGroup">
+        <template #icon>👥</template>
+      </InfoRow>
+    </Card>
 
-      <view class="info-row">
-        <view class="info-label-group">
-          <text class="info-icon">📱</text>
-          <text class="info-label">{{ phoneText }}</text>
-        </view>
-        <text class="info-value">{{ userPhone }}</text>
-      </view>
-
-      <view class="info-row">
-        <view class="info-label-group">
-          <text class="info-icon">👤</text>
-          <text class="info-label">Login Name</text>
-        </view>
-        <text class="info-value">{{ userUsername }}</text>
-      </view>
-
-      <view class="info-row">
-        <view class="info-label-group">
-          <text class="info-icon">👥</text>
-          <text class="info-label">Group</text>
-        </view>
-        <text class="info-value">{{ userGroup }}</text>
-      </view>
-    </view>
-
-    <view class="settings-card">
-      <text class="card-title">{{ appSettingsText }}</text>
-
+    <Card class="settings-card">
+      <template #header>
+        <text class="card-title">{{ appSettingsText }}</text>
+      </template>
       <view class="setting-row">
         <view class="setting-label-group">
           <view class="setting-icon bg-indigo">
@@ -49,29 +37,18 @@
           </view>
           <text class="setting-label">{{ languageText }}</text>
         </view>
-        <view class="language-switcher">
-          <view
-            class="lang-btn"
-            :class="{ active: currentLanguage === 'en' }"
-            @click="setLanguage('en')"
-          >
-            <text class="lang-text">English</text>
-          </view>
-          <view
-            class="lang-btn"
-            :class="{ active: currentLanguage === 'th' }"
-            @click="setLanguage('th')"
-          >
-            <text class="lang-text">ไทย</text>
-          </view>
-        </view>
+        <LanguageSwitcher />
       </view>
-    </view>
+    </Card>
 
-    <view class="logout-btn" @click="handleLogout">
-      <text class="logout-icon">🚪</text>
-      <text class="logout-text">{{ signOutText }}</text>
-    </view>
+    <Button
+      variant="danger"
+      size="lg"
+      class="logout-btn"
+      @click="handleLogout"
+    >
+      🚪 {{ signOutText }}
+    </Button>
 
     <view class="version-info">
       <text class="version-text">iGreen+ {{ versionText }} 1.0.0</text>
@@ -81,41 +58,39 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useUserStore } from '@/store/modules/user';
-import { setLanguage, getLanguage } from '@/utils/i18n';
+import { getUser, clearAuth } from '@/store';
+import { setLanguage } from '@/utils/i18n';
+import { Card, Button, Avatar, InfoRow, LanguageSwitcher } from '@/components/ui';
 
 const emit = defineEmits<{
   (e: 'logout'): void;
 }>();
 
-const userStore = useUserStore();
-
 const userProfileText = 'User Profile';
 const accountInfoText = 'Account Information';
-const phoneText = 'Phone';
 const appSettingsText = 'App Settings';
 const languageText = 'Language';
 const signOutText = 'Sign Out';
 const versionText = 'Version';
 
-const userName = computed(() => userStore.user?.name || 'Guest User');
-const userPhone = computed(() => userStore.user?.phone || '-');
-const userUsername = computed(() => userStore.user?.username || 'guest');
-const userGroup = computed(() => userStore.user?.groupName || '-' );
-const userInitials = computed(() => {
-  const name = userName.value;
-  return name.split(' ').map(n => n[0]).join('').slice(0, 2);
-});
+const user = computed(() => getUser());
 
-const currentLanguage = computed(() => getLanguage());
-
-function setLanguage(lang: 'en' | 'th') {
-  setLanguage(lang);
-}
+const userName = computed(() => user.value?.name || 'Guest User');
+const userPhone = computed(() => user.value?.phone || '-');
+const userUsername = computed(() => user.value?.username || 'guest');
+const userGroup = computed(() => user.value?.groupName || '-' );
 
 function handleLogout() {
-  userStore.logout();
-  emit('logout');
+  uni.showModal({
+    title: 'Sign Out',
+    content: 'Are you sure you want to sign out?',
+    success: (res) => {
+      if (res.confirm) {
+        clearAuth();
+        emit('logout');
+      }
+    },
+  });
 }
 </script>
 
@@ -133,101 +108,49 @@ function handleLogout() {
 
 .page-title {
   font-size: $text-2xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
 }
 
 .user-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-xl;
-  padding: $spacing-6;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: $spacing-6;
   margin-bottom: $spacing-4;
 }
 
-.user-avatar {
-  width: 96px;
-  height: 96px;
-  background: $gray-200;
-  border-radius: $radius-full;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.user-avatar-wrap {
   margin-bottom: $spacing-4;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.avatar-text {
-  font-size: 32px;
-  font-weight: $font-bold;
-  color: $gray-600;
 }
 
 .user-name {
   font-size: $text-xl;
-  font-weight: $font-bold;
-  color: $gray-900;
+  font-weight: $font-weight-bold;
+  color: $foreground;
 }
 
 .info-card, .settings-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: $radius-xl;
-  padding: $spacing-4;
   margin-bottom: $spacing-4;
 }
 
 .card-title {
   font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-500;
+  font-weight: $font-weight-medium;
+  color: $muted-foreground;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: $spacing-4;
-}
-
-.info-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $spacing-2 0;
-  min-height: 40px;
-  border-bottom: 1px solid $gray-50;
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.info-label-group, .setting-label-group {
-  display: flex;
-  align-items: center;
-  gap: $spacing-3;
-}
-
-.info-icon {
-  font-size: 16px;
-}
-
-.info-label, .setting-label {
-  font-size: $text-sm;
-  color: $gray-700;
-}
-
-.info-value {
-  font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-900;
-  text-align: right;
-  margin-left: $spacing-4;
 }
 
 .setting-row {
-  padding: $spacing-3 0;
+  padding: $spacing-2 0;
+}
+
+.setting-label-group {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  margin-bottom: $spacing-3;
 }
 
 .setting-icon {
@@ -239,7 +162,7 @@ function handleLogout() {
   justify-content: center;
 
   &.bg-indigo {
-    background: rgba($indigo-500, 0.1);
+    background: oklch(39.8% 0.07 227.39 / 10%);
   }
 
   .icon {
@@ -247,61 +170,14 @@ function handleLogout() {
   }
 }
 
-.language-switcher {
-  display: flex;
-  background: $gray-100;
-  border-radius: $radius-lg;
-  padding: $spacing-1;
-}
-
-.lang-btn {
-  padding: $spacing-1 $spacing-3;
-  border-radius: $radius-md;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &.active {
-    background: $white;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-
-    .lang-text {
-      color: $gray-900;
-    }
-  }
-}
-
-.lang-text {
+.setting-label {
   font-size: $text-sm;
-  font-weight: $font-medium;
-  color: $gray-500;
+  color: $foreground;
 }
 
 .logout-btn {
   width: 100%;
-  height: 48px;
-  background: $error-color;
-  border-radius: $radius-lg;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $spacing-2;
-  cursor: pointer;
-  box-shadow: 0 10px 15px -3px rgba($error-color, 0.2);
   margin-top: $spacing-4;
-
-  &:active {
-    opacity: 0.9;
-  }
-}
-
-.logout-icon {
-  font-size: 18px;
-}
-
-.logout-text {
-  font-size: $text-base;
-  font-weight: $font-medium;
-  color: $white;
 }
 
 .version-info {
@@ -311,6 +187,6 @@ function handleLogout() {
 
 .version-text {
   font-size: 12px;
-  color: $gray-400;
+  color: $muted-foreground;
 }
 </style>

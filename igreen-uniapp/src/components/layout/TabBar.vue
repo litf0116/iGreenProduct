@@ -7,15 +7,15 @@
       :class="{ active: currentView === item.id }"
       @click="handleTabClick(item.id)"
     >
-      <text class="tab-icon" :class="item.iconClass"></text>
+      <view class="tab-icon-wrapper">
+        <text class="tab-icon">{{ item.icon }}</text>
+      </view>
       <text class="tab-label">{{ item.label }}</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
 const props = defineProps<{
   currentView: string;
 }>();
@@ -24,12 +24,12 @@ const emit = defineEmits<{
   (e: 'update:currentView', view: string): void;
 }>();
 
-const menuItems = computed(() => [
-  { id: 'dashboard', label: 'Home', iconClass: 'icon-home' },
-  { id: 'queue', label: 'Queue', iconClass: 'icon-queue' },
-  { id: 'my-work', label: 'Mine', iconClass: 'icon-work' },
-  { id: 'profile', label: 'Profile', iconClass: 'icon-profile' },
-]);
+const menuItems = [
+  { id: 'dashboard', label: 'Home', icon: '🏠' },
+  { id: 'queue', label: 'Queue', icon: '📋' },
+  { id: 'my-work', label: 'Mine', icon: '✅' },
+  { id: 'profile', label: 'Profile', icon: '👤' },
+];
 
 function handleTabClick(view: string) {
   emit('update:currentView', view);
@@ -59,46 +59,42 @@ function handleTabClick(view: string) {
   justify-content: center;
   gap: 4px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: $radius-md;
 
-  &.active {
+  &:active {
+    background: $gray-50;
+  }
+
+    &.active {
+    .tab-icon-wrapper {
+      transform: scale(1.1);
+    }
+
     .tab-label {
-      color: $primary-color;
+      color: $primary;  // green-600 - matches iGreenApp
+      font-weight: $font-weight-medium;
     }
   }
 }
 
-.tab-icon {
+.tab-icon-wrapper {
   width: 20px;
   height: 20px;
-  background: $gray-500;
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
 
-  .tab-item.active & {
-    background: $primary-color;
-  }
-
-  &.icon-home {
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>');
-  }
-
-  &.icon-queue {
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>');
-  }
-
-  &.icon-work {
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>');
-  }
-
-  &.icon-profile {
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>');
-  }
+.tab-icon {
+  font-size: 20px;
 }
 
 .tab-label {
   font-size: 10px;
-  font-weight: $font-medium;
-  color: $gray-500;
+  font-weight: $font-weight-medium;
+  color: $gray-500;  // slate-500 for inactive
+  transition: color 0.2s ease;
 }
 </style>

@@ -23,7 +23,7 @@ export interface TicketStep {
 }
 
 export interface Ticket {
-    id: string;
+    id: number;
     title: string;
     description: string;
     status: TicketStatus;
@@ -50,12 +50,13 @@ export interface Ticket {
     feedbackPhotoUrls?: string[];
     estimatedResolutionTime?: string;
     problemPhotoUrls?: string[];
-    relatedTicketId?: string;
+    relatedTicketId?: number;
+    problemType?: string;
 }
 
 export const MOCK_TICKETS: Ticket[] = [
     {
-        id: "WO-2024",
+        id: 202601200001,
         title: "Station #405 Offline - Downtown Plaza",
         description: "Station is reporting offline status for more than 2 hours. Remote reset failed. Likely network module issue or power cut.",
         status: "open",
@@ -74,7 +75,7 @@ export const MOCK_TICKETS: Ticket[] = [
         ]
     },
     {
-        id: "WO-2025",
+        id: 202601200002,
         title: "Connector B Damage - Highway Rest Stop 12",
         description: "Customer reported CCS connector locking mechanism is broken. Visual inspection required. Spare part #CCS-Type2-L might be needed.",
         status: "assigned",
@@ -93,7 +94,7 @@ export const MOCK_TICKETS: Ticket[] = [
         ]
     },
     {
-        id: "WO-2026",
+        id: 202601200003,
         title: "Routine Maintenance - Mall of City (Level 2)",
         description: "Quarterly preventive maintenance for cluster A. Check cables, clean screens, test voltage output.",
         status: "open",
@@ -151,7 +152,7 @@ export const MOCK_TICKETS: Ticket[] = [
         ]
     },
     {
-        id: "WO-2027",
+        id: 202601200004,
         title: "Scheduled Modem Upgrade - Westside Park",
         description: "Replace 3G modems with 4G LTE units for Stations 1-4 as part of the Q4 connectivity upgrade plan.",
         status: "open",
@@ -168,7 +169,7 @@ export const MOCK_TICKETS: Ticket[] = [
         ]
     },
     {
-        id: "WO-2028",
+        id: 202601200005,
         title: "Payment Terminal Jammed - Central Station",
         description: "Credit card reader is not accepting cards. Physical obstruction detected in the slot.",
         status: "open",
@@ -185,7 +186,7 @@ export const MOCK_TICKETS: Ticket[] = [
         ]
     },
     {
-        id: "WO-2029",
+        id: 202601200006,
         title: "Recurring Power Fluctuation - Sector 7",
         description: "Multiple users reporting power output instability. Requires deep analysis and long-term monitoring strategy.",
         status: "assigned",
@@ -196,7 +197,7 @@ export const MOCK_TICKETS: Ticket[] = [
         assignee: "Mike Technician",
         tags: ["power", "investigation"],
         location: "Sector 7, Industrial Zone",
-        relatedTicketId: "WO-2024"
+        relatedTicketId: 202601200001
     }
 ];
 

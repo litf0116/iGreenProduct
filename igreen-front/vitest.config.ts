@@ -4,6 +4,9 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'import.meta.env.VITE_API_URL': '"http://localhost:8000"',
+  },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
@@ -54,6 +57,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['**/*.{test,spec}.{js,ts,tsx}'],
     exclude: ['node_modules', 'build', 'dist'],
+    env: {
+      VITE_API_URL: 'http://localhost:8000',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

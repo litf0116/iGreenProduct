@@ -93,6 +93,16 @@ public class ConfigService {
     }
 
     @Transactional(readOnly = true)
+    public List<PriorityResponse> getAllPriorities() {
+        return List.of(
+                new PriorityResponse("P1", "P1 - Critical", "Critical priority requiring immediate response"),
+                new PriorityResponse("P2", "P2 - High", "High priority requiring quick response"),
+                new PriorityResponse("P3", "P3 - Medium", "Medium priority with standard response time"),
+                new PriorityResponse("P4", "P4 - Low", "Low priority with extended response time")
+        );
+    }
+
+    @Transactional(readOnly = true)
     public List<ProblemTypeResponse> getAllProblemTypes() {
         return problemTypeMapper.selectList(new LambdaQueryWrapper<>()).stream()
                 .map(this::toProblemTypeResponse)
@@ -163,7 +173,6 @@ public class ConfigService {
                 .levelName(request.levelName())
                 .description(request.description())
                 .maxConcurrentTickets(request.maxConcurrentTickets())
-                .escalationTimeHours(request.escalationTimeHours())
                 .build();
 
         siteLevelConfigMapper.insert(config);
@@ -190,10 +199,6 @@ public class ConfigService {
 
         if (request.maxConcurrentTickets() != null) {
             config.setMaxConcurrentTickets(request.maxConcurrentTickets());
-        }
-
-        if (request.escalationTimeHours() != null) {
-            config.setEscalationTimeHours(request.escalationTimeHours());
         }
 
         siteLevelConfigMapper.updateById(config);
@@ -230,8 +235,7 @@ public class ConfigService {
                 config.getId(),
                 config.getLevelName(),
                 config.getDescription(),
-                config.getMaxConcurrentTickets(),
-                config.getEscalationTimeHours()
+                config.getMaxConcurrentTickets()
         );
     }
 }

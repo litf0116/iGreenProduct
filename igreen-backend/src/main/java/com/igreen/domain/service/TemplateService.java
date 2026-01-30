@@ -68,7 +68,7 @@ public class TemplateService {
 
         if (request.steps() != null) {
             templateFieldMapper.deleteByTemplateId(id);
-            templateStepMapper.deleteByTemplateId(id);
+            templateStepMapper.delete(new LambdaQueryWrapper<TemplateStep>().eq(TemplateStep::getTemplateId, id));
             createStepsAndFields(id, request.steps());
         }
 
@@ -87,7 +87,7 @@ public class TemplateService {
             step.setTemplateId(templateId);
             step.setName(stepRequest.name());
             step.setDescription(stepRequest.description());
-            step.setOrder(stepRequest.order() != null ? stepRequest.order() : order++);
+            step.setSortOrder(stepRequest.order() != null ? stepRequest.order() : order++);
             templateStepMapper.insert(step);
 
             createFields(step.getId(), stepRequest.fields());
@@ -118,7 +118,10 @@ public class TemplateService {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
-        List<TemplateStep> steps = templateStepMapper.selectByTemplateIdOrderByOrderAsc(id);
+        LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
+        stepWrapper.eq(TemplateStep::getTemplateId, id);
+        stepWrapper.orderByAsc(TemplateStep::getSortOrder);
+        List<TemplateStep> steps = templateStepMapper.selectList(stepWrapper);
         for (TemplateStep step : steps) {
             List<TemplateField> fields = templateFieldMapper.selectByStepId(step.getId());
             step.setFields(fields);
@@ -132,7 +135,10 @@ public class TemplateService {
     public List<Template> getAllTemplates() {
         List<Template> templates = templateMapper.selectList(new LambdaQueryWrapper<>());
         for (Template template : templates) {
-            List<TemplateStep> steps = templateStepMapper.selectByTemplateIdOrderByOrderAsc(template.getId());
+            LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
+            stepWrapper.eq(TemplateStep::getTemplateId, template.getId());
+            stepWrapper.orderByAsc(TemplateStep::getSortOrder);
+            List<TemplateStep> steps = templateStepMapper.selectList(stepWrapper);
             for (TemplateStep step : steps) {
                 List<TemplateField> fields = templateFieldMapper.selectByStepId(step.getId());
                 step.setFields(fields);
@@ -148,7 +154,7 @@ public class TemplateService {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
         templateFieldMapper.deleteByTemplateId(id);
-        templateStepMapper.deleteByTemplateId(id);
+        templateStepMapper.delete(new LambdaQueryWrapper<TemplateStep>().eq(TemplateStep::getTemplateId, id));
         templateMapper.deleteById(id);
     }
 }

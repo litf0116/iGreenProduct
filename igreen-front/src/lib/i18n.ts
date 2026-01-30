@@ -277,6 +277,7 @@ export const translations = {
     // Table
     ticketId: "Ticket ID",
     title: "Title",
+    status: "Status",
     site: "Site",
     selectSite: "Select Site",
     assignedToName: "Assigned To",
@@ -289,6 +290,12 @@ export const translations = {
     // Site Management
     siteManagement: "Site Management",
     sites: "Sites",
+    A: "Level A",
+    B: "Level B",
+    C: "Level C",
+    ONLINE: "Online",
+    OFFLINE: "Offline",
+    UNDER_CONSTRUCTION: "Under Construction",
 
     // Group Management
     groupManagement: "Group Management",
@@ -346,6 +353,8 @@ export const translations = {
     onlineSites: "Online Sites",
     offlineSites: "Offline Sites",
     errorOccurred: "An error occurred",
+    failedToLoadStats: "Failed to load statistics",
+    failedToLoadTickets: "Failed to load tickets",
   },
   th: {
     // Navigation
@@ -637,6 +646,12 @@ export const translations = {
     // Site Management
     siteManagement: "การจัดการสถานที่",
     sites: "สถานที่",
+    A: "ระดับ A",
+    B: "ระดับ B",
+    C: "ระดับ C",
+    ONLINE: "ออนไลน์",
+    OFFLINE: "ออฟไลน์",
+    UNDER_CONSTRUCTION: "กำลังก่อสร้าง",
 
     // Group Management
     groupManagement: "การจัดการกลุ่ม",
@@ -694,6 +709,8 @@ export const translations = {
     onlineSites: "สถานที่ออนไลน์",
     offlineSites: "สถานที่ออฟไลน์",
     errorOccurred: "เกิดข้อผิดพลาด",
+    failedToLoadStats: "โหลดสถิติไม่สำเร็จ",
+    failedToLoadTickets: "โหลดตั๋วไม่สำเร็จ",
   },
 };
 

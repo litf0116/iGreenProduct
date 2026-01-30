@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { Site, SiteLevel, SiteStatus } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
 import { useDataStore, useUIStore } from "../store";
@@ -72,6 +72,8 @@ export function SiteManagement() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // 组件挂载时从 API 加载数据
   useEffect(() => {
@@ -157,63 +159,72 @@ export function SiteManagement() {
     }
   };
 
-  const handleExport = () => {
-    const dataStr = JSON.stringify(sites, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `sites_export_${new Date().toISOString().split("T")[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const blob = await api.exportSites();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `sites_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Sites exported successfully");
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.error("Failed to export sites");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleDownloadTemplate = () => {
-    const template = [
-      {
-        name: "Example Site",
-        address: "123 Example Street, City, Country",
-        level: "normal",
-        status: "online",
-      },
-    ];
-    const dataStr = JSON.stringify(template, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "sites_import_template.json";
-    link.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadTemplate = async () => {
+    try {
+      const blob = await api.downloadSiteTemplate();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "sites_import_template.xlsx";
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Template downloaded successfully");
+    } catch (error) {
+      console.error("Template download failed:", error);
+      toast.error("Failed to download template");
+    }
   };
 
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        if (Array.isArray(data)) {
-          for (const item of data) {
-            await createSite({
-              name: item.name || "",
-              address: item.address || "",
-              level: item.level || "normal",
-              status: item.status || "online",
-            });
-          }
-          toast.success(`${data.length} sites imported successfully`);
+    if (isImporting) return;
+    setIsImporting(true);
+
+    try {
+      const result = await api.importSites(file);
+      if (result.success) {
+        toast.success(`${result.importedCount} sites imported successfully`);
+        // Reload sites after import
+        const response = await api.getSites({ page: 0, size: 100 });
+        setSites(response.records || response || []);
+      } else {
+        toast.error(result.message || "Import failed");
+        if (result.errors && result.errors.length > 0) {
+          result.errors.forEach((err) => {
+            toast.error(`Row ${err.row}: ${err.message}`);
+          });
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        toast.error("Invalid file format");
       }
-    };
-    reader.readAsText(file);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    } catch (error) {
+      console.error("Import failed:", error);
+      toast.error("Failed to import sites");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -281,7 +292,7 @@ export function SiteManagement() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".json"
+            accept=".xlsx,.xls"
             onChange={handleImport}
             className="hidden"
           />

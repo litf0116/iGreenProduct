@@ -56,6 +56,17 @@ public class SiteService {
 
     @Transactional(readOnly = true)
     public PageResult<Site> getAllSites(int page, int size, String keyword, String level, String status) {
+        // 参数验证
+        if (page < 1) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (size < 1) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        if (size > 100) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+
         PageHelper.startPage(page, size);
         try {
             LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();

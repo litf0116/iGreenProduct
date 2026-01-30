@@ -71,7 +71,14 @@
       chunkSizeWarningLimit: 600,
     },
     server: {
-      port: 3000,
+      port: 3100,
       open: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   });

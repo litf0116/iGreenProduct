@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -115,7 +116,7 @@ class SiteServiceTest {
 
     @Test
     @DisplayName("获取站点统计信息")
-    void getSiteStats_Success() {
+    void getSiteStats_ReturnsStats() {
         when(siteMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(10L);
 
         SiteStats stats = siteService.getSiteStats();
@@ -183,5 +184,150 @@ class SiteServiceTest {
                 () -> siteService.deleteSite("nonexistent"));
 
         assertEquals(ErrorCode.SITE_NOT_FOUND.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("获取站点统计信息返回总数")
+    void getSiteStats_ReturnsTotal() {
+        when(siteMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(10L);
+
+        SiteStats stats = siteService.getSiteStats();
+
+        assertNotNull(stats);
+        assertEquals(10L, stats.totalSites());
+    }
+
+    @Test
+    @DisplayName("获取空站点列表")
+    void getAllSites_EmptyList() {
+        PageResult<Site> emptyResult = new PageResult<>(Collections.emptyList(), 0, 10, 0, false);
+        when(siteMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
+
+        PageResult<Site> result = siteService.getAllSites(0, 10, null, null, null);
+
+        assertNotNull(result);
+        assertEquals(0, result.records().size());
+    }
+
+    @Test
+    @DisplayName("获取多个站点")
+    void getAllSites_MultipleSites() {
+        Site site2 = Site.builder()
+                .id("site-2")
+                .name("站点2")
+                .address("地址2")
+                .status(SiteStatus.ONLINE)
+                .build();
+
+        PageResult<Site> pageResult = new PageResult<>(Arrays.asList(testSite, site2), 0, 10, 2, false);
+        when(siteMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Arrays.asList(testSite, site2));
+
+        PageResult<Site> result = siteService.getAllSites(0, 10, null, null, null);
+
+        assertNotNull(result);
+        assertEquals(2, result.records().size());
+    }
+
+    @Test
+    @DisplayName("创建站点时名称为null")
+    void createSite_NullName() {
+        SiteCreateRequest request = new SiteCreateRequest(
+                null,
+                "地址",
+                "VIP",
+                SiteStatus.ONLINE
+        );
+
+        when(siteMapper.insert(any(Site.class))).thenAnswer(invocation -> {
+            Site site = invocation.getArgument(0);
+            site.setId("site-new");
+            return 1;
+        });
+
+        Site result = siteService.createSite(request);
+
+        assertNotNull(result);
+        assertNull(result.getName());
+    }
+
+    @Test
+    @DisplayName("更新站点时只更新地址")
+    void updateSite_OnlyAddress() {
+        SiteUpdateRequest request = new SiteUpdateRequest(
+                null,
+                "新地址",
+                null,
+                null
+        );
+
+        when(siteMapper.selectById("site-1")).thenReturn(testSite);
+        when(siteMapper.updateById(any(Site.class))).thenReturn(1);
+
+        Site result = siteService.updateSite("site-1", request);
+
+        assertNotNull(result);
+        assertEquals("新地址", result.getAddress());
+        verify(siteMapper).updateById(any(Site.class));
+    }
+
+    @Test
+    @DisplayName("更新站点时名称重复应抛出异常")
+    void updateSite_NameExists() {
+        SiteUpdateRequest request = new SiteUpdateRequest(
+                "已存在名称",
+                null,
+                null,
+                null
+        );
+
+        when(siteMapper.selectById("site-1")).thenReturn(testSite);
+        when(siteMapper.countByName("已存在名称")).thenReturn(1);
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> siteService.updateSite("site-1", request));
+
+        assertEquals(ErrorCode.SITE_EXISTS.getCode(), exception.getCode());
+    }
+
+    @Test
+    @DisplayName("创建站点时地址为null")
+    void createSite_NullAddress() {
+        SiteCreateRequest request = new SiteCreateRequest(
+                "新站点",
+                null,
+                "VIP",
+                SiteStatus.ONLINE
+        );
+
+        when(siteMapper.countByName("新站点")).thenReturn(0);
+        when(siteMapper.insert(any(Site.class))).thenAnswer(invocation -> {
+            Site site = invocation.getArgument(0);
+            site.setId("site-new");
+            return 1;
+        });
+
+        Site result = siteService.createSite(request);
+
+        assertNotNull(result);
+        assertEquals("新站点", result.getName());
+        assertNull(result.getAddress());
+    }
+
+    @Test
+    @DisplayName("更新站点时状态为null不更新")
+    void updateSite_NullStatus() {
+        SiteUpdateRequest request = new SiteUpdateRequest(
+                null,
+                null,
+                null,
+                null
+        );
+
+        when(siteMapper.selectById("site-1")).thenReturn(testSite);
+
+        Site result = siteService.updateSite("site-1", request);
+
+        assertNotNull(result);
+        assertEquals(SiteStatus.ONLINE, result.getStatus());
     }
 }

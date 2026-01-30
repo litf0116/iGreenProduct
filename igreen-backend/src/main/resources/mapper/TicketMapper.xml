@@ -25,6 +25,7 @@
         <result property="cause" column="cause"/>
         <result property="solution" column="solution"/>
         <result property="relatedTicketIds" column="related_ticket_ids"/>
+        <result property="problemType" column="problem_type"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="dueDate" column="due_date"/>
@@ -51,7 +52,7 @@
         id, title, description, type, status, priority, site, template_id, assigned_to, created_by,
         completed_steps, step_data, accepted, accepted_at, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
-        created_at, updated_at, due_date
+        problem_type, created_at, updated_at, due_date
     </sql>
 
     <select id="selectByIdWithDetails" resultMap="TicketWithDetailsResultMap">

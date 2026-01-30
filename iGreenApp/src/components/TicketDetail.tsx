@@ -49,12 +49,13 @@ import {
 } from '../lib/data';
 import { toast } from "sonner@2.0.3";
 import { useLanguage } from './LanguageContext';
+import { api } from '../lib/api';
 
 interface TicketDetailProps {
   ticket: Ticket | null;
   onClose: () => void;
-  onUpdateTicket: (id: string, updates: Partial<Ticket>) => void;
-  onViewRelatedTicket?: (ticketId: string) => void;
+  onUpdateTicket: (id: number, updates: Partial<Ticket>) => void;
+  onViewRelatedTicket?: (ticketId: number) => void;
 }
 
 export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTicket }: TicketDetailProps) {
@@ -89,146 +90,173 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       }
   };
 
-  const handleGrabOrder = () => {
-      // TODO: Backend Integration - Grab Ticket
-      // Call API to assign ticket to current user and update status
-      // Example: await api.updateTicket(ticket.id, { status: 'assigned', assignee: currentUser.id });
-
-      if (ticket.type === 'problem') {
-          onUpdateTicket(ticket.id, { 
-              status: 'arrived', // Skip to arrived/work-in-progress for problem tickets
-              assignee: 'Mike Technician',
-              history: { ...ticket.history, arrivedAt: new Date().toISOString() }
-          });
-          toast.success("Ticket accepted. Please provide solution details.");
-      } else {
-          onUpdateTicket(ticket.id, { 
-              status: 'assigned',
-              assignee: 'Mike Technician' // Hardcoded for demo
-          });
-          toast.success("Ticket assigned to you");
+  const handleGrabOrder = async () => {
+      try {
+        await api.acceptTicket(ticket.id);
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        // 直接更新详情页状态，不触发 updateTicket 接口
+        onUpdateTicket(ticket.id, updatedTicket);
+        toast.success("Ticket assigned to you");
+      } catch (error) {
+        console.error("Failed to accept ticket:", error);
+        toast.error("Failed to accept ticket");
       }
   };
 
-  const handleDepart = () => {
-      // TODO: Backend Integration - Departure
-      // Update ticket status to 'departed' and record timestamp
-      // Example: await api.updateTicket(ticket.id, { status: 'departed', departedAt: new Date() });
-
-      onUpdateTicket(ticket.id, { 
-          status: 'departed',
-          history: { ...ticket.history, departedAt: new Date().toISOString() }
-      });
-      toast.success("Departure recorded");
+  const handleDepart = async () => {
+      try {
+        await api.departTicket(ticket.id);
+        onUpdateTicket(ticket.id, {
+            status: 'departed',
+            history: { ...ticket.history, departedAt: new Date().toISOString() }
+        });
+        toast.success("Departure recorded");
+      } catch (error) {
+        console.error("Failed to depart:", error);
+        toast.error("Failed to record departure");
+      }
   };
 
-  const handleArrive = () => {
-      ensureSteps();
-      // TODO: Backend Integration - Arrival
-      // Update ticket status to 'arrived', record timestamp, and initialize steps if needed
-      // Example: await api.updateTicket(ticket.id, { status: 'arrived', arrivedAt: new Date() });
-
-      onUpdateTicket(ticket.id, { 
-          status: 'arrived',
-          history: { ...ticket.history, arrivedAt: new Date().toISOString() }
-      });
-      toast.success("Arrival recorded - Start working on steps");
+  const handleArrive = async () => {
+      try {
+        await api.arriveTicket(ticket.id);
+        ensureSteps();
+        onUpdateTicket(ticket.id, {
+            status: 'arrived',
+            history: { ...ticket.history, arrivedAt: new Date().toISOString() }
+        });
+        toast.success("Arrival recorded - Start working on steps");
+      } catch (error) {
+        console.error("Failed to arrive:", error);
+        toast.error("Failed to record arrival");
+      }
   };
 
-  const handleStepToggle = (stepId: string, checked: boolean) => {
-      // TODO: Backend Integration - Complete Step
-      // Update specific step status in the database
-      // Example: await api.updateTicketStep(ticket.id, stepId, { completed: checked });
-      
-      const updatedSteps = ticket.steps?.map(s => 
-          s.id === stepId ? { ...s, completed: checked } : s
-      );
-      onUpdateTicket(ticket.id, { steps: updatedSteps });
+  const handleStepToggle = async (stepId: string, checked: boolean) => {
+      const step = ticket.steps?.find(s => s.id === stepId);
+      if (!step) return;
+
+      try {
+        await api.updateTicketStep(ticket.id, stepId, { completed: checked });
+        const updatedSteps = ticket.steps?.map(s =>
+            s.id === stepId ? { ...s, completed: checked } : s
+        );
+        onUpdateTicket(ticket.id, { steps: updatedSteps });
+      } catch (error) {
+        console.error("Failed to update step:", error);
+      }
   };
 
-  const handleStepDescription = (stepId: string, desc: string) => {
-       // TODO: Backend Integration - Step Description (Debounced)
-       // Save step description
-       
-       const updatedSteps = ticket.steps?.map(s => 
-          s.id === stepId ? { ...s, description: desc } : s
-      );
-      onUpdateTicket(ticket.id, { steps: updatedSteps });
-  };
+   const handleStepDescription = async (stepId: string, desc: string) => {
+        const step = ticket.steps?.find(s => s.id === stepId);
+        if (!step) return;
 
-  const handlePreventiveStepUpdate = (stepId: string, updates: Partial<TicketStep>) => {
-      const updatedSteps = ticket.steps?.map(s => {
-          if (s.id === stepId) {
-              const newStep = { ...s, ...updates };
-              // Auto-calculate completion status based on rules
-              let isCompleted = false;
-              if (newStep.status === 'na') {
-                  isCompleted = true;
-              } else if (newStep.status === 'pass') {
-                  // Pass requires photo? User said "upload photo即可".
-                  // Check if photos exist (either old singular or new plural)
-                  if (newStep.photoUrl || (newStep.photoUrls && newStep.photoUrls.length > 0)) isCompleted = true;
-              } else if (newStep.status === 'fail') {
-                  // Fail requires cause + before/after photos
-                  const hasBefore = newStep.beforePhotoUrl || (newStep.beforePhotoUrls && newStep.beforePhotoUrls.length > 0);
-                  const hasAfter = newStep.afterPhotoUrl || (newStep.afterPhotoUrls && newStep.afterPhotoUrls.length > 0);
-                  if (newStep.cause && hasBefore && hasAfter) isCompleted = true;
-              }
-              newStep.completed = isCompleted;
-              return newStep;
-          }
-          return s;
-      });
-      onUpdateTicket(ticket.id, { steps: updatedSteps });
+        try {
+          await api.updateTicketStep(ticket.id, stepId, { description: desc });
+          const updatedSteps = ticket.steps?.map(s =>
+             s.id === stepId ? { ...s, description: desc } : s
+         );
+         onUpdateTicket(ticket.id, { steps: updatedSteps });
+        } catch (error) {
+          console.error("Failed to update step description:", error);
+        }
+   };
+
+  const handlePreventiveStepUpdate = async (stepId: string, updates: Partial<TicketStep>) => {
+      const step = ticket.steps?.find(s => s.id === stepId);
+      if (!step) return;
+
+      // 计算完成状态
+      const newStep = { ...step, ...updates };
+      let isCompleted = false;
+      if (newStep.status === 'na') {
+          isCompleted = true;
+      } else if (newStep.status === 'pass') {
+          if (newStep.photoUrl || (newStep.photoUrls && newStep.photoUrls.length > 0)) isCompleted = true;
+      } else if (newStep.status === 'fail') {
+          const hasBefore = newStep.beforePhotoUrl || (newStep.beforePhotoUrls && newStep.beforePhotoUrls.length > 0);
+          const hasAfter = newStep.afterPhotoUrl || (newStep.afterPhotoUrls && newStep.afterPhotoUrls.length > 0);
+          if (newStep.cause && hasBefore && hasAfter) isCompleted = true;
+      }
+      newStep.completed = isCompleted;
+
+      try {
+        await api.updateTicketStep(ticket.id, stepId, {
+          status: newStep.status,
+          cause: newStep.cause,
+          photoUrl: newStep.photoUrl,
+          photoUrls: newStep.photoUrls,
+          beforePhotoUrl: newStep.beforePhotoUrl,
+          beforePhotoUrls: newStep.beforePhotoUrls,
+          afterPhotoUrl: newStep.afterPhotoUrl,
+          afterPhotoUrls: newStep.afterPhotoUrls,
+          completed: newStep.completed,
+          timestamp: newStep.timestamp,
+        });
+
+        const updatedSteps = ticket.steps?.map(s =>
+            s.id === stepId ? newStep : s
+        );
+        onUpdateTicket(ticket.id, { steps: updatedSteps });
+      } catch (error) {
+        console.error("Failed to update step:", error);
+      }
   };
 
   const handleAddPhoto = async (
       source: 'camera' | 'gallery',
-      stepId: string, 
+      stepId: string,
       fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' = 'photo',
       isCorrectiveOrPlanned: boolean = false
   ) => {
-      // Construct field names
-      const singularField = `${fieldPrefix}Url` as 'photoUrl' | 'beforePhotoUrl' | 'afterPhotoUrl'; // Note: feedbackPhotoUrl might not exist on TicketStep, but we cast for dynamic access
-      const pluralField = `${fieldPrefix}Urls` as 'photoUrls' | 'beforePhotoUrls' | 'afterPhotoUrls' | 'feedbackPhotoUrls' | 'problemPhotoUrls';
-
-      setLoadingImage(stepId + singularField);
+      setLoadingImage(stepId + fieldPrefix);
       try {
-        // Mock upload - get 1-3 photos based on source
-        // Camera = 1 photo, Gallery = 1-3 photos
-        const count = source === 'camera' ? 1 : Math.floor(Math.random() * 3) + 1;
-        
-        const newPhotos: string[] = [];
-        for(let i=0; i<count; i++) {
-            newPhotos.push(`https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&random=${Math.random()}`);
-        }
+          // Trigger file selection
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.multiple = source === 'gallery';
+          input.capture = source === 'camera' ? 'environment' : undefined as any;
 
-        if (isCorrectiveOrPlanned) {
-            // Get existing photos
-            const existingPhotos = (ticket as any)[pluralField] || ((ticket as any)[singularField] ? [(ticket as any)[singularField]!] : []);
-            const updatedPhotos = [...existingPhotos, ...newPhotos];
-            
-            onUpdateTicket(ticket.id, {
-                // [singularField]: updatedPhotos[0], // Only update singular if it exists in type, simpler to just rely on plural for new fields
-                [pluralField]: updatedPhotos
-            });
-        } else {
-            // Find step to get existing photos
-            const step = ticket.steps?.find(s => s.id === stepId);
-            const existingPhotos = step?.[pluralField] || (step?.[singularField] ? [step[singularField]!] : []);
-            const updatedPhotos = [...existingPhotos, ...newPhotos];
+          input.onchange = async (e) => {
+              const files = (e.target as HTMLInputElement).files;
+              if (!files || files.length === 0) {
+                  setLoadingImage(null);
+                  return;
+              }
 
-            handlePreventiveStepUpdate(stepId, { 
-                [singularField]: updatedPhotos[0], // Update singular for backward compatibility
-                [pluralField]: updatedPhotos,
-                timestamp: new Date().toISOString()
-            });
-        }
-        toast.success(`${count} photo(s) added from ${source}`);
-      } catch (e) {
-        toast.error("Failed to add photo");
-      } finally {
-        setLoadingImage(null);
+              for (let i = 0; i < files.length; i++) {
+                  const file = files[i];
+                  try {
+                      const uploaded = await api.uploadFile(file, fieldPrefix);
+
+                      if (isCorrectiveOrPlanned) {
+                          const existingPhotos = (ticket as any)[`${fieldPrefix}Urls`] || [];
+                          onUpdateTicket(ticket.id, {
+                              [`${fieldPrefix}Urls`]: [...existingPhotos, uploaded.url]
+                          });
+                      } else {
+                          const step = ticket.steps?.find(s => s.id === stepId);
+                          const existingPhotos = step?.photoUrls || (step?.photoUrl ? [step.photoUrl] : []);
+                          handlePreventiveStepUpdate(stepId, {
+                              photoUrls: [...existingPhotos, uploaded.url],
+                              timestamp: new Date().toISOString()
+                          });
+                      }
+                  } catch (error) {
+                      toast.error(`Failed to upload photo ${i + 1}`);
+                  }
+              }
+              toast.success('Photo(s) uploaded successfully');
+              setLoadingImage(null);
+          };
+
+          input.click();
+      } catch (error) {
+          console.error('Upload error:', error);
+          toast.error('Failed to upload photo');
+          setLoadingImage(null);
       }
   };
 
@@ -284,7 +312,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       );
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
       if (ticket.type === 'corrective') {
           // Check for multiple photos support
           const hasBefore = ticket.beforePhotoUrl || (ticket.beforePhotoUrls && ticket.beforePhotoUrls.length > 0);
@@ -313,31 +341,28 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
         }
       }
 
-      // TODO: Backend Integration - Finish Work
-      // Update status to 'review', maybe trigger notification to admin
-      // Example: await api.updateTicket(ticket.id, { status: 'review' });
-
-      onUpdateTicket(ticket.id, { status: 'review' });
-      toast.success("Work finished. Pending review.");
+      try {
+        await api.reviewTicket(ticket.id);
+        onUpdateTicket(ticket.id, { status: 'review' });
+        toast.success("Work finished. Pending review.");
+      } catch (error) {
+        console.error("Failed to submit:", error);
+        toast.error("Failed to submit work for review");
+      }
   };
 
-  const handleConfirm = () => {
-       // For demo, we act as if we are the system confirming it.
-       // In real app, this might be done by another user (admin).
-       
-       // If you want to simulate "Reject" for testing:
-       // Change this boolean to true to simulate rejection
-       const simulateReject = false; 
-
-       if (simulateReject) {
-           handleReject();
-       } else {
-           onUpdateTicket(ticket.id, { 
-               status: 'completed',
-               history: { ...ticket.history, completedAt: new Date().toISOString() }
-           });
-           toast.success("Ticket confirmed and closed.");
-       }
+  const handleConfirm = async () => {
+        try {
+            await api.completeTicket(ticket.id);
+            onUpdateTicket(ticket.id, {
+                status: 'completed',
+                history: { ...ticket.history, completedAt: new Date().toISOString() }
+            });
+            toast.success("Ticket confirmed and closed.");
+        } catch (error) {
+            console.error("Failed to confirm:", error);
+            toast.error("Failed to confirm ticket");
+        }
   };
 
   const handleReject = () => {
@@ -877,7 +902,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                                               size="sm" 
                                                               variant="outline" 
                                                               className="text-xs gap-2 h-9"
-                                                              onClick={() => handleAddPhoto(step.id, step.label)}
+                                                               onClick={() => handleAddPhoto('gallery', step.id, 'photo')}
                                                               disabled={loadingImage === step.id}
                                                           >
                                                               <Camera className="w-3 h-3" />
@@ -1048,7 +1073,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                         <div className="flex items-center gap-2 text-sm font-medium truncate">
                         <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                         <span className="truncate">
-                            {new Date(ticket.createdAt).toLocaleDateString()}
+                            {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : '-'}
                         </span>
                         </div>
                     </div>
