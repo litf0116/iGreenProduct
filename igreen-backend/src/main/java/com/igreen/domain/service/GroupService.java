@@ -74,13 +74,8 @@ public class GroupService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAllGroups();
         }
-        String searchKeyword = "%" + keyword.trim() + "%";
-        System.out.println("[DEBUG searchGroups] Searching with keyword: " + searchKeyword);
-        List<Group> groups = groupMapper.selectList(
-                new LambdaQueryWrapper<Group>()
-                        .like(Group::getName, searchKeyword)
-                        .or()
-                        .like(Group::getDescription, searchKeyword)
+        System.out.println("[DEBUG searchGroups] Searching with keyword: " + keyword);
+        List<Group> groups = groupMapper.selectList(new LambdaQueryWrapper<Group>().like(Group::getName, keyword.trim()).or().like(Group::getDescription, keyword.trim())
         );
         System.out.println("[DEBUG searchGroups] Found groups: " + groups.size());
         for (Group group : groups) {
