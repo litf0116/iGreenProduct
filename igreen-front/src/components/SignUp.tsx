@@ -18,7 +18,7 @@ import appLogo from "figma:asset/e2d3be716f2b03621853146ef3c8dd02abba30cb.png";
 
 interface SignUpProps {
   language: Language;
-  onSignUp: (name: string, username: string, password: string, role: string, country: string) => Promise<void>;
+  onSignUp: (name: string, username: string, password: string, confirmPassword: string, role: string, country: string) => Promise<void>;
   onSwitchToLogin: () => void;
 }
 
@@ -56,7 +56,7 @@ export function SignUp({ language, onSignUp, onSwitchToLogin }: SignUpProps) {
 
     setIsLoading(true);
     try {
-      await onSignUp(name, username, email, password, role, country);
+      await onSignUp(name, username, password, confirmPassword, role, country);
     } catch (err) {
       // Basic error handling assumption
       setError("Username already exists"); 

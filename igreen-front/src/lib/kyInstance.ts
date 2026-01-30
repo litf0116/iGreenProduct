@@ -64,9 +64,6 @@ export const kyInstance = ky.create({
     limit: 2,
     methods: ['get', 'put', 'head', 'delete', 'options', 'trace'],
     statusCodes: [408, 413, 429, 500, 502, 503, 504],
-    afterStatusCodes: {
-      401: true,
-    },
     backoffLimit: 10000,
     delay: (attemptCount) => 300 * (2 ** (attemptCount - 1)),
     retryOnTimeout: false,
@@ -135,8 +132,9 @@ export const kyInstance = ky.create({
             }
           }
 
-          const error = new HTTPError(response, request, options, errorMessage);
-          (error as any).isApiError = true;
+          const error = new HTTPError(response, request, options as any) as HTTPError & { isApiError?: boolean };
+          error.message = errorMessage;
+          error.isApiError = true;
           throw error;
         }
 
@@ -145,8 +143,9 @@ export const kyInstance = ky.create({
           const apiResponse: ApiResponse<unknown> = await clonedForSuccess.json();
 
           if (!apiResponse.success) {
-            const error = new HTTPError(response, request, options, apiResponse.message || 'API Error');
-            (error as any).isApiError = true;
+            const error = new HTTPError(response, request, options as any) as HTTPError & { isApiError?: boolean };
+            error.message = apiResponse.message || 'API Error';
+            error.isApiError = true;
             throw error;
           }
 

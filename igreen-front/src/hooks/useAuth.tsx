@@ -57,12 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(async (
     name: string,
     username: string,
-    email: string,
     password: string,
+    confirmPassword: string,
     role: string,
     country: string
   ) => {
-    await api.register({ name, username, email, password, role: role.toUpperCase(), country });
+    await api.register({ name, username, password, confirmPassword, role: role.toUpperCase(), country });
     const user = await api.getCurrentUser();
     setCurrentUser(user);
     setIsAuthenticated(true);

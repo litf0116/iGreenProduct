@@ -57,7 +57,7 @@ export function TicketDetail({
   const isCreator = ticket.createdBy === currentUserId;
   const isAssigned = ticket.assignedTo === currentUserId;
   const canAcceptOrDecline = isAssigned && !isCreator && ticket.status === "assigned" && !ticket.accepted;
-  const canCancel = isCreator && (ticket.status === "new" || ticket.status === "assigned");
+  const canCancel = isCreator && (ticket.status === "open" || ticket.status === "assigned");
 
   const handleAccept = () => {
     if (onAccept) {
@@ -201,7 +201,7 @@ export function TicketDetail({
             </Button>
           )}
           
-          {onEdit && isCreator && (ticket.status === "new" || ticket.status === "assigned") && (
+          {onEdit && isCreator && (ticket.status === "open" || ticket.status === "assigned") && (
             <Button variant="outline" onClick={onEdit}>
               <Edit className="h-4 w-4 mr-2" />
               {t("edit")}

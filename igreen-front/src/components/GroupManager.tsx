@@ -52,18 +52,22 @@ export function GroupManager() {
   const [isLoading, setIsLoading] = useState(true);
   const isDataLoaded = useRef(false);
 
-  const loadData = useCallback(async () => {
-    if (isDataLoaded.current) return;
+  // Search state with debounce
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const loadData = useCallback(async (keyword?: string) => {
     setIsLoading(true);
     try {
       const [groupsRes, usersRes] = await Promise.all([
-        api.getGroups().catch(() => []),
+        api.getGroups(keyword).catch(() => []),
         api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] })),
       ]);
-      // Handle API response that wraps data in { success, data, ... } format
-      const groupsData = (groupsRes as any)?.data || (groupsRes as any)?.records || groupsRes || [];
+      // api.getGroups(keyword) returns Group[] array
+      // api.getUsers() returns { records: User[], total, ... }
+      const groupsData = Array.isArray(groupsRes) ? groupsRes : [];
       const usersData = (usersRes as any)?.records || usersRes || [];
-      setGroups(Array.isArray(groupsData) ? groupsData : []);
+      setGroups(groupsData);
       setUsers(Array.isArray(usersData) ? usersData : []);
       isDataLoaded.current = true;
     } catch (error) {
@@ -74,9 +78,28 @@ export function GroupManager() {
     }
   }, [setGroups, setUsers, t]);
 
+  // Load data only once on mount
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (!isDataLoaded.current) {
+      loadData();
+    }
+  }, []); // Empty dependency array - run only once on mount
+
+  // Handle search with 250ms debounce
+  const handleSearchChange = (value: string) => {
+    setSearchKeyword(value);
+    
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set new timeout - search after 250ms
+    searchTimeoutRef.current = setTimeout(() => {
+      loadData(value.trim() || undefined);
+    }, 250);
+  };
+
   const [activeTab, setActiveTab] = useState("groups");
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
@@ -273,7 +296,12 @@ export function GroupManager() {
           <div className="flex justify-between items-center">
             <div className="relative w-72">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t("search")} className="pl-8" />
+              <Input 
+                placeholder={t("search")} 
+                className="pl-8"
+                value={searchKeyword}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
             </div>
             <Button 
               onClick={() => {

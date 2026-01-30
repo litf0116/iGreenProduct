@@ -13,7 +13,7 @@ public enum TicketType {
 
     @JsonValue
     public String getValue() {
-        return name();
+        return name().toLowerCase();
     }
 
     @JsonCreator

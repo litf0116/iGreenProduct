@@ -127,9 +127,29 @@ export const api = {
     return response.data.records;
   },
 
-  getGroups: async (): Promise<Group[]> => {
-    const response = await kyInstance.get('api/groups').json<{ data: { records: Group[] } }>();
-    return response.data.records;
+  getGroups: async (keyword?: string): Promise<Group[]> => {
+    const url = keyword ? `api/groups?keyword=${encodeURIComponent(keyword)}` : 'api/groups';
+    const rawResponse = await kyInstance.get(url).text();
+    console.log('[DEBUG getGroups] Raw response:', rawResponse);
+    
+    const response = JSON.parse(rawResponse) as {
+      success: boolean;
+      data?: { records: Group[] };
+      message?: string;
+      code?: string;
+    };
+    
+    console.log('[DEBUG getGroups] Parsed response:', response);
+    
+    if (response.success && response.data) {
+      console.log('[DEBUG getGroups] Using wrapper format, records:', response.data.records);
+      return response.data.records || [];
+    }
+    
+    // Fallback: try direct format
+    const directResponse = JSON.parse(rawResponse) as { records: Group[]; total: number; current: number; size: number; hasNext: boolean };
+    console.log('[DEBUG getGroups] Using direct format, records:', directResponse.records);
+    return directResponse.records || [];
   },
 
   getGroup: async (id: string): Promise<Group> => {

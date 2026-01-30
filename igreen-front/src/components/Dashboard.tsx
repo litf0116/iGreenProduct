@@ -104,7 +104,7 @@ export function Dashboard() {
     onHold: 0,
   });
 
-  const [activeTab, setActiveTab] = useState<TicketType>("CORRECTIVE");
+  const [activeTab, setActiveTab] = useState<TicketType>("corrective");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
@@ -119,13 +119,13 @@ export function Dashboard() {
     const priority = searchParams.get("priority");
     const query = searchParams.get("q");
 
-    if (tab && ["CORRECTIVE", "PREVENTIVE", "PLANNED", "PROBLEM"].includes(tab)) {
+    if (tab && ["corrective", "preventive", "planned", "problem"].includes(tab)) {
       setActiveTab(tab);
     }
     if (time && ["8hours", "today", "week", "month", "3months", "all"].includes(time)) {
       setTimeFilter(time);
     }
-    if (status && ["OPEN", "ASSIGNED", "ACCEPTED", "IN_PROGRESS", "SUBMITTED", "COMPLETED", "ON_HOLD", "CANCELLED", "all"].includes(status)) {
+    if (status && ["open", "assigned", "accepted", "in_progress", "submitted", "completed", "on_hold", "cancelled", "all"].includes(status)) {
       setStatusFilter(status);
     }
     if (priority) {
@@ -138,7 +138,7 @@ export function Dashboard() {
 
   const updateSearchParams = useCallback(() => {
     const params: Record<string, string> = {};
-    if (activeTab !== "CORRECTIVE") params.type = activeTab;
+    if (activeTab !== "corrective") params.type = activeTab;
     if (timeFilter !== "all") params.time = timeFilter;
     if (statusFilter !== "all") params.status = statusFilter;
     if (priorityFilter !== "all") params.priority = priorityFilter;
@@ -244,21 +244,21 @@ export function Dashboard() {
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "bg-blue-500";
-      case "ASSIGNED":
+      case "assigned":
         return "bg-indigo-500";
-      case "ACCEPTED":
+      case "accepted":
         return "bg-cyan-500";
-      case "IN_PROGRESS":
+      case "in_progress":
         return "bg-orange-500";
-      case "SUBMITTED":
+      case "submitted":
         return "bg-purple-500";
-      case "COMPLETED":
+      case "completed":
         return "bg-green-500";
-      case "ON_HOLD":
+      case "on_hold":
         return "bg-yellow-500";
-      case "CANCELLED":
+      case "cancelled":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -267,19 +267,19 @@ export function Dashboard() {
 
   const getStatusBadgeVariant = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "default";
-      case "ASSIGNED":
-      case "ACCEPTED":
-      case "IN_PROGRESS":
+      case "assigned":
+      case "accepted":
+      case "in_progress":
         return "secondary";
-      case "SUBMITTED":
+      case "submitted":
         return "default";
-      case "COMPLETED":
+      case "completed":
         return "outline";
-      case "ON_HOLD":
+      case "on_hold":
         return "default";
-      case "CANCELLED":
+      case "cancelled":
         return "destructive";
       default:
         return "default";
@@ -307,14 +307,14 @@ export function Dashboard() {
 
   const getStatusTranslationKey = (status: string): TranslationKey => {
     const statusMap: Record<string, TranslationKey> = {
-      "OPEN": "open",
-      "ASSIGNED": "assigned",
-      "ACCEPTED": "accepted",
-      "IN_PROGRESS": "inProgress",
-      "SUBMITTED": "submitted",
-      "COMPLETED": "closed",
-      "ON_HOLD": "onHold",
-      "CANCELLED": "cancelled",
+      "open": "open",
+      "assigned": "assigned",
+      "accepted": "accepted",
+      "in_progress": "inProgress",
+      "submitted": "submitted",
+      "completed": "closed",
+      "on_hold": "onHold",
+      "cancelled": "cancelled",
     };
     return statusMap[status] || status as TranslationKey;
   };
@@ -333,7 +333,7 @@ export function Dashboard() {
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : language === "pt" ? "pt-BR" : "en-US", {
+    return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : "en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -397,13 +397,13 @@ export function Dashboard() {
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectItem value="all">{t("allStatus")}</SelectItem>
-                  <SelectItem value="OPEN">{t("open")}</SelectItem>
-                  <SelectItem value="ASSIGNED">{t("assigned")}</SelectItem>
-                  <SelectItem value="ACCEPTED">{t("accepted")}</SelectItem>
-                  <SelectItem value="IN_PROGRESS">{t("inProgress")}</SelectItem>
-                  <SelectItem value="SUBMITTED">{t("submitted")}</SelectItem>
-                  <SelectItem value="ON_HOLD">{t("onHold")}</SelectItem>
-                  <SelectItem value="COMPLETED">{t("closed")}</SelectItem>
+                  <SelectItem value="open">{t("open")}</SelectItem>
+                  <SelectItem value="assigned">{t("assigned")}</SelectItem>
+                  <SelectItem value="accepted">{t("accepted")}</SelectItem>
+                  <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
+                  <SelectItem value="submitted">{t("submitted")}</SelectItem>
+                  <SelectItem value="on_hold">{t("onHold")}</SelectItem>
+                  <SelectItem value="completed">{t("closed")}</SelectItem>
                 </SelectContent>
               </Select>
 

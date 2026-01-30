@@ -15,7 +15,7 @@ public enum CommentType {
 
     @JsonValue
     public String getValue() {
-        return name();
+        return name().toLowerCase();
     }
 
     @JsonCreator

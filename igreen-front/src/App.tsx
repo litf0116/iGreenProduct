@@ -115,27 +115,29 @@ function AppLayout() {
   }, []);
 
   useEffect(() => {
-    loadInitialData();
-    loadConfigData();
-  }, [loadInitialData, loadConfigData]);
+    if (currentUser) {
+      loadInitialData();
+      loadConfigData();
+    }
+  }, [currentUser, loadInitialData, loadConfigData]);
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case "OPEN":
+      case "open":
         return "bg-blue-500";
-      case "ASSIGNED":
+      case "assigned":
         return "bg-indigo-500";
-      case "ACCEPTED":
+      case "accepted":
         return "bg-cyan-500";
-      case "IN_PROGRESS":
+      case "in_progress":
         return "bg-orange-500";
-      case "SUBMITTED":
+      case "submitted":
         return "bg-purple-500";
-      case "COMPLETED":
+      case "completed":
         return "bg-green-500";
-      case "ON_HOLD":
+      case "on_hold":
         return "bg-yellow-500";
-      case "CANCELLED":
+      case "cancelled":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -154,9 +156,9 @@ function AppLayout() {
 
   const stats = {
     total: tickets.length,
-    pending: tickets.filter((t) => t.status === "OPEN").length,
-    inProgress: tickets.filter((t) => t.status === "IN_PROGRESS" || t.status === "ACCEPTED").length,
-    completed: tickets.filter((t) => t.status === "COMPLETED").length,
+    pending: tickets.filter((t) => t.status === "open").length,
+    inProgress: tickets.filter((t) => t.status === "in_progress" || t.status === "accepted").length,
+    completed: tickets.filter((t) => t.status === "completed").length,
   };
 
   const handleLogout = () => {
@@ -296,7 +298,7 @@ function AppLayout() {
         dueDate: ticketData.dueDate.toISOString(),
         relatedTicketIds: ticketData.relatedTicketIds,
       });
-      setTickets((prev) => [created, ...(prev.records || prev)]);
+      setTickets((prev) => Array.isArray(prev) ? [created, ...prev] : [created]);
       toast.success(t("ticketCreated"));
       navigate("/dashboard");
     } catch (error: any) {
@@ -391,7 +393,7 @@ function AppLayout() {
     try {
       const updated = await api.updateTicket(ticketId, {
         assignedTo: newAssigneeId,
-        status: "ASSIGNED" as TicketStatus,
+        status: "assigned" as TicketStatus,
       });
       await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
       setTickets((prev) => ({
@@ -794,13 +796,13 @@ function SignUpPage() {
   const handleSignUp = async (
     name: string,
     username: string,
-    email: string,
     password: string,
+    confirmPassword: string,
     role: string,
     country: string
   ) => {
     try {
-      await signUp(name, username, email, password, role, country);
+      await signUp(name, username, password, confirmPassword, role, country);
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
       throw new Error(error.message || "Registration failed");

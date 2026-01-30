@@ -1,6 +1,5 @@
 package com.igreen.domain.vo;
 
-import com.igreen.domain.enums.GroupStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +22,7 @@ public class GroupVO {
     private String name;
     private String description;
     private List<String> tags;
-    private GroupStatus status;
+    private String status;  // 小写字符串: "active", "inactive"
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer memberCount;

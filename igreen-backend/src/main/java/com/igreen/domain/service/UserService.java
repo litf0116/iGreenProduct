@@ -40,7 +40,6 @@ public class UserService {
         }
 
         wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getEmail, request.email());
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.EMAIL_EXISTS);
         }
@@ -49,7 +48,6 @@ public class UserService {
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
                 .username(request.username())
-                .email(request.email())
                 .hashedPassword(passwordEncoder.encode(request.password()))
                 .role(request.role() != null ? request.role() : UserRole.ENGINEER)
                 .groupId(request.groupId())
@@ -314,11 +312,9 @@ public class UserService {
                 user.getName(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPhone(),
-                user.getRole(),
+                user.getPhone(), user.getRole() != null ? user.getRole().name().toLowerCase() : null,
                 user.getGroupId(),
-                groupName,
-                user.getStatus(),
+                groupName, user.getStatus() != null ? user.getStatus().name().toLowerCase() : null,
                 user.getCountry(),
                 user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
         );

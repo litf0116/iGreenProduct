@@ -53,6 +53,13 @@ public class ConfigController {
         return ResponseEntity.ok(Result.successResult());
     }
 
+    @Operation(summary = "获取所有优先级配置")
+    @GetMapping("/priorities")
+    public ResponseEntity<Result<List<PriorityResponse>>> getPriorities() {
+        List<PriorityResponse> priorities = configService.getAllPriorities();
+        return ResponseEntity.ok(Result.success(priorities));
+    }
+
     @Operation(summary = "获取所有问题类型")
     @GetMapping("/problem-types")
     public ResponseEntity<Result<PageResult<ProblemTypeResponse>>> getProblemTypes() {

@@ -62,9 +62,9 @@ export function MyTasks({
 
     // If this is the last step, mark ticket as done
     if (newCompletedSteps.length === template.steps.length) {
-      updates.status = "done";
-    } else if (selectedTicket.status === "new" || selectedTicket.status === "assigned") {
-      updates.status = "inProgress";
+      updates.status = "completed";
+    } else if (selectedTicket.status === "open" || selectedTicket.status === "assigned") {
+      updates.status = "in_progress";
     }
 
     onUpdateTicket(selectedTicket.id, updates);

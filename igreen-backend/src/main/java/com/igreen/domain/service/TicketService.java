@@ -668,8 +668,8 @@ public class TicketService {
                 ticket.getId(),
                 ticket.getTitle(),
                 ticket.getDescription(),
-                ticket.getType(),
-                ticket.getStatus(),
+                ticket.getType() != null ? ticket.getType().toLowerCase() : null,
+                ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null,
                 ticket.getPriority(),
                 ticket.getSite(),
                 site != null ? site.getName() : null,       // siteName

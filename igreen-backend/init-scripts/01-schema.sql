@@ -140,3 +140,60 @@ INSERT INTO sites (id, name, address, level, status) VALUES
 ('site-002', '北京分公司', '北京市朝阳区建国路', 'enterprise', 'ONLINE'),
 ('site-003', '深圳工厂', '深圳市南山区科技园', 'normal', 'ONLINE')
 ON DUPLICATE KEY UPDATE name = name;
+
+-- SLA Configs Table
+CREATE TABLE IF NOT EXISTS sla_configs (
+    id VARCHAR(36) PRIMARY KEY,
+    priority ENUM('P1', 'P2', 'P3', 'P4') NOT NULL UNIQUE,
+    response_time_minutes INT NOT NULL DEFAULT 60,
+    completion_time_hours INT NOT NULL DEFAULT 4,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Problem Types Table
+CREATE TABLE IF NOT EXISTS problem_types (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Site Level Configs Table
+CREATE TABLE IF NOT EXISTS site_level_configs (
+    id VARCHAR(36) PRIMARY KEY,
+    level_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    max_concurrent_tickets INT NOT NULL DEFAULT 5,
+    escalation_time_hours INT NOT NULL DEFAULT 4,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert default SLA configs
+INSERT INTO sla_configs (id, priority, response_time_minutes, completion_time_hours) VALUES
+('sla-p1', 'P1', 120, 24),
+('sla-p2', 'P2', 240, 24),
+('sla-p3', 'P3', 360, 24),
+('sla-p4', 'P4', 480, 24)
+ON DUPLICATE KEY UPDATE priority = priority;
+
+-- Insert default problem types
+INSERT INTO problem_types (id, name, description) VALUES
+('pt-001', '设备故障', '充电设备无法正常工作'),
+('pt-002', '网络异常', '网络连接问题导致无法通信'),
+('pt-003', '支付问题', '支付失败或退款问题'),
+('pt-004', '充电速度慢', '充电效率低于预期'),
+('pt-005', '显示屏故障', '显示屏不亮或显示异常'),
+('pt-006', '枪头损坏', '充电枪头物理损坏'),
+('pt-007', '二维码无法识别', '设备二维码扫描失败'),
+('pt-008', '其他', '其他问题类型')
+ON DUPLICATE KEY UPDATE name = name;
+
+-- Insert default site level configs
+INSERT INTO site_level_configs (id, level_name, description, max_concurrent_tickets, escalation_time_hours) VALUES
+('sl-normal', 'Normal', '普通站点', 5, 4),
+('sl-vip', 'VIP', '重要站点', 3, 2),
+('sl-enterprise', 'Enterprise', '企业级站点', 2, 1)
+ON DUPLICATE KEY UPDATE level_name = level_name;

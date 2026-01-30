@@ -29,8 +29,16 @@ public class GroupController {
 
     @Operation(summary = "获取所有分组")
     @GetMapping
-    public ResponseEntity<Result<PageResult<GroupVO>>> getAllGroups() {
-        List<Group> groups = groupService.getAllGroups();
+    public ResponseEntity<Result<PageResult<GroupVO>>> getAllGroups(
+            @RequestParam(required = false) String keyword) {
+        System.out.println("[DEBUG getAllGroups] Received keyword: " + keyword);
+        List<Group> groups;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            groups = groupService.searchGroups(keyword);
+        } else {
+            groups = groupService.getAllGroups();
+        }
+        System.out.println("[DEBUG getAllGroups] Returning groups count: " + groups.size());
         List<GroupVO> voList = groupConverter.toVOList(groups);
         PageResult<GroupVO> pageResult = new PageResult<>(voList, voList.size(), 0, voList.size(), false);
         return ResponseEntity.ok(Result.success(pageResult));

@@ -1,18 +1,15 @@
 package com.igreen.domain.dto;
 
-import com.igreen.domain.enums.UserRole;
-import com.igreen.domain.enums.UserStatus;
-
 public record UserResponse(
         String id,
         String name,
         String username,
         String email,
         String phone,
-        UserRole role,
+        String role,      // 小写: "admin", "manager", "engineer"
         String groupId,
         String groupName,
-        UserStatus status,
+        String status,    // 小写: "active", "inactive"
         String country,
         String createdAt
 ) {}

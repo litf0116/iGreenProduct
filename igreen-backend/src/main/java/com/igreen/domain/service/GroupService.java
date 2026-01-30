@@ -69,6 +69,27 @@ public class GroupService {
         return groups;
     }
 
+    @Transactional(readOnly = true)
+    public List<Group> searchGroups(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllGroups();
+        }
+        String searchKeyword = "%" + keyword.trim() + "%";
+        System.out.println("[DEBUG searchGroups] Searching with keyword: " + searchKeyword);
+        List<Group> groups = groupMapper.selectList(
+                new LambdaQueryWrapper<Group>()
+                        .like(Group::getName, searchKeyword)
+                        .or()
+                        .like(Group::getDescription, searchKeyword)
+        );
+        System.out.println("[DEBUG searchGroups] Found groups: " + groups.size());
+        for (Group group : groups) {
+            Integer memberCount = userMapper.countByGroupId(group.getId());
+            group.setMemberCount(memberCount != null ? memberCount : 0);
+        }
+        return groups;
+    }
+
     @Transactional
     public Group updateGroup(String id, GroupUpdateRequest request) {
         Group existingGroup = groupMapper.selectById(id);
