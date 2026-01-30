@@ -210,8 +210,15 @@ export const api = {
   },
 
   getTemplates: async (): Promise<Template[]> => {
-    const response = await kyInstance.get('api/templates').json<{ data: { records: Template[] } }>();
-    return response.data.records;
+    try {
+      // kyInstance.afterResponse 已经提取了 apiResponse.data
+      // 所以返回的直接是 { records: Template[] }
+      const response = await kyInstance.get('api/templates').json<{ records: Template[] }>();
+      return response.records || [];
+    } catch (error) {
+      console.error("getTemplates API error:", error);
+      return [];
+    }
   },
 
   getTemplate: async (id: string): Promise<Template> => {
@@ -233,9 +240,9 @@ export const api = {
       }>;
     }>;
   }): Promise<Template> => {
-    return kyInstance.post('api/templates', { json: template }).json<Template>();
+    const response = await kyInstance.post('api/templates', { json: template }).json<{ data: Template }>();
+    return response.data;
   },
-
   updateTemplate: async (id: string, template: {
     name?: string;
     description?: string;
@@ -251,7 +258,8 @@ export const api = {
       }>;
     }>;
   }): Promise<Template> => {
-    return kyInstance.put(`api/templates/${id}`, { json: template }).json<Template>();
+    const response = await kyInstance.put(`api/templates/${id}`, { json: template }).json<{ data: Template }>();
+    return response.data;
   },
 
   deleteTemplate: async (id: string): Promise<void> => {
@@ -276,7 +284,8 @@ export const api = {
   },
 
   createTicket: async (ticket: Partial<Ticket>): Promise<Ticket> => {
-    return kyInstance.post('api/tickets', { json: ticket }).json<Ticket>();
+    const response = await kyInstance.post('api/tickets', { json: ticket }).json<{ data: Ticket }>();
+    return response.data;
   },
 
   updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
@@ -378,8 +387,29 @@ export const api = {
   },
 
   getSLAConfigs: async (): Promise<SLAConfig[]> => {
-    const response = await kyInstance.get('api/configs/sla-configs').json<{ data: { records: SLAConfig[] } }>();
-    return response.data.records;
+    const rawResponse = await kyInstance.get('api/configs/sla-configs').text();
+    console.log('[DEBUG getSLAConfigs] Raw response:', rawResponse);
+    
+    // 尝试解析为带 wrapper 的格式
+    let response = JSON.parse(rawResponse) as {
+      success: boolean;
+      data?: { records: SLAConfig[] };
+      message?: string;
+      code?: string;
+    };
+    
+    // 判断是否有 wrapper
+    if (response.success && response.data) {
+      console.log('[DEBUG getSLAConfigs] Using wrapper format');
+      console.log('[DEBUG getSLAConfigs] Records:', response.data.records);
+      return response.data.records || [];
+    }
+    
+    // 无 wrapper 格式，直接从 records 解析
+    console.log('[DEBUG getSLAConfigs] Using direct format');
+    const directResponse = JSON.parse(rawResponse) as { records: SLAConfig[]; total: number; current: number; size: number; hasNext: boolean };
+    console.log('[DEBUG getSLAConfigs] Records:', directResponse.records);
+    return directResponse.records || [];
   },
 
   getSLAConfig: async (id: string): Promise<SLAConfig> => {
@@ -394,9 +424,63 @@ export const api = {
     await kyInstance.delete(`api/configs/sla-configs/${id}`);
   },
 
+  getPriorities: async (): Promise<{ value: string; name: string }[]> => {
+    // 从 SLA configs 中获取优先级配置
+    const rawResponse = await kyInstance.get('api/configs/sla-configs').text();
+    console.log('[DEBUG getPriorities] Raw response:', rawResponse);
+    
+    // 尝试解析为带 wrapper 的格式
+    let response = JSON.parse(rawResponse) as {
+      success: boolean;
+      data?: { records: { priority: string }[] };
+      message?: string;
+      code?: string;
+    };
+    
+    let records: { priority: string }[] = [];
+    
+    // 判断是否有 wrapper
+    if (response.success && response.data) {
+      console.log('[DEBUG getPriorities] Using wrapper format');
+      records = response.data.records || [];
+    } else {
+      // 无 wrapper 格式，直接从 records 解析
+      console.log('[DEBUG getPriorities] Using direct format');
+      const directResponse = JSON.parse(rawResponse) as { records: { priority: string }[]; total: number; current: number; size: number; hasNext: boolean };
+      records = directResponse.records || [];
+    }
+    
+    console.log('[DEBUG getPriorities] Records:', records);
+    return records.map(config => ({
+      value: config.priority,
+      name: config.priority  // P1, P2, P3, P4
+    }));
+  },
+
   getProblemTypes: async (): Promise<ProblemType[]> => {
-    const response = await kyInstance.get('api/configs/problem-types').json<{ data: { records: ProblemType[] } }>();
-    return response.data.records;
+    const rawResponse = await kyInstance.get('api/configs/problem-types').text();
+    console.log('[DEBUG getProblemTypes] Raw response:', rawResponse);
+    
+    // 尝试解析为带 wrapper 的格式
+    let response = JSON.parse(rawResponse) as {
+      success: boolean;
+      data?: { records: ProblemType[] };
+      message?: string;
+      code?: string;
+    };
+    
+    // 判断是否有 wrapper
+    if (response.success && response.data) {
+      console.log('[DEBUG getProblemTypes] Using wrapper format');
+      console.log('[DEBUG getProblemTypes] Records:', response.data.records);
+      return response.data.records || [];
+    }
+    
+    // 无 wrapper 格式，直接从 records 解析
+    console.log('[DEBUG getProblemTypes] Using direct format');
+    const directResponse = JSON.parse(rawResponse) as { records: ProblemType[]; total: number; current: number; size: number; hasNext: boolean };
+    console.log('[DEBUG getProblemTypes] Records:', directResponse.records);
+    return directResponse.records || [];
   },
 
   createProblemType: async (type: ProblemTypeRequest): Promise<ProblemType> => {
@@ -412,8 +496,29 @@ export const api = {
   },
 
   getSiteLevelConfigs: async (): Promise<SiteLevelConfig[]> => {
-    const response = await kyInstance.get('api/configs/site-level-configs').json<{ data: { records: SiteLevelConfig[] } }>();
-    return response.data.records;
+    const rawResponse = await kyInstance.get('api/configs/site-level-configs').text();
+    console.log('[DEBUG getSiteLevelConfigs] Raw response:', rawResponse);
+    
+    // 尝试解析为带 wrapper 的格式
+    let response = JSON.parse(rawResponse) as {
+      success: boolean;
+      data?: { records: SiteLevelConfig[] };
+      message?: string;
+      code?: string;
+    };
+    
+    // 判断是否有 wrapper
+    if (response.success && response.data) {
+      console.log('[DEBUG getSiteLevelConfigs] Using wrapper format');
+      console.log('[DEBUG getSiteLevelConfigs] Records:', response.data.records);
+      return response.data.records || [];
+    }
+    
+    // 无 wrapper 格式，直接从 records 解析
+    console.log('[DEBUG getSiteLevelConfigs] Using direct format');
+    const directResponse = JSON.parse(rawResponse) as { records: SiteLevelConfig[]; total: number; current: number; size: number; hasNext: boolean };
+    console.log('[DEBUG getSiteLevelConfigs] Records:', directResponse.records);
+    return directResponse.records || [];
   },
 
   createSiteLevelConfig: async (config: SiteLevelConfigRequest): Promise<SiteLevelConfig> => {

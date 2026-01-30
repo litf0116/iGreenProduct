@@ -221,10 +221,32 @@ export function SystemSettings() {
 
       <Tabs 
         value={activeTab} 
-        onValueChange={(val) => {
-          // Backend Integration: Fetch data for the selected tab (SLA, Problem Types, or Levels)
-          // API: GET /api/system-settings/:tab
+        onValueChange={async (val) => {
           setActiveTab(val);
+          // Fetch latest data when switching tabs to ensure we have the most up-to-date information
+          setIsLoading(true);
+          try {
+            let data;
+            switch (val) {
+              case "sla":
+                data = await api.getSLAConfigs().catch(() => []);
+                setSLAConfigs(data || []);
+                break;
+              case "problems":
+                data = await api.getProblemTypes().catch(() => []);
+                setProblemTypes(data || []);
+                break;
+              case "levels":
+                data = await api.getSiteLevelConfigs().catch(() => []);
+                setSiteLevelConfigs(data || []);
+                break;
+            }
+          } catch (error) {
+            console.error(`Failed to load ${val} data:`, error);
+            toast.error(t("errorOccurred") || "Failed to load configuration");
+          } finally {
+            setIsLoading(false);
+          }
         }} 
         className="w-full"
       >
