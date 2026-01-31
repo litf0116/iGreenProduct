@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     type ENUM('MAINTENANCE', 'INSTALLATION', 'INSPECTION', 'REPAIR', 'EMERGENCY') NOT NULL,
-    status ENUM('OPEN', 'ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
+    status ENUM('OPEN', 'ASSIGNED', 'ACCEPTED', 'DEPARTED', 'ARRIVED', 'REVIEW', 'COMPLETED', 'ON_HOLD', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
     priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM',
     site VARCHAR(255),
     template_id VARCHAR(36),
@@ -197,3 +197,15 @@ INSERT INTO site_level_configs (id, level_name, description, max_concurrent_tick
 ('sl-vip', 'VIP', '重要站点', 3, 2),
 ('sl-enterprise', 'Enterprise', '企业级站点', 2, 1)
 ON DUPLICATE KEY UPDATE level_name = level_name;
+
+-- Files Table for uploaded images
+CREATE TABLE IF NOT EXISTS files (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(500) NOT NULL,
+    url VARCHAR(1000) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    size INT NOT NULL,
+    field_type VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_files_field_type (field_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
