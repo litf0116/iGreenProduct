@@ -195,8 +195,8 @@ test_api "更新工单为 ASSIGNED" "PUT" "/tickets/${TICKET_ID}" '{
     "status": "ASSIGNED"
 }'
 
-test_api "更新工单为 IN_PROGRESS" "PUT" "/tickets/${TICKET_ID}" '{
-    "status": "IN_PROGRESS"
+test_api "更新工单为 DEPARTED" "PUT" "/tickets/${TICKET_ID}" '{
+    "status": "DEPARTED"
 }'
 
 test_api "更新工单为 COMPLETED" "PUT" "/tickets/${TICKET_ID}" '{

@@ -242,7 +242,7 @@ test_complete_workflow() {
     fi
 
     # 4. 工程师出发
-    print_step "4. 工程师出发 (ACCEPTED -> IN_PROGRESS)"
+    print_step "4. 工程师出发 (ACCEPTED -> DEPARTED)"
     local depart_response=$(curl -s -X POST "${API_URL}/tickets/${TICKET_ID}/depart" \
         -H "Authorization: Bearer $ENGINEER_TOKEN")
 
@@ -341,7 +341,7 @@ test_complete_workflow() {
     fi
 
     print_header "E2E 测试完成!"
-    echo -e "${GREEN}工单生命周期: OPEN -> ACCEPTED -> IN_PROGRESS -> ARRIVED -> COMPLETED${NC}"
+    echo -e "${GREEN}工单生命周期: OPEN -> ACCEPTED -> DEPARTED -> ARRIVED -> COMPLETED${NC}"
 }
 
 # ============================================

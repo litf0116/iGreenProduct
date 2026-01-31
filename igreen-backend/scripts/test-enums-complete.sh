@@ -171,7 +171,7 @@ echo "=========================================="
 echo "工单状态测试"
 echo "=========================================="
 
-for status in "OPEN" "ASSIGNED" "IN_PROGRESS" "COMPLETED" "ON_HOLD" "CANCELLED"; do
+for status in "OPEN" "ASSIGNED" "DEPARTED" "COMPLETED" "ON_HOLD" "CANCELLED"; do
     call_api "更新工单为${status}" "PUT" "/tickets/${TICKET_ID}" "{\"status\": \"${status}\"}"
 done
 

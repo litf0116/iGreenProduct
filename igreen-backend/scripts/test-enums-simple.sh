@@ -100,7 +100,7 @@ TICKET_ID=$(curl -s -X POST ${BASE_URL}/tickets \
 
 echo "工单ID: ${TICKET_ID}"
 
-for status in "OPEN" "ASSIGNED" "IN_PROGRESS" "COMPLETED" "ON_HOLD" "CANCELLED"; do
+for status in "OPEN" "ASSIGNED" "DEPARTED" "COMPLETED" "ON_HOLD" "CANCELLED"; do
     echo ""
     echo "测试: 更新为${status}"
     RESPONSE=$(curl -s -X PUT ${BASE_URL}/tickets/${TICKET_ID} \
