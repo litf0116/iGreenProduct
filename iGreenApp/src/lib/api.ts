@@ -15,13 +15,21 @@ function getAuthToken(): string | null {
 
 // 后端 TicketResponse 转换为前端 Ticket 格式
 function transformTicket(backendTicket: any): Ticket {
+  // 后端状态是英文大写，前端用小写
+  // 注意：后端 ACCEPTED 对应前端 assigned（已接单待出发）
+  // IN_PROGRESS 对应 departed（已出发前往现场）
+  const statusMap: Record<string, string> = {
+    'accepted': 'assigned',
+    'in_progress': 'departed',
+  };
+  const normalizedStatus = backendTicket.status?.toLowerCase();
+  const mappedStatus = (statusMap[normalizedStatus] || normalizedStatus || 'open') as TicketStatus;
+
   return {
     id: backendTicket.id,
     title: backendTicket.title,
     description: backendTicket.description || '',
-    // 后端状态是英文大写，前端用小写
-    // 注意：后端 ACCEPTED 对应前端 assigned（已接单待出发）
-    status: ((backendTicket.status?.toLowerCase() === 'accepted' ? 'assigned' : backendTicket.status?.toLowerCase()) || 'open') as TicketStatus,
+    status: mappedStatus,
     // 后端优先级如 P1, P2，前端用 low, medium, high, critical
     priority: mapBackendPriority(backendTicket.priority),
     type: mapBackendType(backendTicket.type),
@@ -284,6 +292,14 @@ export const api = {
     return fetchWithAuth(`/api/tickets/${id}/review`, {
       method: 'POST',
       body: cause ? JSON.stringify(cause) : undefined,
+    });
+  },
+
+  // 提交工单审核（工程师完成工作后使用）
+  // 状态: ARRIVED → REVIEW
+  submitTicketForReview: async (id: number) => {
+    return fetchWithAuth(`/api/tickets/${id}/submit-for-review`, {
+      method: 'POST',
     });
   },
 

@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu@2.1.6";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react@0.487.0";
+import { Slot } from "@radix-ui/react-slot";
 
 import { cn } from "./utils";
 
@@ -21,11 +22,13 @@ function DropdownMenuPortal({
 }
 
 function DropdownMenuTrigger({
+  asChild = true,
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger> & { asChild?: boolean }) {
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
+      asChild={asChild}
       {...props}
     />
   );

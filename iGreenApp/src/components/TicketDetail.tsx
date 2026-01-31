@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  Clock, 
-  Calendar, 
-  User, 
-  Tag, 
+import {
+  X,
+  Clock,
+  Calendar,
+  User,
+  Tag,
   CheckCircle2,
   Zap,
   MapPin,
@@ -32,17 +32,18 @@ import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { 
-  Ticket, 
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
+import {
+  Ticket,
   TicketStep,
-  getPriorityColor, 
-  getStatusIcon, 
-  getTicketTypeLabel, 
+  getPriorityColor,
+  getStatusIcon,
+  getTicketTypeLabel,
   getTicketTypeColor,
   getTicketTypeIcon,
   TicketStatus
@@ -51,10 +52,94 @@ import { toast } from "sonner@2.0.3";
 import { useLanguage } from './LanguageContext';
 import { api } from '../lib/api';
 
+// Photo Uploader Component - Independent component to avoid Hooks rules violation
+interface PhotoUploaderProps {
+  stepId: string;
+  fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto';
+  isCorrectiveOrPlanned: boolean;
+  existingPhotos: string[];
+  label: string;
+  loadingImage: string | null;
+  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto', isCorrectiveOrPlanned?: boolean) => void;
+}
+
+function PhotoUploader({ stepId, fieldPrefix, isCorrectiveOrPlanned, existingPhotos, label, loadingImage, onAddPhoto }: PhotoUploaderProps) {
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const singularField = `${fieldPrefix}Url`;
+  const loadingKey = stepId + singularField;
+  const isLoading = loadingImage === loadingKey;
+
+  return (
+    <div className="space-y-2">
+      {label && <div className="text-xs font-medium text-slate-500">{label}</div>}
+      <div className="flex flex-wrap gap-2">
+        {existingPhotos.map((url, idx) => (
+          <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-200 group">
+            <img src={url} className="w-full h-full object-cover" alt="Evidence" />
+          </div>
+        ))}
+        <Sheet open={photoSheetOpen} onOpenChange={setPhotoSheetOpen}>
+          <SheetTrigger asChild>
+            <button type="button" className="cursor-pointer w-20 h-20 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center hover:bg-slate-50 transition-colors text-slate-400 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              {isLoading ? (
+                <div className="animate-spin w-5 h-5 border-2 border-indigo-600 rounded-full border-t-transparent"></div>
+              ) : (
+                <>
+                  <Camera className="w-5 h-5 mb-1" />
+                  <span className="text-[10px]">Add</span>
+                </>
+              )}
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-auto rounded-t-2xl border-t bg-white px-0 pb-0">
+            <SheetHeader className="border-b border-slate-200 pb-4 px-4">
+              <SheetTitle className="text-center text-lg font-medium text-slate-900">添加照片</SheetTitle>
+            </SheetHeader>
+            <div className="flex flex-col gap-1 py-2">
+              <button
+                onClick={() => {
+                  onAddPhoto('camera', stepId, fieldPrefix, isCorrectiveOrPlanned);
+                  setPhotoSheetOpen(false);
+                }}
+                className="flex items-center gap-4 w-full px-6 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-indigo-600" />
+                </div>
+                <span className="text-base font-medium text-slate-800">拍摄照片</span>
+              </button>
+              <button
+                onClick={() => {
+                  onAddPhoto('gallery', stepId, fieldPrefix, isCorrectiveOrPlanned);
+                  setPhotoSheetOpen(false);
+                }}
+                className="flex items-center gap-4 w-full px-6 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+              >
+                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <ImageIcon className="w-5 h-5 text-indigo-600" />
+                </div>
+                <span className="text-base font-medium text-slate-800">从相册选择</span>
+              </button>
+            </div>
+            <div className="px-4 pb-8 pt-4 bg-slate-50 border-t border-slate-200">
+              <button
+                onClick={() => setPhotoSheetOpen(false)}
+                className="w-full py-3.5 bg-white border border-slate-300 shadow-sm text-slate-700 font-semibold rounded-xl transition-colors active:bg-slate-100"
+              >
+                取消
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
+  );
+}
+
 interface TicketDetailProps {
   ticket: Ticket | null;
   onClose: () => void;
-  onUpdateTicket: (id: number, updates: Partial<Ticket>) => void;
+  onUpdateTicket: (id: number, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => void;
   onViewRelatedTicket?: (ticketId: number) => void;
 }
 
@@ -95,8 +180,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
         await api.acceptTicket(ticket.id);
         // 重新获取工单详情以获取最新状态
         const updatedTicket = await api.getTicket(ticket.id);
-        // 直接更新详情页状态，不触发 updateTicket 接口
-        onUpdateTicket(ticket.id, updatedTicket);
+        onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
         toast.success("Ticket assigned to you");
       } catch (error) {
         console.error("Failed to accept ticket:", error);
@@ -107,10 +191,9 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
   const handleDepart = async () => {
       try {
         await api.departTicket(ticket.id);
-        onUpdateTicket(ticket.id, {
-            status: 'departed',
-            history: { ...ticket.history, departedAt: new Date().toISOString() }
-        });
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
         toast.success("Departure recorded");
       } catch (error) {
         console.error("Failed to depart:", error);
@@ -122,10 +205,9 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       try {
         await api.arriveTicket(ticket.id);
         ensureSteps();
-        onUpdateTicket(ticket.id, {
-            status: 'arrived',
-            history: { ...ticket.history, arrivedAt: new Date().toISOString() }
-        });
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
         toast.success("Arrival recorded - Start working on steps");
       } catch (error) {
         console.error("Failed to arrive:", error);
@@ -236,14 +318,17 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                           onUpdateTicket(ticket.id, {
                               [`${fieldPrefix}Urls`]: [...existingPhotos, uploaded.url]
                           });
-                      } else {
-                          const step = ticket.steps?.find(s => s.id === stepId);
-                          const existingPhotos = step?.photoUrls || (step?.photoUrl ? [step.photoUrl] : []);
-                          handlePreventiveStepUpdate(stepId, {
-                              photoUrls: [...existingPhotos, uploaded.url],
-                              timestamp: new Date().toISOString()
-                          });
-                      }
+                       } else {
+                           const step = ticket.steps?.find(s => s.id === stepId);
+                           // 根据 fieldPrefix 使用正确的字段名
+                           const photoField = fieldPrefix === 'beforePhoto' ? 'beforePhotoUrls' : 
+                                              fieldPrefix === 'afterPhoto' ? 'afterPhotoUrls' : 'photoUrls';
+                           const existingPhotos = step?.[photoField] || (step?.[`${fieldPrefix}Url`] ? [step[`${fieldPrefix}Url`]] : []);
+                           handlePreventiveStepUpdate(stepId, {
+                               [photoField]: [...existingPhotos, uploaded.url],
+                               timestamp: new Date().toISOString()
+                           });
+                       }
                   } catch (error) {
                       toast.error(`Failed to upload photo ${i + 1}`);
                   }
@@ -252,7 +337,10 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
               setLoadingImage(null);
           };
 
-          input.click();
+          // 使用 setTimeout 延迟调用，让 DropdownMenu 有时间关闭
+          setTimeout(() => {
+              input.click();
+          }, 100);
       } catch (error) {
           console.error('Upload error:', error);
           toast.error('Failed to upload photo');
@@ -260,64 +348,12 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       }
   };
 
-  const renderPhotoUploader = (
-    stepId: string, 
-    fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto',
-    isCorrectiveOrPlanned: boolean = false,
-    existingPhotos: string[] = [],
-    label: string = "Add Photo"
-  ) => {
-      const singularField = `${fieldPrefix}Url`;
-      const loadingKey = stepId + singularField;
-      const isLoading = loadingImage === loadingKey;
-
-      return (
-          <div className="space-y-2">
-              {label && <div className="text-xs font-medium text-slate-500">{label}</div>}
-              
-              <div className="flex flex-wrap gap-2">
-                  {existingPhotos.map((url, idx) => (
-                      <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-200 group">
-                          <img src={url} className="w-full h-full object-cover" alt="Evidence" />
-                          {/* Delete button could go here */}
-                      </div>
-                  ))}
-                  
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <div className="cursor-pointer w-20 h-20 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center hover:bg-slate-50 transition-colors text-slate-400 hover:text-slate-600">
-                              {isLoading ? (
-                                  <div className="animate-spin w-5 h-5 border-2 border-indigo-600 rounded-full border-t-transparent"></div>
-                              ) : (
-                                  <>
-                                      <Camera className="w-5 h-5 mb-1" />
-                                      <span className="text-[10px]">Add</span>
-                                  </>
-                              )}
-                          </div>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                          <DropdownMenuItem onClick={() => handleAddPhoto('camera', stepId, fieldPrefix, isCorrectiveOrPlanned)}>
-                              <Camera className="w-4 h-4 mr-2" />
-                              Take Photo
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleAddPhoto('gallery', stepId, fieldPrefix, isCorrectiveOrPlanned)}>
-                              <ImageIcon className="w-4 h-4 mr-2" />
-                              Choose from Album
-                          </DropdownMenuItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-              </div>
-          </div>
-      );
-  };
-
   const handleFinish = async () => {
       if (ticket.type === 'corrective') {
           // Check for multiple photos support
           const hasBefore = ticket.beforePhotoUrl || (ticket.beforePhotoUrls && ticket.beforePhotoUrls.length > 0);
           const hasAfter = ticket.afterPhotoUrl || (ticket.afterPhotoUrls && ticket.afterPhotoUrls.length > 0);
-          
+
           if (!ticket.rootCause || !ticket.solution || !hasBefore || !hasAfter) {
               toast.error("Please complete all fields and photos.");
               return;
@@ -342,9 +378,11 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
       }
 
       try {
-        await api.reviewTicket(ticket.id);
-        onUpdateTicket(ticket.id, { status: 'review' });
-        toast.success("Work finished. Pending review.");
+        await api.submitTicketForReview(ticket.id);
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
+        toast.success("Work submitted for review.");
       } catch (error) {
         console.error("Failed to submit:", error);
         toast.error("Failed to submit work for review");
@@ -354,10 +392,9 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
   const handleConfirm = async () => {
         try {
             await api.completeTicket(ticket.id);
-            onUpdateTicket(ticket.id, {
-                status: 'completed',
-                history: { ...ticket.history, completedAt: new Date().toISOString() }
-            });
+            // 重新获取工单详情以获取最新状态
+            const updatedTicket = await api.getTicket(ticket.id);
+            onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
             toast.success("Ticket confirmed and closed.");
         } catch (error) {
             console.error("Failed to confirm:", error);
@@ -365,16 +402,17 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
         }
   };
 
-  const handleReject = () => {
-      // When rejected, move back to 'arrived' (work in progress) or a specific state
-      // User requirement: "return to before finish submission, support edit and re-submit"
-      // So we return to 'arrived' which allows editing steps and clicking Finish again.
-      
-      onUpdateTicket(ticket.id, { 
-          status: 'arrived',
-          // Optional: add a rejection note or reset some flags if needed
-      });
-      toast.error("Work rejected. Please check steps and resubmit.");
+  const handleReject = async () => {
+      try {
+        await api.declineTicket(ticket.id, "审核不通过，请修改后重新提交");
+        // 重新获取工单详情以获取最新状态
+        const updatedTicket = await api.getTicket(ticket.id);
+        onUpdateTicket(ticket.id, updatedTicket, { skipApi: true });
+        toast.error("Work rejected. Please check steps and resubmit.");
+      } catch (error) {
+        console.error("Failed to reject ticket:", error);
+        toast.error("Failed to reject ticket");
+      }
   };
 
   // Render Logic for the Action Area
@@ -529,7 +567,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                       </Button>
                   </div>
               );
-          
+
           case 'assigned':
               return (
                   <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-xl flex flex-col items-center text-center space-y-4">
@@ -583,8 +621,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Root Cause</label>
-                                    <Textarea 
-                                        placeholder="Describe the root cause of the issue..." 
+                                    <Textarea
+                                        placeholder="Describe the root cause of the issue..."
                                         value={ticket.rootCause || ''}
                                         onChange={(e) => onUpdateTicket(ticket.id, { rootCause: e.target.value })}
                                         className="min-h-[100px]"
@@ -592,8 +630,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Solution</label>
-                                    <Textarea 
-                                        placeholder="Describe the solution implemented..." 
+                                    <Textarea
+                                        placeholder="Describe the solution implemented..."
                                         value={ticket.solution || ''}
                                         onChange={(e) => onUpdateTicket(ticket.id, { solution: e.target.value })}
                                         className="min-h-[100px]"
@@ -602,25 +640,29 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              </div>
 
                              <div className="grid grid-cols-2 gap-4">
-                                {renderPhotoUploader(
-                                    'corrective',
-                                    'beforePhoto',
-                                    true,
-                                    ticket.beforePhotoUrls || (ticket.beforePhotoUrl ? [ticket.beforePhotoUrl] : []),
-                                    "Before"
-                                )}
-                                {renderPhotoUploader(
-                                    'corrective',
-                                    'afterPhoto',
-                                    true,
-                                    ticket.afterPhotoUrls || (ticket.afterPhotoUrl ? [ticket.afterPhotoUrl] : []),
-                                    "After"
-                                )}
+<PhotoUploader
+    stepId="corrective"
+    fieldPrefix="beforePhoto"
+    isCorrectiveOrPlanned={true}
+    existingPhotos={ticket.beforePhotoUrls || (ticket.beforePhotoUrl ? [ticket.beforePhotoUrl] : [])}
+    label="Before"
+    loadingImage={loadingImage}
+    onAddPhoto={handleAddPhoto}
+/>
+<PhotoUploader
+    stepId="corrective"
+    fieldPrefix="afterPhoto"
+    isCorrectiveOrPlanned={true}
+    existingPhotos={ticket.afterPhotoUrls || (ticket.afterPhotoUrl ? [ticket.afterPhotoUrl] : [])}
+    label="After"
+    loadingImage={loadingImage}
+    onAddPhoto={handleAddPhoto}
+/>
                             </div>
                         </div>
 
-                        <Button 
-                            size="lg" 
+                        <Button
+                            size="lg"
                             className={`w-full ${ticket.rootCause && ticket.solution && (ticket.beforePhotoUrl || ticket.beforePhotoUrls?.length) && (ticket.afterPhotoUrl || ticket.afterPhotoUrls?.length) ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-300 cursor-not-allowed'}`}
                             onClick={handleFinish}
                             disabled={!(ticket.rootCause && ticket.solution && (ticket.beforePhotoUrl || ticket.beforePhotoUrls?.length) && (ticket.afterPhotoUrl || ticket.afterPhotoUrls?.length))}
@@ -650,8 +692,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Feedback / Notes</label>
-                                    <Textarea 
-                                        placeholder="Enter maintenance feedback and notes..." 
+                                    <Textarea
+                                        placeholder="Enter maintenance feedback and notes..."
                                         value={ticket.feedback || ''}
                                         onChange={(e) => onUpdateTicket(ticket.id, { feedback: e.target.value })}
                                         className="min-h-[150px]"
@@ -660,18 +702,20 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              </div>
 
                              <div className="space-y-2">
-                                {renderPhotoUploader(
-                                    'planned',
-                                    'feedbackPhoto',
-                                    true,
-                                    ticket.feedbackPhotoUrls || [],
-                                    "Maintenance Photos"
-                                )}
+<PhotoUploader
+    stepId="planned"
+    fieldPrefix="feedbackPhoto"
+    isCorrectiveOrPlanned={true}
+    existingPhotos={ticket.feedbackPhotoUrls || []}
+    label="Maintenance Photos"
+    loadingImage={loadingImage}
+    onAddPhoto={handleAddPhoto}
+/>
                             </div>
                         </div>
 
-                        <Button 
-                            size="lg" 
+                        <Button
+                            size="lg"
                             className={`w-full ${ticket.feedback && ticket.feedbackPhotoUrls?.length ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-300 cursor-not-allowed'}`}
                             onClick={handleFinish}
                             disabled={!(ticket.feedback && ticket.feedbackPhotoUrls?.length)}
@@ -698,8 +742,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                         </div>
 
                         {ticket.relatedTicketId && (
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 flex items-center gap-2"
                                 onClick={() => onViewRelatedTicket?.(ticket.relatedTicketId!)}
                             >
@@ -713,8 +757,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Solution / Action Plan</label>
-                                    <Textarea 
-                                        placeholder="Describe the solution or action plan..." 
+                                    <Textarea
+                                        placeholder="Describe the solution or action plan..."
                                         value={ticket.solution || ''}
                                         onChange={(e) => onUpdateTicket(ticket.id, { solution: e.target.value })}
                                         className="min-h-[100px]"
@@ -722,7 +766,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-900">Estimated Date for Resolution (mm/dd/yy)</label>
-                                    <Input 
+                                    <Input
                                         type="date"
                                         value={ticket.estimatedResolutionTime || ''}
                                         onChange={(e) => onUpdateTicket(ticket.id, { estimatedResolutionTime: e.target.value })}
@@ -731,18 +775,20 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                              </div>
 
                              <div className="space-y-2">
-                                {renderPhotoUploader(
-                                    'problem',
-                                    'problemPhoto',
-                                    true,
-                                    ticket.problemPhotoUrls || [],
-                                    "Evidence Photos"
-                                )}
+<PhotoUploader
+    stepId="problem"
+    fieldPrefix="problemPhoto"
+    isCorrectiveOrPlanned={true}
+    existingPhotos={ticket.problemPhotoUrls || []}
+    label="Evidence Photos"
+    loadingImage={loadingImage}
+    onAddPhoto={handleAddPhoto}
+/>
                             </div>
                         </div>
 
-                        <Button 
-                            size="lg" 
+                        <Button
+                            size="lg"
                             className={`w-full ${ticket.solution && ticket.estimatedResolutionTime && ticket.problemPhotoUrls?.length ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-300 cursor-not-allowed'}`}
                             onClick={handleFinish}
                             disabled={!(ticket.solution && ticket.estimatedResolutionTime && ticket.problemPhotoUrls?.length)}
@@ -773,7 +819,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                 <CheckSquare className="w-4 h-4" />
                                 Maintenance Checklist
                             </h3>
-                            
+
                             <div className="space-y-4">
                                 {ticket.steps?.map((step) => (
                                     <div key={step.id} className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
@@ -795,52 +841,58 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                                 </ToggleGroupItem>
                                             </ToggleGroup>
 
-                                            {step.status === 'pass' && (
-                                                <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
-                                                    {renderPhotoUploader(
-                                                        step.id, 
-                                                        'photo', 
-                                                        false, 
-                                                        step.photoUrls || (step.photoUrl ? [step.photoUrl] : []),
-                                                        "Evidence Photos"
-                                                    )}
-                                                </div>
-                                            )}
+{step.status === 'pass' && (
+    <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
+        <PhotoUploader
+            stepId={step.id}
+            fieldPrefix="photo"
+            isCorrectiveOrPlanned={false}
+            existingPhotos={step.photoUrls || (step.photoUrl ? [step.photoUrl] : [])}
+            label="Evidence Photos"
+            loadingImage={loadingImage}
+            onAddPhoto={handleAddPhoto}
+        />
+    </div>
+)}
 
-                                            {step.status === 'fail' && (
-                                                <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
-                                                    <Textarea 
-                                                        placeholder="Describe the cause of failure..." 
-                                                        value={step.cause || ''}
-                                                        onChange={(e) => handlePreventiveStepUpdate(step.id, { cause: e.target.value })}
-                                                        className="text-sm min-h-[80px]"
-                                                    />
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        {renderPhotoUploader(
-                                                            step.id,
-                                                            'beforePhoto',
-                                                            false,
-                                                            step.beforePhotoUrls || (step.beforePhotoUrl ? [step.beforePhotoUrl] : []),
-                                                            "Before"
-                                                        )}
-                                                        {renderPhotoUploader(
-                                                            step.id,
-                                                            'afterPhoto',
-                                                            false,
-                                                            step.afterPhotoUrls || (step.afterPhotoUrl ? [step.afterPhotoUrl] : []),
-                                                            "After"
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
+{step.status === 'fail' && (
+    <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
+        <Textarea
+            placeholder="Describe the cause of failure..."
+            value={step.cause || ''}
+            onChange={(e) => handlePreventiveStepUpdate(step.id, { cause: e.target.value })}
+            className="text-sm min-h-[80px]"
+        />
+        <div className="grid grid-cols-2 gap-4">
+            <PhotoUploader
+                stepId={step.id}
+                fieldPrefix="beforePhoto"
+                isCorrectiveOrPlanned={false}
+                existingPhotos={step.beforePhotoUrls || (step.beforePhotoUrl ? [step.beforePhotoUrl] : [])}
+                label="Before"
+                loadingImage={loadingImage}
+                onAddPhoto={handleAddPhoto}
+            />
+            <PhotoUploader
+                stepId={step.id}
+                fieldPrefix="afterPhoto"
+                isCorrectiveOrPlanned={false}
+                existingPhotos={step.afterPhotoUrls || (step.afterPhotoUrl ? [step.afterPhotoUrl] : [])}
+                label="After"
+                loadingImage={loadingImage}
+                onAddPhoto={handleAddPhoto}
+            />
+        </div>
+    </div>
+)}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        <Button 
-                            size="lg" 
+                        <Button
+                            size="lg"
                             className={`w-full ${ticket.steps?.every(s => s.completed) ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
                             onClick={handleFinish}
                             disabled={!ticket.steps?.every(s => s.completed)}
@@ -870,37 +922,37 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                               <CheckSquare className="w-4 h-4" />
                               Required Steps
                           </h3>
-                          
+
                           <div className="space-y-4">
                               {ticket.steps?.map((step, index) => (
                                   <div key={step.id} className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
                                       <div className="flex items-start gap-3">
-                                          <Checkbox 
-                                              id={`step-${step.id}`} 
-                                              checked={step.completed} 
+                                          <Checkbox
+                                              id={`step-${step.id}`}
+                                              checked={step.completed}
                                               disabled
                                               className={`mt-1 ${step.completed ? "data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 opacity-100" : ""}`}
                                           />
                                           <div className="flex-1 space-y-3">
-                                              <label 
+                                              <label
                                                   htmlFor={`step-${step.id}`}
                                                   className={`text-sm font-medium leading-none block transition-colors ${step.completed ? 'text-green-700' : 'text-slate-900'}`}
                                               >
                                                   {step.label}
                                               </label>
-                                              
+
                                               {!step.completed && (
                                                   <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                                                      <Textarea 
-                                                          placeholder="Add notes/description..." 
+                                                      <Textarea
+                                                          placeholder="Add notes/description..."
                                                           value={step.description || ''}
                                                           onChange={(e) => handleStepDescription(step.id, e.target.value)}
                                                           className="text-sm min-h-[80px]"
                                                       />
                                                       <div className="flex items-center justify-between gap-2">
-                                                          <Button 
-                                                              size="sm" 
-                                                              variant="outline" 
+                                                          <Button
+                                                              size="sm"
+                                                              variant="outline"
                                                               className="text-xs gap-2 h-9"
                                                                onClick={() => handleAddPhoto('gallery', step.id, 'photo')}
                                                               disabled={loadingImage === step.id}
@@ -908,9 +960,9 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                                               <Camera className="w-3 h-3" />
                                                               {step.photoUrl ? 'Retake Photo' : 'Add Photo'}
                                                           </Button>
-                                                          
-                                                          <Button 
-                                                              size="sm" 
+
+                                                          <Button
+                                                              size="sm"
                                                               className="text-xs gap-2 h-9 bg-green-600 hover:bg-green-700 text-white"
                                                               onClick={() => handleStepToggle(step.id, true)}
                                                           >
@@ -918,7 +970,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                                                               Complete
                                                           </Button>
                                                       </div>
-                                                      
+
                                                       {step.location && (
                                                           <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 justify-end">
                                                               <MapPin className="w-3 h-3" />
@@ -943,8 +995,8 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                           </div>
                       </div>
 
-                      <Button 
-                          size="lg" 
+                      <Button
+                          size="lg"
                           className={`w-full ${ticket.steps?.every(s => s.completed) ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
                           onClick={handleFinish}
                           disabled={!ticket.steps?.every(s => s.completed)}
@@ -964,7 +1016,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                           <h3 className="text-lg font-semibold text-purple-900">Pending Confirmation</h3>
                           <p className="text-purple-700 max-w-sm">Work is finished. Waiting for system/admin confirmation.</p>
                       </div>
-                      
+
                       {renderSummary()}
 
                       <div className="flex gap-2 w-full md:w-auto">
@@ -991,11 +1043,11 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
                           <p className="text-green-700">Great job! This ticket is now closed.</p>
                            <p className="text-xs text-green-600 mt-2">Completed at: {ticket.history?.completedAt ? new Date(ticket.history.completedAt).toLocaleString() : '-'}</p>
                       </div>
-                      
+
                       {renderSummary()}
                   </div>
               );
-          
+
           default:
               return null;
       }
@@ -1004,7 +1056,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
   return (
     <div className="fixed inset-0 z-[100] flex justify-end bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full md:max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 md:border-l">
-        
+
         {/* Header */}
         <div className="p-4 md:p-6 border-b flex items-start justify-between bg-slate-50 safe-area-top">
           <div className="space-y-1 flex-1 mr-4">
@@ -1031,7 +1083,7 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 md:p-6 space-y-6">
-            
+
             {/* Active Workflow Area */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {renderWorkflow()}
