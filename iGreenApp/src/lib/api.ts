@@ -20,7 +20,8 @@ function transformTicket(backendTicket: any): Ticket {
     title: backendTicket.title,
     description: backendTicket.description || '',
     // 后端状态是英文大写，前端用小写
-    status: (backendTicket.status?.toLowerCase() || 'open') as TicketStatus,
+    // 注意：后端 ACCEPTED 对应前端 assigned（已接单待出发）
+    status: ((backendTicket.status?.toLowerCase() === 'accepted' ? 'assigned' : backendTicket.status?.toLowerCase()) || 'open') as TicketStatus,
     // 后端优先级如 P1, P2，前端用 low, medium, high, critical
     priority: mapBackendPriority(backendTicket.priority),
     type: mapBackendType(backendTicket.type),
