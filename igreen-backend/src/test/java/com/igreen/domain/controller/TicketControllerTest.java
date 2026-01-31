@@ -512,7 +512,7 @@ class TicketControllerTest {
 
             TicketResponse approvedResponse = createTestTicketResponse("COMPLETED");
 
-            when(ticketService.reviewTicket(anyString(), anyString(), anyString())).thenReturn(approvedResponse);
+            when(ticketService.reviewTicket(anyLong(), anyString(), anyString())).thenReturn(approvedResponse);
 
             mockMvc.perform(post("/api/tickets/ticket-1/review")
                             .header("Authorization", "Bearer test-token")

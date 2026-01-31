@@ -130,7 +130,7 @@ class TicketServiceTest {
         when(userMapper.selectById("creator-id")).thenReturn(testCreator);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             testTicket = invocation.getArgument(0);
-            testTicket.setId("new-ticket-id");
+            testTicket.setId(202601200001L);
             return 1;
         });
 
@@ -163,7 +163,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -193,7 +193,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -220,10 +220,10 @@ class TicketServiceTest {
         );
 
         when(userMapper.selectById("creator-id")).thenReturn(testCreator);
-
+        when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -253,7 +253,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -283,7 +283,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -316,7 +316,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -347,7 +347,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -377,7 +377,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -407,7 +407,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -437,7 +437,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -468,7 +468,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -499,7 +499,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -531,7 +531,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -561,7 +561,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -588,13 +588,13 @@ class TicketServiceTest {
         );
 
         Ticket savedTicket = new Ticket();
-        savedTicket.setId("saved-ticket-id");
+        savedTicket.setId(202601200001L);
 
         when(userMapper.selectById("creator-id")).thenReturn(testCreator);
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("saved-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -627,7 +627,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("new-ticket-id");
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -658,7 +658,7 @@ class TicketServiceTest {
         when(userMapper.selectById("assignee-id")).thenReturn(testAssignee);
         when(ticketMapper.insert(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
-            ticket.setId("ticket-" + System.nanoTime());
+            ticket.setId(202601200001L);
             return 1;
         });
 
@@ -699,7 +699,7 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should decline ticket successfully")
     void declineTicket_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
         testTicket.setAssignedTo("assignee-id");
 
         TicketDeclineRequest request = new TicketDeclineRequest("Cannot complete this task");
@@ -707,7 +707,7 @@ class TicketServiceTest {
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.declineTicket("ticket-1", request, "assignee-id");
+        TicketResponse response = ticketService.declineTicket(202601200001L, request, "assignee-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
@@ -723,14 +723,14 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should throw exception when declining ticket as non-assignee")
     void declineTicket_NotAssignee_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
         TicketDeclineRequest request = new TicketDeclineRequest("Reason");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.declineTicket("ticket-1", request, "other-user-id"));
+                () -> ticketService.declineTicket(202601200001L, request, "other-user-id"));
 
         assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
     }
@@ -740,14 +740,14 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should cancel ticket successfully as creator")
     void cancelTicket_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
         TicketCancelRequest request = new TicketCancelRequest("No longer needed");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.cancelTicket("ticket-1", request, "creator-id");
+        TicketResponse response = ticketService.cancelTicket(202601200001L, request, "creator-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
@@ -762,14 +762,14 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should throw exception when canceling ticket as non-creator")
     void cancelTicket_NotCreator_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
         TicketCancelRequest request = new TicketCancelRequest("Reason");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.cancelTicket("ticket-1", request, "other-user-id"));
+                () -> ticketService.cancelTicket(202601200001L, request, "other-user-id"));
 
         assertEquals(ErrorCode.NOT_CREATOR.getCode(), exception.getCode());
     }
@@ -779,7 +779,7 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should submit ticket with step data successfully")
     void submitTicket_WithStepData_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
         testTicket.setStepData(null);
 
         Map<String, Object> stepDataMap = new HashMap<>();
@@ -789,7 +789,7 @@ class TicketServiceTest {
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.submitTicket("ticket-1", stepData, "assignee-id");
+        TicketResponse response = ticketService.submitTicket(202601200001L, stepData, "assignee-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(any(Ticket.class));
@@ -798,25 +798,25 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should handle null step data gracefully")
     void submitTicket_NullStepData_ShouldNotThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        assertDoesNotThrow(() -> ticketService.submitTicket("ticket-1", null, "assignee-id"));
+        assertDoesNotThrow(() -> ticketService.submitTicket(202601200001L, null, "assignee-id"));
     }
 
     @Test
     @DisplayName("Should throw exception when submitting as non-assignee")
     void submitTicket_NotAssignee_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         StepData stepData = new StepData(new HashMap<>());
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.submitTicket("ticket-1", stepData, "other-user-id"));
+                () -> ticketService.submitTicket(202601200001L, stepData, "other-user-id"));
 
         assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
     }
@@ -826,29 +826,29 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should review ticket with cause and reopen it")
     void reviewTicket_WithCause_ShouldReopen() {
-        Ticket testTicket = createTestTicket("ticket-1", "COMPLETED", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "COMPLETED", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.reviewTicket("ticket-1", "Needs more work", "reviewer-id");
+        TicketResponse response = ticketService.reviewTicket(202601200001L, "Needs more work", "reviewer-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
             "Needs more work".equals(ticket.getCause()) &&
-            "OPEN".equals(ticket.getStatus())
+            "ARRIVED".equals(ticket.getStatus())
         ));
     }
 
     @Test
     @DisplayName("Should review ticket without cause and keep completed")
     void reviewTicket_WithoutCause_ShouldKeepCompleted() {
-        Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "SUBMITTED", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.reviewTicket("ticket-1", null, "reviewer-id");
+        TicketResponse response = ticketService.reviewTicket(202601200001L, null, "reviewer-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
@@ -861,12 +861,12 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should add comment to ticket successfully")
     void addTicketComment_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
         User testUser = User.builder().id("user-1").name("Test User").build();
 
         TicketCommentCreateRequest request = new TicketCommentCreateRequest("This is a comment", CommentType.GENERAL);
 
-        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
+        when(ticketMapper.selectById(202601200001L)).thenReturn(testTicket);
         when(userMapper.selectById("user-1")).thenReturn(testUser);
         when(ticketCommentMapper.insert(any(TicketComment.class))).thenAnswer(invocation -> {
             TicketComment comment = invocation.getArgument(0);
@@ -875,7 +875,7 @@ class TicketServiceTest {
             return 1;
         });
 
-        TicketCommentResponse response = ticketService.addTicketComment("ticket-1", request, "user-1");
+        TicketCommentResponse response = ticketService.addTicketComment(202601200001L, request, "user-1");
 
         assertNotNull(response);
         assertEquals("This is a comment", response.comment());
@@ -884,23 +884,23 @@ class TicketServiceTest {
         verify(ticketCommentMapper).insert(argThat(comment ->
             "This is a comment".equals(comment.getComment()) &&
             CommentType.GENERAL.equals(comment.getType()) &&
-            "ticket-1".equals(comment.getTicketId())
+            java.util.Objects.equals(202601200001L, comment.getTicketId())
         ));
     }
 
     @Test
     @DisplayName("Should add comment with default type when type is null")
     void addTicketComment_NullType_UsesDefault() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
         User testUser = User.builder().id("user-1").name("Test User").build();
 
         TicketCommentCreateRequest request = new TicketCommentCreateRequest("Comment", null);
 
-        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
+        when(ticketMapper.selectById(202601200001L)).thenReturn(testTicket);
         when(userMapper.selectById("user-1")).thenReturn(testUser);
         when(ticketCommentMapper.insert(any(TicketComment.class))).thenReturn(1);
 
-        ticketService.addTicketComment("ticket-1", request, "user-1");
+        ticketService.addTicketComment(202601200001L, request, "user-1");
 
         verify(ticketCommentMapper).insert(argThat(comment ->
             CommentType.GENERAL.equals(comment.getType())
@@ -915,7 +915,7 @@ class TicketServiceTest {
         when(ticketMapper.selectById("non-existent-ticket")).thenReturn(null);
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.addTicketComment("non-existent-ticket", request, "user-1"));
+                () -> ticketService.addTicketComment(999999L, request, "user-1"));
 
         assertEquals(ErrorCode.TICKET_NOT_FOUND.getCode(), exception.getCode());
     }
@@ -929,7 +929,7 @@ class TicketServiceTest {
                 .id("comment-1")
                 .comment("First comment")
                 .type(CommentType.GENERAL)
-                .ticketId("ticket-1")
+                .ticketId(202601200001L)
                 .userId("user-1")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -938,7 +938,7 @@ class TicketServiceTest {
                 .id("comment-2")
                 .comment("Second comment")
                 .type(CommentType.ACCEPT)
-                .ticketId("ticket-1")
+                .ticketId(202601200001L)
                 .userId("user-2")
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -946,12 +946,12 @@ class TicketServiceTest {
         User user1 = User.builder().id("user-1").name("User One").build();
         User user2 = User.builder().id("user-2").name("User Two").build();
 
-        when(ticketCommentMapper.selectByTicketIdWithUser("ticket-1"))
+        when(ticketCommentMapper.selectByTicketIdWithUser(202601200001L))
                 .thenReturn(Arrays.asList(comment1, comment2));
         when(userMapper.selectById("user-1")).thenReturn(user1);
         when(userMapper.selectById("user-2")).thenReturn(user2);
 
-        List<TicketCommentResponse> comments = ticketService.getTicketComments("ticket-1");
+        List<TicketCommentResponse> comments = ticketService.getTicketComments(202601200001L);
 
         assertEquals(2, comments.size());
         assertEquals("First comment", comments.get(0).comment());
@@ -963,10 +963,10 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should return empty list when ticket has no comments")
     void getTicketComments_NoComments_ReturnsEmpty() {
-        when(ticketCommentMapper.selectByTicketIdWithUser("ticket-1"))
+        when(ticketCommentMapper.selectByTicketIdWithUser(202601200001L))
                 .thenReturn(Collections.emptyList());
 
-        List<TicketCommentResponse> comments = ticketService.getTicketComments("ticket-1");
+        List<TicketCommentResponse> comments = ticketService.getTicketComments(202601200001L);
 
         assertTrue(comments.isEmpty());
     }
@@ -976,8 +976,8 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should get tickets assigned to user")
     void getMyTickets_Success() {
-        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "user-1", "creator-1");
-        Ticket ticket2 = createTestTicket("ticket-2", "IN_PROGRESS", "user-1", "creator-2");
+        Ticket ticket1 = createTestTicket(202601200001L, "OPEN", "user-1", "creator-1");
+        Ticket ticket2 = createTestTicket(202601200002L, "IN_PROGRESS", "user-1", "creator-2");
 
         when(ticketMapper.selectByAssignedTo("user-1"))
                 .thenReturn(Arrays.asList(ticket1, ticket2));
@@ -994,8 +994,8 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should get my tickets filtered by status")
     void getMyTickets_WithStatusFilter_Success() {
-        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "user-1", "creator-1");
-        Ticket ticket2 = createTestTicket("ticket-2", "COMPLETED", "user-1", "creator-2");
+        Ticket ticket1 = createTestTicket(202601200001L, "OPEN", "user-1", "creator-1");
+        Ticket ticket2 = createTestTicket(202601200002L, "COMPLETED", "user-1", "creator-2");
 
         when(ticketMapper.selectByAssignedTo("user-1"))
                 .thenReturn(Arrays.asList(ticket1, ticket2));
@@ -1012,17 +1012,17 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should get all pending tickets (OPEN and ASSIGNED)")
     void getPendingTickets_Success() {
-        Ticket ticket1 = createTestTicket("ticket-1", "OPEN", "assignee-1", "creator-1");
-        Ticket ticket2 = createTestTicket("ticket-2", "ASSIGNED", "assignee-2", "creator-2");
-        Ticket ticket3 = createTestTicket("ticket-3", "IN_PROGRESS", "assignee-3", "creator-3");
+        Ticket ticket1 = createTestTicket(202601200001L, "OPEN", "assignee-1", "creator-1");
+        Ticket ticket2 = createTestTicket(202601200002L, "ASSIGNED", "assignee-2", "creator-2");
+        Ticket ticket3 = createTestTicket(202601200003L, "IN_PROGRESS", "assignee-3", "creator-3");
 
         when(ticketMapper.selectByStatusIn(Arrays.asList("OPEN", "ASSIGNED")))
                 .thenReturn(Arrays.asList(ticket1, ticket2, ticket3));
         when(userMapper.selectById(any())).thenReturn(testCreator, testAssignee);
 
-        List<TicketResponse> pendingTickets = ticketService.getPendingTickets();
+        PageResult<TicketResponse> pendingTickets = ticketService.getPendingTickets();
 
-        assertEquals(3, pendingTickets.size());
+        assertEquals(3, pendingTickets.records().size());
     }
 
     @Test
@@ -1030,9 +1030,9 @@ class TicketServiceTest {
     void getPendingTickets_NoPending_ReturnsEmpty() {
         when(ticketMapper.selectByStatusIn(any())).thenReturn(Collections.emptyList());
 
-        List<TicketResponse> pendingTickets = ticketService.getPendingTickets();
+        PageResult<TicketResponse> pendingTickets = ticketService.getPendingTickets();
 
-        assertTrue(pendingTickets.isEmpty());
+        assertTrue(pendingTickets.records().isEmpty());
     }
 
     // ==================== Get Completed Tickets Tests ====================
@@ -1040,8 +1040,8 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should get completed tickets with pagination")
     void getCompletedTickets_Success() {
-        Ticket ticket1 = createTestTicket("ticket-1", "COMPLETED", "assignee-1", "creator-1");
-        Ticket ticket2 = createTestTicket("ticket-2", "COMPLETED", "assignee-2", "creator-2");
+        Ticket ticket1 = createTestTicket(202601200001L, "COMPLETED", "assignee-1", "creator-1");
+        Ticket ticket2 = createTestTicket(202601200002L, "COMPLETED", "assignee-2", "creator-2");
 
         when(ticketMapper.selectByStatus("COMPLETED"))
                 .thenReturn(Arrays.asList(ticket1, ticket2));
@@ -1126,7 +1126,7 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should update ticket with all nullable fields")
     void updateTicket_AllNullableFields_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
         TicketUpdateRequest request = new TicketUpdateRequest(
                 "Updated Title",
@@ -1152,7 +1152,7 @@ class TicketServiceTest {
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.updateTicket("ticket-1", request);
+        TicketResponse response = ticketService.updateTicket(202601200001L, request);
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
@@ -1171,7 +1171,7 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should handle JSON processing error in completed steps")
     void updateTicket_InvalidCompletedStepsJson_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
         TicketUpdateRequest request = new TicketUpdateRequest(
                 null, null, null, null, null, null, null, null,
@@ -1182,7 +1182,7 @@ class TicketServiceTest {
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
         // Should not throw with valid input
-        assertDoesNotThrow(() -> ticketService.updateTicket("ticket-1", request));
+        assertDoesNotThrow(() -> ticketService.updateTicket(202601200001L, request));
     }
 
     // ==================== Delete Ticket Tests ====================
@@ -1190,22 +1190,22 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should delete existing ticket")
     void deleteTicket_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "OPEN", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "OPEN", "assignee-id", "creator-id");
 
-        when(ticketMapper.selectById("ticket-1")).thenReturn(testTicket);
-        when(ticketMapper.deleteById("ticket-1")).thenReturn(1);
+        when(ticketMapper.selectById(202601200001L)).thenReturn(testTicket);
+        when(ticketMapper.deleteById(202601200001L)).thenReturn(1);
 
-        assertDoesNotThrow(() -> ticketService.deleteTicket("ticket-1"));
-        verify(ticketMapper).deleteById("ticket-1");
+        assertDoesNotThrow(() -> ticketService.deleteTicket(202601200001L));
+        verify(ticketMapper).deleteById(202601200001L);
     }
 
     @Test
     @DisplayName("Should throw exception when deleting non-existent ticket")
     void deleteTicket_NotFound_ShouldThrow() {
-        when(ticketMapper.selectById("non-existent-ticket")).thenReturn(null);
+        when(ticketMapper.selectById(999999L)).thenReturn(null);
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.deleteTicket("non-existent-ticket"));
+                () -> ticketService.deleteTicket(999999L));
 
         assertEquals(ErrorCode.TICKET_NOT_FOUND.getCode(), exception.getCode());
     }
@@ -1215,12 +1215,12 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should arrive ticket with photo")
     void arriveTicket_WithPhoto_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.arriveTicket("ticket-1", "arrival-photo.jpg", "assignee-id");
+        TicketResponse response = ticketService.arriveTicket(202601200001L, "arrival-photo.jpg", "assignee-id");
 
         assertNotNull(response);
         verify(ticketMapper).updateById(argThat(ticket ->
@@ -1232,12 +1232,12 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should throw exception when arriving as non-assignee")
     void arriveTicket_NotAssignee_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.arriveTicket("ticket-1", "photo.jpg", "other-user-id"));
+                () -> ticketService.arriveTicket(202601200001L, "photo.jpg", "other-user-id"));
 
         assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
     }
@@ -1247,12 +1247,12 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should complete ticket with photo")
     void completeTicket_WithPhoto_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.completeTicket("ticket-1", "completion-photo.jpg", "assignee-id");
+        TicketResponse response = ticketService.completeTicket(202601200001L, "completion-photo.jpg", "assignee-id");
 
         assertNotNull(response);
         assertEquals("COMPLETED", response.status());
@@ -1265,12 +1265,12 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should complete ticket without photo")
     void completeTicket_WithoutPhoto_Success() {
-        Ticket testTicket = createTestTicket("ticket-1", "SUBMITTED", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "SUBMITTED", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
         when(ticketMapper.updateById(any(Ticket.class))).thenReturn(1);
 
-        TicketResponse response = ticketService.completeTicket("ticket-1", null, "assignee-id");
+        TicketResponse response = ticketService.completeTicket(202601200001L, null, "assignee-id");
 
         assertNotNull(response);
         assertEquals("COMPLETED", response.status());
@@ -1279,19 +1279,19 @@ class TicketServiceTest {
     @Test
     @DisplayName("Should throw exception when completing as non-assignee")
     void completeTicket_NotAssignee_ShouldThrow() {
-        Ticket testTicket = createTestTicket("ticket-1", "IN_PROGRESS", "assignee-id", "creator-id");
+        Ticket testTicket = createTestTicket(202601200001L, "IN_PROGRESS", "assignee-id", "creator-id");
 
         when(ticketMapper.selectByIdWithDetails(202601200001L)).thenReturn(Optional.of(testTicket));
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> ticketService.completeTicket("ticket-1", "photo.jpg", "other-user-id"));
+                () -> ticketService.completeTicket(202601200001L, "photo.jpg", "other-user-id"));
 
         assertEquals(ErrorCode.NOT_ASSIGNEE.getCode(), exception.getCode());
     }
 
     // ==================== Helper Methods ====================
 
-    private Ticket createTestTicket(String id, String status, String assignedTo, String createdBy) {
+    private Ticket createTestTicket(Long id, String status, String assignedTo, String createdBy) {
         Ticket ticket = Ticket.builder()
                 .id(id)
                 .title("Test Ticket")
