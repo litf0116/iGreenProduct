@@ -84,3 +84,4 @@ openspec/output/
 *.swo
 *~
 .fleet/
+igreen-backend/uploads/
