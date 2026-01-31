@@ -13,14 +13,12 @@ function getAuthToken(): string | null {
   return localStorage.getItem('auth_token');
 }
 
-// 后端 TicketResponse 转换为前端 Ticket 格式
+  // 后端 TicketResponse 转换为前端 Ticket 格式
 function transformTicket(backendTicket: any): Ticket {
   // 后端状态是英文大写，前端用小写
-  // 注意：后端 ACCEPTED 对应前端 assigned（已接单待出发）
-  // IN_PROGRESS 对应 departed（已出发前往现场）
+  // 后端状态: OPEN, ASSIGNED, ACCEPTED, DEPARTED, ARRIVED, REVIEW, COMPLETED, ON_HOLD, CANCELLED
   const statusMap: Record<string, string> = {
-    'accepted': 'assigned',
-    'in_progress': 'departed',
+    'accepted': 'assigned',  // 后端 ACCEPTED 对应前端 assigned（已接单待出发）
   };
   const normalizedStatus = backendTicket.status?.toLowerCase();
   const mappedStatus = (statusMap[normalizedStatus] || normalizedStatus || 'open') as TicketStatus;
