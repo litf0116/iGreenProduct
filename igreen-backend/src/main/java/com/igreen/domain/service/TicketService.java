@@ -338,7 +338,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
         }
 
-        ticket.setStatus("IN_PROGRESS");
+        ticket.setStatus("DEPARTED");
         ticket.setDepartureAt(LocalDateTime.now());
         if (departurePhoto != null) {
             ticket.setDeparturePhoto(departurePhoto);
