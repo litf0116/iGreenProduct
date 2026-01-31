@@ -157,20 +157,13 @@ function AppContent() {
     setSelectedTicket(null);
   };
 
-  const handleUpdateTicket = async (id: number, updates: Partial<Ticket>) => {
+  const handleUpdateTicket = async (id: number, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => {
     const previousTickets = [...tickets];
     const targetTicket = tickets.find(t => t.id === id);
     
     if (!targetTicket) return;
 
-    const statusActions: Record<string, () => Promise<any>> = {
-      'assigned': () => api.acceptTicket(id),
-      'departed': () => api.departTicket(id),
-      'arrived': () => api.arriveTicket(id),
-      'completed': () => api.completeTicket(id),
-      'review': () => api.reviewTicket(id),
-    };
-
+    // 本地乐观更新
     setTickets(prev => prev.map(t => 
       t.id === id ? { ...t, ...updates } : t
     ));
@@ -179,12 +172,14 @@ function AppContent() {
       setSelectedTicket(prev => prev ? { ...prev, ...updates } : null);
     }
 
+    // skipApi 默认为 false，调用者可以传 true 跳过 API 调用
+    // 用于操作接口（accept/depart/arrive/complete）后刷新，避免重复调用
+    if (options?.skipApi) {
+      return;
+    }
+
     try {
-      if (updates.status && statusActions[updates.status]) {
-        await statusActions[updates.status]();
-      } else {
-        await api.updateTicket(id, updates);
-      }
+      await api.updateTicket(id, updates);
     } catch (error) {
       setTickets(previousTickets);
       if (selectedTicket && selectedTicket.id === id) {
