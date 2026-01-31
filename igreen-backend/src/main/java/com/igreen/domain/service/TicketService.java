@@ -9,11 +9,7 @@ import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.domain.dto.*;
-import com.igreen.domain.entity.Site;
-import com.igreen.domain.entity.TemplateStep;
-import com.igreen.domain.entity.Ticket;
-import com.igreen.domain.entity.TicketComment;
-import com.igreen.domain.entity.User;
+import com.igreen.domain.entity.*;
 import com.igreen.domain.enums.CommentType;
 import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -255,7 +250,7 @@ public class TicketService {
                     .ticketId(id)
                     .userId(userId)
                     .build();
-            ticketCommentMapper.insert(comment);
+        ticketCommentMapper.insert(comment);
         }
 
         ticketMapper.updateById(ticket);
@@ -280,7 +275,7 @@ public class TicketService {
 
         TicketComment comment = TicketComment.builder()
                 .id(UUID.randomUUID().toString())
-                .comment(request.reason())
+                .comment(request.comment())
                 .type(CommentType.DECLINE)
                 .ticketId(id)
                 .userId(userId)
@@ -362,6 +357,12 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
+        // Allow arrive from DEPARTED status
+        if (!"DEPARTED".equals(ticket.getStatus())) {
+            throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
+        }
+
+        ticket.setStatus("ARRIVED");
         ticket.setArrivalAt(LocalDateTime.now());
         if (arrivalPhoto != null) {
             ticket.setArrivalPhoto(arrivalPhoto);
@@ -469,14 +470,35 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponse submitTicketForReview(Long id, String userId) {
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+
+        // 检查工单状态是否为 ARRIVED（工程师已到达现场）
+        if (!"ARRIVED".equals(ticket.getStatus())) {
+            throw new BusinessException("工单状态不正确，无法提交审核");
+        }
+
+        // 将工单状态设置为 REVIEW（待审核）
+        ticket.setStatus("REVIEW");
+        ticketMapper.updateById(ticket);
+
+        User creator = ticket.getCreator();
+        User assignee = ticket.getAssignee();
+        Site site = siteMapper.selectById(ticket.getSite());
+        return toResponse(ticket, creator, assignee, site);
+    }
+
+    @Transactional
     public TicketResponse reviewTicket(Long id, String cause, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (cause != null) {
+        if (cause != null && !cause.trim().isEmpty()) {
+            // 有原因 → 管理员拒绝，退回给工程师，状态回退到 ARRIVED
             ticket.setCause(cause);
-            ticket.setStatus("OPEN");
+            ticket.setStatus("ARRIVED");
         } else {
+            // 无原因 → 管理员审核通过，工单完成
             ticket.setStatus("COMPLETED");
         }
 
@@ -618,7 +640,7 @@ public class TicketService {
             total += count.getCount();
             switch (count.getStatus()) {
                 case "OPEN" -> open += count.getCount();
-                case "ASSIGNED", "ACCEPTED", "IN_PROGRESS" -> inProgress += count.getCount();
+                case "ASSIGNED", "ACCEPTED", "DEPARTED" -> inProgress += count.getCount();
                 case "SUBMITTED" -> submitted += count.getCount();
                 case "COMPLETED" -> completed += count.getCount();
                 case "ON_HOLD" -> onHold += count.getCount();
