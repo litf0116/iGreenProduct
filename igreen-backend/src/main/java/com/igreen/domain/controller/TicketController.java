@@ -63,7 +63,7 @@ public class TicketController {
 
     @Operation(summary = "更新工单")
     @PostMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ENGINEER')")
     public ResponseEntity<Result<TicketResponse>> updateTicket(
             @PathVariable Long id,
             @Valid @RequestBody TicketUpdateRequest request) {
@@ -149,7 +149,17 @@ public class TicketController {
         return ResponseEntity.ok(Result.success(ticketService.completeTicket(id, completionPhoto, userId)));
     }
 
-    @Operation(summary = "审核工单")
+    @Operation(summary = "提交工单审核（工程师使用）")
+    @PostMapping("/{id}/submit-for-review")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ENGINEER')")
+    public ResponseEntity<Result<TicketResponse>> submitTicketForReview(
+            HttpServletRequest httpRequest,
+            @PathVariable Long id) {
+        String userId = getCurrentUserId(httpRequest);
+        return ResponseEntity.ok(Result.success(ticketService.submitTicketForReview(id, userId)));
+    }
+
+    @Operation(summary = "审核工单（管理员使用）")
     @PostMapping("/{id}/review")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<TicketResponse>> reviewTicket(

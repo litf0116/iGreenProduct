@@ -9,7 +9,6 @@ public enum TicketStatus {
     OPEN,
     ASSIGNED,
     ACCEPTED,
-    IN_PROGRESS,
     DEPARTED,
     ARRIVED,
     REVIEW,

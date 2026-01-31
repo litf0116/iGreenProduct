@@ -84,6 +84,8 @@ public class SecurityConfig {
                         .requestMatchers("/doc.html", "/doc.html/**").permitAll()
                         .requestMatchers("/knife4j/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/openapi/**").permitAll()
+                        // 上传文件访问 - 公开访问
+                        .requestMatchers("/uploads/**").permitAll()
                         // 站点导入导出API (测试用，临时公开)
                         .requestMatchers("/api/sites/export", "/api/sites/export/template").permitAll()
                         // 管理端点
