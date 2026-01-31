@@ -49,10 +49,10 @@ Uncaught TypeError: ticket.dueDate.getTime is not a function
 4. 可选：保持前端的日期格式化辅助函数（作为后备）
 
 ### Definition of Done
-- [ ] API 返回的所有时间字段格式统一为 `yyyy-MM-dd HH:mm:ss`
-- [ ] 前端可以正常解析和显示日期时间
-- [ ] 不破坏现有的日期时间处理逻辑
-- [ ] 向后兼容（如果前端已有日期格式化逻辑）
+- [x] API 返回的所有时间字段格式统一为 `yyyy-MM-dd HH:mm:ss`
+- [x] 前端可以正常解析和显示日期时间
+- [x] 不破坏现有的日期时间处理逻辑
+- [x] 向后兼容（如果前端已有日期格式化逻辑）
 
 ### Must Have
 - 所有 API 端点返回的日期时间格式一致
