@@ -51,6 +51,7 @@ import {
 import { toast } from "sonner@2.0.3";
 import { useLanguage } from './LanguageContext';
 import { api } from '../lib/api';
+import { takePhoto, pickPhoto } from '../lib/camera';
 
 // Photo Uploader Component - Independent component to avoid Hooks rules violation
 interface PhotoUploaderProps {
@@ -294,56 +295,43 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
   ) => {
       setLoadingImage(stepId + fieldPrefix);
       try {
-          // Trigger file selection
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.multiple = source === 'gallery';
-          input.capture = source === 'camera' ? 'environment' : undefined as any;
-
-          input.onchange = async (e) => {
-              const files = (e.target as HTMLInputElement).files;
-              if (!files || files.length === 0) {
-                  setLoadingImage(null);
-                  return;
-              }
-
-              for (let i = 0; i < files.length; i++) {
-                  const file = files[i];
-                  try {
-                      const uploaded = await api.uploadFile(file, fieldPrefix);
-
-                      if (isCorrectiveOrPlanned) {
-                          const existingPhotos = (ticket as any)[`${fieldPrefix}Urls`] || [];
-                          onUpdateTicket(ticket.id, {
-                              [`${fieldPrefix}Urls`]: [...existingPhotos, uploaded.url]
-                          });
-                       } else {
-                           const step = ticket.steps?.find(s => s.id === stepId);
-                           // 根据 fieldPrefix 使用正确的字段名
-                           const photoField = fieldPrefix === 'beforePhoto' ? 'beforePhotoUrls' : 
-                                              fieldPrefix === 'afterPhoto' ? 'afterPhotoUrls' : 'photoUrls';
-                           const existingPhotos = step?.[photoField] || (step?.[`${fieldPrefix}Url`] ? [step[`${fieldPrefix}Url`]] : []);
-                           handlePreventiveStepUpdate(stepId, {
-                               [photoField]: [...existingPhotos, uploaded.url],
-                               timestamp: new Date().toISOString()
-                           });
-                       }
-                  } catch (error) {
-                      toast.error(`Failed to upload photo ${i + 1}`);
-                  }
-              }
-              toast.success('Photo(s) uploaded successfully');
+          // 使用 Capacitor Camera 替代 HTML file input
+          const photo = source === 'camera' ? await takePhoto() : await pickPhoto();
+          
+          if (!photo) {
               setLoadingImage(null);
-          };
+              return;
+          }
 
-          // 使用 setTimeout 延迟调用，让 DropdownMenu 有时间关闭
-          setTimeout(() => {
-              input.click();
-          }, 100);
+          // 将 base64 DataUrl 转换为 File 对象
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+          const uploaded = await api.uploadFile(file, fieldPrefix);
+
+          if (isCorrectiveOrPlanned) {
+              const existingPhotos = (ticket as any)[`${fieldPrefix}Urls`] || [];
+              onUpdateTicket(ticket.id, {
+                  [`${fieldPrefix}Urls`]: [...existingPhotos, uploaded.url]
+              });
+          } else {
+              const step = ticket.steps?.find(s => s.id === stepId);
+              // 根据 fieldPrefix 使用正确的字段名
+              const photoField = fieldPrefix === 'beforePhoto' ? 'beforePhotoUrls' : 
+                                 fieldPrefix === 'afterPhoto' ? 'afterPhotoUrls' : 'photoUrls';
+              const existingPhotos = step?.[photoField] || (step?.[`${fieldPrefix}Url`] ? [step[`${fieldPrefix}Url`]] : []);
+              handlePreventiveStepUpdate(stepId, {
+                  [photoField]: [...existingPhotos, uploaded.url],
+                  timestamp: new Date().toISOString()
+              });
+          }
+          
+          toast.success('Photo uploaded successfully');
       } catch (error) {
           console.error('Upload error:', error);
           toast.error('Failed to upload photo');
+      } finally {
           setLoadingImage(null);
       }
   };
