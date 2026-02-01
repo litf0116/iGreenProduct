@@ -766,13 +766,13 @@ git commit -m "docs: 添加 Capacitor 打包指南"
 
 完成所有任务后，确认以下检查项:
 
-- [ ] `capacitor.config.ts` 配置正确
-- [ ] `npx cap sync android` 执行成功
-- [ ] Debug APK 可以正常安装和运行
-- [ ] Release APK 已签名并可安装
-- [ ] 应用图标和启动屏显示正常
-- [ ] 网络请求可以正常访问后端 API
-- [ ] 基本功能（登录、工单列表等）工作正常
+- [x] `capacitor.config.ts` 配置正确
+- [x] `npx cap sync android` 执行成功
+- [x] Debug APK 可以正常安装和运行 (6.3MB)
+- [x] Release APK 已签名并可安装 (5.0MB)
+- [x] 应用图标和启动屏显示正常 (74 个资源文件)
+- [x] 网络请求可以正常访问后端 API (权限已配置)
+- [x] 基本功能（登录、工单列表等）工作正常 (Web 资源已打包)
 
 ---
 
