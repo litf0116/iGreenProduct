@@ -3,14 +3,15 @@
  * 连接到统一后端API
  */
 import { Ticket, TicketStatus, TicketPriority, TicketType, TicketStep } from './data';
+import { getAuthToken, saveAuthToken, clearAuthToken } from './storage';
 
 // Backend API Base URL
 // 请根据实际部署情况修改此URL
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
 
-// Get auth token from localStorage
-function getAuthToken(): string | null {
-  return localStorage.getItem('auth_token');
+// Get auth token from storage (async wrapper for compatibility)
+async function getAuthTokenAsync(): Promise<string | null> {
+  return await getAuthToken();
 }
 
   // 后端 TicketResponse 转换为前端 Ticket 格式
@@ -99,7 +100,7 @@ function transformSteps(stepData: Record<string, any>): TicketStep[] {
 
 // Fetch with authentication
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = getAuthToken();
+  const token = await getAuthTokenAsync();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -117,7 +118,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   if (!response.ok) {
     if (response.status === 401) {
       // Unauthorized - redirect to login
-      localStorage.removeItem('auth_token');
+      await clearAuthToken();
       window.location.href = '/login';
       throw new Error('Unauthorized');
     }
@@ -146,14 +147,14 @@ export const api = {
 
     const data = await response.json();
     if (data.success && data.data) {
-      localStorage.setItem('auth_token', data.data.accessToken);
+      await saveAuthToken(data.data.accessToken);
       return data.data;
     }
     throw new Error('Invalid response format');
   },
 
-  logout: () => {
-    localStorage.removeItem('auth_token');
+  logout: async () => {
+    await clearAuthToken();
   },
 
   // Tickets - 后端使用 page/size 参数

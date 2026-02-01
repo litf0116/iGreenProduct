@@ -9,6 +9,7 @@ import { Ticket, TicketStatus } from './lib/data';
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import { api } from './lib/api';
+import { getAuthToken, clearAuthToken } from './lib/storage';
 import { Button } from "./components/ui/button";
 import { RefreshCw, Database } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './components/LanguageContext';
@@ -45,7 +46,7 @@ function AppContent() {
   // 检查登录状态并恢复会话
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('auth_token');
+      const token = await getAuthToken();
       if (token) {
         try {
           // 验证 token 并获取用户信息
@@ -64,11 +65,11 @@ function AppContent() {
             setIsAuthenticated(true);
           } else {
             // Token 无效，清除
-            localStorage.removeItem('auth_token');
+            await clearAuthToken();
           }
         } catch (error) {
           console.error('Auth check failed:', error);
-          localStorage.removeItem('auth_token');
+          await clearAuthToken();
         }
       }
       setInitializing(false);
