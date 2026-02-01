@@ -1,8 +1,8 @@
 {
-  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/add-skipapi-parameter.md",
-  "started_at": "2026-01-31T08:30:03.600Z",
-  "session_ids": ["ses_3effb6871ffeGkl1waESG7OgGc"],
-  "plan_name": "add-skipapi-parameter",
+  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/fix-status-mapping.md",
+  "started_at": "2026-02-01T01:46:45.000Z",
+  "session_ids": ["ses_3ea9a6021ffeqOA3JASrCwh9aY"],
+  "plan_name": "fix-status-mapping",
   "completed": true,
-  "completed_at": "2026-01-31T08:35:00.000Z"
+  "completed_at": "2026-02-01T01:50:00.000Z"
 }

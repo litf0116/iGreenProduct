@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">iGreen工程师</string>
+    <string name="title_activity_main">iGreen工程师</string>
+    <string name="package_name">com.igreen.engineer</string>
+    <string name="custom_url_scheme">com.igreen.engineer</string>
+</resources>
