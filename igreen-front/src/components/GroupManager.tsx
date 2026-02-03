@@ -56,19 +56,30 @@ export function GroupManager() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadData = useCallback(async (keyword?: string) => {
+  const loadData = useCallback(async (keyword?: string, loadType?: 'groups' | 'users' | 'all') => {
+    // Default to 'all' if not specified
+    const typeToLoad = loadType || 'all';
+
     setIsLoading(true);
     try {
-      const [groupsRes, usersRes] = await Promise.all([
-        api.getGroups(keyword).catch(() => []),
-        api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] })),
-      ]);
-      // api.getGroups(keyword) returns Group[] array
-      // api.getUsers() returns { records: User[], total, ... }
-      const groupsData = Array.isArray(groupsRes) ? groupsRes : [];
-      const usersData = (usersRes as any)?.records || usersRes || [];
-      setGroups(groupsData);
-      setUsers(Array.isArray(usersData) ? usersData : []);
+      if (typeToLoad === 'all') {
+        const [groupsRes, usersRes] = await Promise.all([
+          api.getGroups(keyword).catch(() => []),
+          api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] })),
+        ]);
+        const groupsData = Array.isArray(groupsRes) ? groupsRes : [];
+        const usersData = (usersRes as any)?.records || usersRes || [];
+        setGroups(groupsData);
+        setUsers(Array.isArray(usersData) ? usersData : []);
+      } else if (typeToLoad === 'groups') {
+        const groupsRes = await api.getGroups(keyword).catch(() => []);
+        const groupsData = Array.isArray(groupsRes) ? groupsRes : [];
+        setGroups(groupsData);
+      } else if (typeToLoad === 'users') {
+        const usersRes = await api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] }));
+        const usersData = (usersRes as any)?.records || usersRes || [];
+        setUsers(Array.isArray(usersData) ? usersData : []);
+      }
       isDataLoaded.current = true;
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -88,15 +99,18 @@ export function GroupManager() {
   // Handle search with 250ms debounce
   const handleSearchChange = (value: string) => {
     setSearchKeyword(value);
-    
+
     // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-    
+
     // Set new timeout - search after 250ms
     searchTimeoutRef.current = setTimeout(() => {
-      loadData(value.trim() || undefined);
+      // Search based on current active tab
+      const keyword = value.trim() || undefined;
+      const loadType = activeTab === 'groups' ? 'groups' : 'users';
+      loadData(keyword, loadType);
     }, 250);
   };
 
@@ -105,7 +119,7 @@ export function GroupManager() {
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  
+
   // Delete Confirmation State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"group" | "user" | null>(null);
@@ -272,13 +286,14 @@ export function GroupManager() {
         </div>
       </div>
 
-      <Tabs 
-        value={activeTab} 
+      <Tabs
+        value={activeTab}
         onValueChange={(val) => {
-          // Backend Integration: Fetch Users or Groups when tab changes
-          // API: GET /api/users OR GET /api/groups
           setActiveTab(val);
-        }} 
+          // Reload data when switching tabs
+          const loadType = val === 'groups' ? 'groups' : 'users';
+          loadData(searchKeyword.trim() || undefined, loadType);
+        }}
         className="space-y-6"
       >
         <TabsList>
@@ -296,18 +311,18 @@ export function GroupManager() {
           <div className="flex justify-between items-center">
             <div className="relative w-72">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder={t("search")} 
+              <Input
+                placeholder={t("search")}
                 className="pl-8"
                 value={searchKeyword}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
-            <Button 
+            <Button
               onClick={() => {
                 // Backend Integration: Prepare for Group Creation
                 handleOpenGroupDialog();
-              }} 
+              }}
               className="bg-[#0ea5e9] hover:bg-[#0284c7]"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -386,13 +401,18 @@ export function GroupManager() {
           <div className="flex justify-between items-center">
             <div className="relative w-72">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t("search")} className="pl-8" />
+              <Input
+                placeholder={t("search")}
+                className="pl-8"
+                value={searchKeyword}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
             </div>
-            <Button 
+            <Button
               onClick={() => {
                 // Backend Integration: Prepare for User Creation
                 handleOpenUserDialog();
-              }} 
+              }}
               className="bg-[#0ea5e9] hover:bg-[#0284c7]"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -497,9 +517,9 @@ export function GroupManager() {
             <div className="space-y-2">
               <Label>{t("tags")}</Label>
               <div className="flex gap-2">
-                <Input 
-                  value={currentTag} 
-                  onChange={(e) => setCurrentTag(e.target.value)} 
+                <Input
+                  value={currentTag}
+                  onChange={(e) => setCurrentTag(e.target.value)}
                   placeholder={t("addTag")}
                   onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
                 />
@@ -553,11 +573,11 @@ export function GroupManager() {
             </div>
             <div className="space-y-2">
               <Label>{t("password")}</Label>
-              <Input 
-                type="password" 
-                value={userPassword} 
-                onChange={(e) => setUserPassword(e.target.value)} 
-                placeholder={editingUser ? t("changePassword") : t("enterPassword")} 
+              <Input
+                type="password"
+                value={userPassword}
+                onChange={(e) => setUserPassword(e.target.value)}
+                placeholder={editingUser ? t("changePassword") : t("enterPassword")}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">

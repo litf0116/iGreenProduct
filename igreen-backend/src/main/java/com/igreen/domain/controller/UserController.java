@@ -82,6 +82,15 @@ public class UserController {
         return ResponseEntity.ok(Result.successResult());
     }
 
+    @Operation(summary = "更新用户(POST方式)")
+    @PostMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Result<UserResponse>> updateUserByPost(
+            @PathVariable String id,
+            @Valid @RequestBody UserUpdateRequest request) {
+        return ResponseEntity.ok(Result.success(userService.updateUser(id, request)));
+    }
+
     @Operation(summary = "获取所有工程师")
     @GetMapping("/engineers")
     public ResponseEntity<Result<PageResult<UserResponse>>> getEngineers() {
