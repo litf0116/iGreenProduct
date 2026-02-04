@@ -239,6 +239,9 @@ export const translations = {
     maintenanceEngineer: "Maintenance Engineer",
     supervisor: "Supervisor",
     admin: "Administrator",
+      engineer: "Maintenance Engineer",
+      manager: "Supervisor",
+
     signInSuccess: "Signed in successfully",
     signUpSuccess: "Account created successfully",
     invalidCredentials: "Invalid email or password",

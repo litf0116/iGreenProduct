@@ -8,6 +8,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     cleartext: true,
+    // 允许访问局域网 API
+    allowNavigation: [
+      '192.168.10.154',
+      'localhost',
+    ],
   },
   plugins: {
     SplashScreen: {
