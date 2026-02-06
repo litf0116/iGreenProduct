@@ -14,10 +14,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# 配置
-APP_DIR="/opt/igreen/backend"
+# 配置 - 支持环境变量覆盖
+IGREEN_ROOT="${IGREEN_ROOT:-/home/igreen/app}"
+APP_DIR="$IGREEN_ROOT/igreen-backend"
 JAR_FILE="$APP_DIR/target/igreen-backend-1.0.0-SNAPSHOT.jar"
-LOG_FILE="/var/log/igreen/igreen-backend.log"
+LOG_DIR="$IGREEN_ROOT/logs"
+LOG_FILE="$LOG_DIR/igreen-backend.log"
 CONFIG_FILE="$APP_DIR/config/.env"
 
 # JVM参数
@@ -40,7 +42,7 @@ JWT_EXPIRATION="${JWT_EXPIRATION:-7200000}"
 JWT_REFRESH="${JWT_REFRESH_EXPIRATION:-604800000}"
 
 # 文件上传配置
-UPLOAD_DIR="${UPLOAD_DIR:-/opt/igreen/uploads}"
+UPLOAD_DIR="${UPLOAD_DIR:-$IGREEN_ROOT/uploads}"
 MAX_FILE_SIZE="${MAX_FILE_SIZE:-52428800}"
 
 # CORS配置
@@ -49,21 +51,25 @@ ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-*}"
 # 日志函数
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 

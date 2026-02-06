@@ -13,8 +13,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-PROJECT_DIR="/opt/igreen"
-BACKEND_SCRIPT="$PROJECT_DIR/scripts/start-backend.sh"
+# 配置 - 支持环境变量覆盖
+IGREEN_ROOT="${IGREEN_ROOT:-/home/igreen/app}"
+PROJECT_DIR="$IGREEN_ROOT"
+BACKEND_SCRIPT="$IGREEN_ROOT/scripts/start-backend.sh"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"

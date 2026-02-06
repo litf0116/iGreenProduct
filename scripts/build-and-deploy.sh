@@ -15,38 +15,43 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# 配置
-PROJECT_DIR="/var/folders/1x/qcplfbgn4430v6l9gltk_7v00000gn/T/vibe-kanban/worktrees/d2e1-/iGreenProduct"
-DEPLOY_DIR="/opt/igreen"
+# 配置 - 支持环境变量覆盖
+IGREEN_ROOT="${IGREEN_ROOT:-/home/igreen/app}"
+PROJECT_DIR="$IGREEN_ROOT"
+DEPLOY_DIR="$IGREEN_ROOT"
 
 # iGreenApp 配置
-IGREEN_APP_SRC="$PROJECT_DIR/iGreenApp"
-IGREEN_APP_DIST="$DEPLOY_DIR/iGreenApp/dist"
-IGREEN_APP_CONFIG="$IGREEN_APP_SRC/.env.production"
+IGREEN_APP_SRC="$IGREEN_ROOT/iGreenApp"
+IGREEN_APP_DIST="$IGREEN_ROOT/iGreenApp/dist"
+IGREEN_APP_CONFIG="$IGREEN_ROOT/iGreenApp/.env.production"
 
 # igreen-front 配置
-IGREEN_FRONT_SRC="$PROJECT_DIR/igreen-front"
-IGREEN_FRONT_DIST="$DEPLOY_DIR/igreen-front/dist"
-IGREEN_FRONT_CONFIG="$IGREEN_FRONT_SRC/.env.production"
+IGREEN_FRONT_SRC="$IGREEN_ROOT/igreen-front"
+IGREEN_FRONT_DIST="$IGREEN_ROOT/igreen-front/dist"
+IGREEN_FRONT_CONFIG="$IGREEN_ROOT/igreen-front/.env.production"
 
 # API配置
 API_URL="${API_URL:-http://localhost:8080}"
 
 # 日志
-LOG_FILE="/var/log/igreen/frontend-deploy.log"
+LOG_DIR="$IGREEN_ROOT/logs"
+LOG_FILE="$LOG_DIR/frontend-deploy.log"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[SUCCESS] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    mkdir -p "$LOG_DIR"
     echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 

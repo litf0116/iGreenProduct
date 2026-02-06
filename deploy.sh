@@ -14,14 +14,14 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 配置变量
-PROJECT_DIR="/opt/igreen"
-BACKEND_DIR="$PROJECT_DIR/backend"
+# 配置变量 - 根据实际部署目录修改
+PROJECT_DIR="${IGREEN_ROOT:-/home/igreen/app}"
+BACKEND_DIR="$PROJECT_DIR/igreen-backend"
 FRONTEND_APP_DIR="$PROJECT_DIR/iGreenApp"
 FRONTEND_ADMIN_DIR="$PROJECT_DIR/igreen-front"
-UPLOAD_DIR="/opt/igreen/uploads"
-LOG_DIR="/var/log/igreen"
-BACKUP_DIR="/opt/backup/igreen"
+UPLOAD_DIR="$PROJECT_DIR/uploads"
+LOG_DIR="$PROJECT_DIR/logs"
+BACKUP_DIR="$PROJECT_DIR/backups"
 
 # 数据库配置
 DB_HOST="localhost"
@@ -45,21 +45,25 @@ INSTALL_LOG="$LOG_DIR/install.log"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
+    mkdir -p "$LOG_DIR"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] $1" >> "$INSTALL_LOG"
 }
 
 log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
+    mkdir -p "$LOG_DIR"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [SUCCESS] $1" >> "$INSTALL_LOG"
 }
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
+    mkdir -p "$LOG_DIR"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [WARN] $1" >> "$INSTALL_LOG"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+    mkdir -p "$LOG_DIR"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] $1" >> "$INSTALL_LOG"
 }
 
