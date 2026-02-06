@@ -82,7 +82,6 @@ class UserServiceTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "newuser",
-                    "new@example.com",
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
@@ -120,7 +119,6 @@ class UserServiceTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "testuser", // 已存在的用户名
-                    "new@example.com",
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
@@ -147,7 +145,6 @@ class UserServiceTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "newuser",
-                    "test@example.com", // 已存在的邮箱
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
@@ -176,7 +173,6 @@ class UserServiceTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "newuser",
-                    "new@example.com",
                     "password123",
                     null, // 未指定角色
                     null, // 未指定状态

@@ -164,7 +164,6 @@ class UserControllerTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "newuser",
-                    "new@example.com",
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
@@ -191,8 +190,7 @@ class UserControllerTest {
             // Given
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
-                    "testuser", // 已存在的用户名
-                    "new@example.com",
+                    "newuser",
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
@@ -218,7 +216,6 @@ class UserControllerTest {
             UserCreateRequest request = new UserCreateRequest(
                     "New User",
                     "newuser",
-                    "new@example.com",
                     "password123",
                     UserRole.ENGINEER,
                     UserStatus.ACTIVE,
