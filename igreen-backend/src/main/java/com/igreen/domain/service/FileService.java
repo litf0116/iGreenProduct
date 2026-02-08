@@ -57,7 +57,7 @@ public class FileService {
         Path filePath = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), filePath);
 
-        String fileUrl = "/" + uploadDir + "/" + uniqueFilename;
+        String fileUrl = "/uploads/" + uniqueFilename;
 
         File fileEntity = File.builder()
                 .id(fileId)

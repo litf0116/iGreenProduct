@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
-import com.igreen.domain.dto.*;
+import com.igreen.domain.dto.UserCountryRequest;
+import com.igreen.domain.dto.UserCreateRequest;
+import com.igreen.domain.dto.UserResponse;
+import com.igreen.domain.dto.UserUpdateRequest;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
@@ -23,9 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,10 +68,10 @@ class UserControllerTest {
                 testUser.getUsername(),
                 testUser.getEmail(),
                 "+86-13800000000",
-                testUser.getRole(),
+                testUser.getRole().name(),
                 testUser.getGroupId(),
                 null,
-                testUser.getStatus(),
+                testUser.getStatus().name(),
                 testUser.getCountry(),
                 null
         );

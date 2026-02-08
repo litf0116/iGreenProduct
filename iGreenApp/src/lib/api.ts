@@ -7,7 +7,7 @@ import { getAuthToken, saveAuthToken, clearAuthToken } from './storage';
 
 // Backend API Base URL
 // 请根据实际部署情况修改此URL
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://43.255.212.68:8080';
 
 // Get auth token from storage (async wrapper for compatibility)
 async function getAuthTokenAsync(): Promise<string | null> {

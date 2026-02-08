@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class FileController {
 
-    private final FileService fileService;
+    public final FileService fileService;
 
     @Operation(summary = "上传文件")
     @PostMapping("/upload")
