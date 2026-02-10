@@ -38,7 +38,7 @@ public class UserService {
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
-        
+
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(request.name())
@@ -58,19 +58,19 @@ public class UserService {
     public TokenResponse login(LoginRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, request.username());
-        List<User> users = userMapper.selectList(wrapper);
+        wrapper.last("LIMIT 1");
+        User users = userMapper.selectOne(wrapper);
 
-        if (users.isEmpty()) {
+        if (users == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
         User matchedUser = null;
-        for (User user : users) {
-            if (passwordEncoder.matches(request.password(), user.getHashedPassword())) {
-                matchedUser = user;
-                break;
-            }
+
+        if (passwordEncoder.matches(request.password(), users.getHashedPassword())) {
+            matchedUser = users;
         }
+
 
         if (matchedUser == null) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
