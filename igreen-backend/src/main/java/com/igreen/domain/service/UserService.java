@@ -81,7 +81,7 @@ public class UserService {
         }
 
         // ADMIN 跳过国家校验，ENGINEER/MANAGER 使用账号自己的 country 属性
-        if (matchedUser.getRole() != UserRole.ADMIN) {
+        if (matchedUser.getRole() == UserRole.ADMIN || matchedUser.getRole() == UserRole.MANAGER) {
             if (matchedUser.getCountry() == null || matchedUser.getCountry().isBlank()) {
                 throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
             }
