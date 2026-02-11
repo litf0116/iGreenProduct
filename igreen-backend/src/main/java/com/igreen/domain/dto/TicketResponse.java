@@ -1,8 +1,11 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import java.util.List;
 
 public record TicketResponse(
+        @JsonSerialize(using = ToStringSerializer.class)
         Long id,
         String title,
         String description,

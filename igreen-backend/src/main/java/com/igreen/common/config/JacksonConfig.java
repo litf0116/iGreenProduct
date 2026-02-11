@@ -2,6 +2,8 @@ package com.igreen.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +32,12 @@ public class JacksonConfig {
 
         // 禁用将日期写入时间戳（使用日期时间字符串代替）
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // 注册 Long 类型序列化为字符串（避免 JavaScript 大整数精度丢失）
+        SimpleModule longModule = new SimpleModule("LongToStringModule");
+        longModule.addSerializer(Long.class, ToStringSerializer.instance);
+        longModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
+        mapper.registerModule(longModule);
 
         // 配置全局日期时间格式
         // 注意：这里主要作为后备配置，主要格式配置在 application.yml 中
