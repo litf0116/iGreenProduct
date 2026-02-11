@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { api } from './lib/api';
 import { getAuthToken, clearAuthToken } from './lib/storage';
 import { Button } from "./components/ui/button";
-import { RefreshCw, Database } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './components/LanguageContext';
 
 export interface UserProfile {
@@ -125,16 +125,6 @@ function AppContent() {
     }
   };
 
-  const seedData = async () => {
-    try {
-      setLoading(true);
-      await api.seedTickets();
-      toast.success("Database seeded with sample data");
-      await loadTickets(true);
-    } catch (error) {
-      toast.error("Failed to seed database");
-    }
-  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -278,12 +268,6 @@ function AppContent() {
                 {loading ? "Syncing..." : `Last synced: ${new Date().toLocaleTimeString()}`}
              </div>
              <div className="flex items-center gap-2">
-               {!loading && (
-                 <Button variant="outline" size="sm" onClick={seedData} className="gap-2 h-8 text-xs">
-                   <Database className="w-3 h-3" />
-                   Reset Data
-                 </Button>
-               )}
                <Button 
                  variant="ghost" 
                  size="sm" 

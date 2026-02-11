@@ -212,7 +212,7 @@ export const api = {
     return [];
   },
 
-  getTicket: async (id: number): Promise<Ticket> => {
+  getTicket: async (id: string): Promise<Ticket> => {
     const data = await fetchWithAuth(`/api/tickets/${id}`);
     if (data.success && data.data) {
       return transformTicket(data.data);
@@ -220,7 +220,7 @@ export const api = {
     throw new Error('Ticket not found');
   },
 
-  updateTicket: async (id: number, updates: Partial<Ticket>): Promise<Ticket> => {
+  updateTicket: async (id: string, updates: Partial<Ticket>): Promise<Ticket> => {
     // 后端 TicketUpdateRequest 只接受特定字段，需要过滤掉其他字段
     // 允许的字段列表：relatedTicketIds, dueDate, priority, site, assignedTo, arrivalAt, 
     // status, stepData, title, arrivalPhoto, type, description, departurePhoto, 
@@ -245,7 +245,7 @@ export const api = {
   },
 
   // 接受工单
-  acceptTicket: async (id: number, comment?: string) => {
+  acceptTicket: async (id: string, comment?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/accept`, {
       method: 'POST',
       body: JSON.stringify({ comment }),
@@ -253,7 +253,7 @@ export const api = {
   },
 
   // 拒绝工单
-  declineTicket: async (id: number, comment: string) => {
+  declineTicket: async (id: string, comment: string) => {
     return fetchWithAuth(`/api/tickets/${id}/decline`, {
       method: 'POST',
       body: JSON.stringify({ comment }),
@@ -261,7 +261,7 @@ export const api = {
   },
 
   // 出发
-  departTicket: async (id: number, departurePhoto?: string) => {
+  departTicket: async (id: string, departurePhoto?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/depart`, {
       method: 'POST',
       body: departurePhoto ? JSON.stringify(departurePhoto) : undefined,
@@ -269,14 +269,14 @@ export const api = {
   },
 
   // 到达
-  arriveTicket: async (id: number, arrivalPhoto?: string) => {
+  arriveTicket: async (id: string, arrivalPhoto?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/arrive`, {
       method: 'POST',
       body: arrivalPhoto ? JSON.stringify(arrivalPhoto) : undefined,
     });
   },
 
-  completeTicket: async (id: number, completionData?: {
+  completeTicket: async (id: string, completionData?: {
     cause?: string;
     solution?: string;
     completionPhoto?: string;
@@ -287,7 +287,7 @@ export const api = {
     });
   },
 
-  reviewTicket: async (id: number, cause?: string) => {
+  reviewTicket: async (id: string, cause?: string) => {
     return fetchWithAuth(`/api/tickets/${id}/review`, {
       method: 'POST',
       body: cause ? JSON.stringify(cause) : undefined,
@@ -296,7 +296,7 @@ export const api = {
 
   // 提交工单审核（工程师完成工作后使用）
   // 状态: ARRIVED → REVIEW
-  submitTicketForReview: async (id: number) => {
+  submitTicketForReview: async (id: string) => {
     return fetchWithAuth(`/api/tickets/${id}/submit-for-review`, {
       method: 'POST',
     });
@@ -304,7 +304,7 @@ export const api = {
 
   // 更新工单步骤
   updateTicketStep: async (
-    ticketId: number,
+    ticketId: string,
     stepId: string,
     updates: {
       completed?: boolean;

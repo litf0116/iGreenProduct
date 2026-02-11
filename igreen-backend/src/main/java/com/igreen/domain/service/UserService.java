@@ -43,6 +43,7 @@ public class UserService {
                 .id(UUID.randomUUID().toString())
                 .name(request.getName())
                 .username(request.getUsername())
+                .email(request.getUsername() + "@igreen.com")
                 .hashedPassword(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole() != null ? request.getRole() : UserRole.ENGINEER)
                 .groupId(request.getGroupId())

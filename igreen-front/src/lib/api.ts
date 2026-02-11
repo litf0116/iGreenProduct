@@ -388,19 +388,51 @@ export const api = {
   },
 
   uploadFile: async (file: File, fieldType?: string): Promise<{ id: string; url: string; name: string; type: string; size: number }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (fieldType) {
-      formData.append('fieldType', fieldType);
-    }
+     // 验证文件
+     if (!file) {
+       throw new Error('Please select a file to upload');
+     }
 
-    const response = await kyInstance.post('api/files/upload', {
-      body: formData,
-    });
+     // 验证文件大小（限制 10MB）
+     const MAX_SIZE = 10 * 1024 * 1024;
+     if (file.size > MAX_SIZE) {
+       throw new Error('File size exceeds 10MB limit');
+     }
 
-    const result = await response.json<{ success: boolean; data: { id: string; url: string; name: string; type: string; size: number }; message: string }>();
-    return result.data;
-  },
+     const formData = new FormData();
+     formData.append('file', file);
+     if (fieldType) {
+       formData.append('fieldType', fieldType);
+     }
+
+     try {
+       // 使用 kyInstance.post 并确保认证头通过 hooks 自动添加
+       const response = await kyInstance.post('api/files/upload', {
+         body: formData,
+       });
+
+       const result = await response.json<{ success: boolean; data: { id: string; url: string; name: string; type: string; size: number }; message: string }>();
+
+       if (!result.success) {
+         // 详细的 401 错误处理
+         if (result.message && result.message.includes('401') || result.message.includes('Unauthorized') || result.message.includes('Authentication')) {
+           console.error('[Upload] Authentication failed:', result.message);
+           console.error('[Upload] Current token:', localStorage.getItem('auth_token'));
+           throw new Error('Authentication failed. Please login again.');
+         }
+         throw new Error(result.message || 'File upload failed');
+       }
+
+       console.log('[Upload] Success:', result.data);
+       return result.data;
+     } catch (error) {
+       console.error('[Upload] Network error:', error);
+       if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+         throw new Error('Network error. Please check your connection.');
+       }
+       throw error;
+     }
+   },
 
   deleteFile: async (id: string): Promise<void> => {
     await kyInstance.delete(`api/files/${id}`);

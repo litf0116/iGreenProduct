@@ -34,7 +34,7 @@ public class TicketController {
     @Operation(summary = "获取工单列表")
     @GetMapping
     public ResponseEntity<Result<PageResult<TicketResponse>>> getTickets(
-            @RequestParam @Min(0) @Max(100) int page,
+            @RequestParam @Min(1) int page,
             @RequestParam @Min(1) @Max(100) int size,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String status,
@@ -203,7 +203,7 @@ public class TicketController {
     @GetMapping("/my")
     public ResponseEntity<Result<PageResult<TicketResponse>>> getMyTickets(
             HttpServletRequest httpRequest,
-            @RequestParam @Min(0) @Max(100) int page,
+            @RequestParam @Min(1) int page,
             @RequestParam @Min(1) @Max(100) int size,
             @RequestParam(required = false) String status) {
         String userId = getCurrentUserId(httpRequest);
@@ -219,7 +219,7 @@ public class TicketController {
     @Operation(summary = "获取已完成工单")
     @GetMapping("/completed")
     public ResponseEntity<Result<PageResult<TicketResponse>>> getCompletedTickets(
-            @RequestParam @Min(0) @Max(100) int page,
+            @RequestParam @Min(1) int page,
             @RequestParam @Min(1) @Max(100) int size) {
         return ResponseEntity.ok(Result.success(ticketService.getCompletedTickets(page, size)));
     }

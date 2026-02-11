@@ -83,8 +83,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/swagger-ui/**", "/api/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers("/api/swagger-resources/**", "/api/webjars/**").permitAll()
-                        .requestMatchers("/doc.html", "/doc.html/**").permitAll()
-                        .requestMatchers("/knife4j/**").permitAll()
+                        .requestMatchers("/doc.html", "/doc.html/**", "/api/doc.html", "/api/doc.html/**").permitAll()
+                        .requestMatchers("/knife4j/**", "/api/knife4j/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/openapi/**").permitAll()
                         .requestMatchers("/api/v3/api-docs/**", "/api/openapi/**").permitAll()
                         // 上传文件访问 - 公开访问

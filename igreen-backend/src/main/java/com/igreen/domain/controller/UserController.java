@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Result<PageResult<UserResponse>>> getAllUsers(
-            @RequestParam @Min(0) @Max(100) int page,
+            @RequestParam @Min(1) int page,
             @RequestParam @Min(1) @Max(100) int size,
             @RequestParam(required = false) String keyword) {
         return ResponseEntity.ok(Result.success(userService.getAllUsers(page, size, keyword)));

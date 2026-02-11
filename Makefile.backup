@@ -1,0 +1,105 @@
+# ============================================
+# iGreenProduct Test Management Makefile
+# 用法: make [命令]
+# ============================================
+
+# 颜色定义
+RED = \033[0;31m
+GREEN = \033[0;32m
+YELLOW = \033[1;33m
+NC = \033[0m
+
+.PHONY: help test test-all test-backend test-integration clean-tests test-report
+
+# ============================================
+# 帮助信息
+# ============================================
+
+help:
+	@echo -e "${GREEN}╔════════════════════════════════════════════════╗${NC}"
+	@echo -e "${GREEN}║      iGreenProduct 测试管理命令               ║${NC}"
+	@echo -e "${GREEN}╚════════════════════════════════════════════════╝${NC}"
+	@echo ""
+	@echo "可用命令:"
+	@echo "  test              运行所有测试"
+	@echo "  test-backend      运行后端 API 测试"
+	@echo "  test-integration  运行集成测试"
+	@echo "  clean-tests       清理过期测试日志（30天以上）"
+	@echo "  test-report       生成测试报告"
+	@echo ""
+
+# ============================================
+# 测试命令
+# ============================================
+
+test: test-backend
+
+test-backend:
+	@echo -e "${YELLOW}运行后端 API 测试...${NC}"
+	@for test in tests/backend/*.test.sh; do \
+		if [ -f "$$test" ]; then \
+			echo ""; \
+			echo -e "${GREEN}运行: $$test${NC}"; \
+			chmod +x "$$test"; \
+			"$$test" || echo -e "${RED}测试失败: $$test${NC}"; \
+		fi \
+	done
+
+test-integration:
+	@echo -e "${YELLOW}运行集成测试...${NC}"
+	@for test in tests/integration/*.test.sh; do \
+		if [ -f "$$test" ]; then \
+			echo ""; \
+			echo -e "${GREEN}运行: $$test${NC}"; \
+			chmod +x "$$test"; \
+			"$$test" || echo -e "${RED}测试失败: $$test${NC}"; \
+		fi \
+	done
+
+test-all: test-backend test-integration
+	@echo -e "${GREEN}所有测试完成${NC}"
+
+# ============================================
+# 测试管理
+# ============================================
+
+clean-tests:
+	@echo -e "${YELLOW}清理过期测试日志...${NC}"
+	@find tests/logs -name "*.log" -mtime +30 -type f -exec rm -f {} \;
+	@echo -e "${GREEN}清理完成${NC}"
+
+test-report:
+	@echo -e "${GREEN}╔════════════════════════════════════════════════╗${NC}"
+	@echo -e "${GREEN}║              测试报告                          ║${NC}"
+	@echo -e "${GREEN}╚════════════════════════════════════════════════╝${NC}"
+	@echo ""
+	@echo "后端测试:"
+	@for test in tests/backend/*.test.sh; do \
+		if [ -f "$$test" ]; then \
+			TEST_NAME=$$(basename "$$test" .test.sh); \
+			LOG_FILE="tests/logs/$${TEST_NAME}.log"; \
+			if [ -f "$$LOG_FILE" ]; then \
+				LAST_RUN=$$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "$$LOG_FILE" 2>/dev/null || stat -c "%y" "$$LOG_FILE" 2>/dev/null | cut -d. -f1); \
+				RESULT=$$(grep -q "✅" "$$LOG_FILE" && echo -e "${GREEN}通过${NC}" || echo -e "${RED}失败${NC}"); \
+				echo "  - $$TEST_NAME: $$RESULT (最后运行: $$LAST_RUN)"; \
+			else \
+				echo "  - $$TEST_NAME: 未运行"; \
+			fi \
+		fi \
+	done
+	@echo ""
+	@echo "集成测试:"
+	@for test in tests/integration/*.test.sh; do \
+		if [ -f "$$test" ]; then \
+			TEST_NAME=$$(basename "$$test" .test.sh); \
+			LOG_FILE="tests/logs/$${TEST_NAME}.log"; \
+			if [ -f "$$LOG_FILE" ]; then \
+				LAST_RUN=$$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "$$LOG_FILE" 2>/dev/null || stat -c "%y" "$$LOG_FILE" 2>/dev/null | cut -d. -f1); \
+				RESULT=$$(grep -q "✅" "$$LOG_FILE" && echo -e "${GREEN}通过${NC}" || echo -e "${RED}失败${NC}"); \
+				echo "  - $$TEST_NAME: $$RESULT (最后运行: $$LAST_RUN)"; \
+			else \
+				echo "  - $$TEST_NAME: 未运行"; \
+			fi \
+		fi \
+	done
+	@echo ""

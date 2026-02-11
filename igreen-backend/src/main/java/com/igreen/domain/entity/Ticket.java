@@ -2,6 +2,8 @@ package com.igreen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Ticket {
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     private String title;
     private String description;
