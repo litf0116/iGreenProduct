@@ -34,20 +34,20 @@ public class UserService {
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, request.username());
+        wrapper.eq(User::getUsername, request.getUsername());
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
 
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
-                .name(request.name())
-                .username(request.username())
-                .hashedPassword(passwordEncoder.encode(request.password()))
-                .role(request.role() != null ? request.role() : UserRole.ENGINEER)
-                .groupId(request.groupId())
-                .status(request.status() != null ? request.status() : UserStatus.ACTIVE)
-                .country(request.country())
+                .name(request.getName())
+                .username(request.getUsername())
+                .hashedPassword(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole() != null ? request.getRole() : UserRole.ENGINEER)
+                .groupId(request.getGroupId())
+                .status(request.getStatus() != null ? request.getStatus() : UserStatus.ACTIVE)
+                .country(request.getCountry())
                 .build();
 
         userMapper.insert(user);
