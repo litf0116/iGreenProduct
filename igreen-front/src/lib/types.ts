@@ -3,6 +3,9 @@ export type TicketStatus =
   | 'arrived' | 'submitted' | 'review' | 'completed' | 'on_hold' 
   | 'cancelled' | 'declined';
 
+// Admin status: 6 statuses for management view
+export type AdminTicketStatus = 'open' | 'accepted' | 'in_process' | 'submitted' | 'on_hold' | 'closed';
+
 export type TicketType = 'planned' | 'preventive' | 'corrective' | 'problem';
 
 export type Priority = 'P1' | 'P2' | 'P3' | 'P4';
@@ -413,8 +416,9 @@ export interface HealthResponse {
 export interface TicketStatsResponse {
   total: number;
   open: number;
+  accepted: number;
   inProgress: number;
   submitted: number;
-  completed: number;
   onHold: number;
+  closed: number;
 }

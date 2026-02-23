@@ -1,41 +1,19 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Skeleton } from "./ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table";
-import { Ticket, TicketStatus, TicketType } from "../lib/types";
-import { translations, TranslationKey, Language } from "../lib/i18n";
-import { useDataStore, useUIStore } from "../store";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {Card} from "./ui/card";
+import {Badge} from "./ui/badge";
+import {Button} from "./ui/button";
+import {Input} from "./ui/input";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "./ui/tabs";
+import {Skeleton} from "./ui/skeleton";
+import {Select, SelectContent, SelectItem, SelectTrigger,} from "./ui/select";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
+import {Ticket, TicketStatus, TicketType} from "../lib/types";
+import {TranslationKey, translations} from "../lib/i18n";
+import {useDataStore, useUIStore} from "../store";
 import api from "../lib/api";
-import { toast } from "sonner";
-import {
-  ClipboardList,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-  Plus,
-  Search,
-  Calendar,
-  Filter,
-} from "lucide-react";
+import {toast} from "sonner";
+import {AlertCircle, Calendar, CheckCircle2, ClipboardList, Clock, Filter, Plus, Search,} from "lucide-react";
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
@@ -100,8 +78,8 @@ export function Dashboard() {
     open: 0,
     inProgress: 0,
     submitted: 0,
-    completed: 0,
     onHold: 0,
+      closed: 0,
   });
 
   const [activeTab, setActiveTab] = useState<TicketType>("corrective");
@@ -125,7 +103,7 @@ export function Dashboard() {
     if (time && ["8hours", "today", "week", "month", "3months", "all"].includes(time)) {
       setTimeFilter(time);
     }
-    if (status && ["open", "assigned", "accepted", "in_progress", "submitted", "completed", "on_hold", "cancelled", "all"].includes(status)) {
+      if (status && ["open", "accepted", "in_progress", "submitted", "on_hold", "closed", "all"].includes(status)) {
       setStatusFilter(status);
     }
     if (priority) {
@@ -164,8 +142,8 @@ export function Dashboard() {
   const loadTickets = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await api.getTickets({ 
-        page: 0, 
+        const response = await api.getTickets({
+            page: 0,
         size: 100,
         type: activeTab,
         status: statusFilter !== "all" ? statusFilter : undefined,
@@ -190,7 +168,7 @@ export function Dashboard() {
   // Filter tickets by time
   const filterByTime = (ticket: Ticket): boolean => {
     if (timeFilter === "all") return true;
-    
+
     const now = new Date();
     const ticketDate = new Date(ticket.createdAt);
     const diffHours = (now.getTime() - ticketDate.getTime()) / (1000 * 60 * 60);
@@ -217,17 +195,17 @@ export function Dashboard() {
     return tickets.filter((ticket) => {
       // Type filter
       if (ticket.type !== activeTab) return false;
-      
+
       // Time filter
       if (!filterByTime(ticket)) return false;
-      
+
       // Status filter
       if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
-      
+
       // Priority filter
       if (priorityFilter !== "all" && ticket.priority !== priorityFilter) return false;
-      
-      // Search filter
+
+        // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -237,8 +215,8 @@ export function Dashboard() {
           (ticket.assignedToName && ticket.assignedToName.toLowerCase().includes(query))
         );
       }
-      
-      return true;
+
+        return true;
     });
   }, [tickets, activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
 
@@ -315,6 +293,7 @@ export function Dashboard() {
       "completed": "closed",
       "on_hold": "onHold",
       "cancelled": "cancelled",
+        "closed": "closed",
     };
     return statusMap[status] || status as TranslationKey;
   };
@@ -398,12 +377,11 @@ export function Dashboard() {
                 <SelectContent className="bg-white">
                   <SelectItem value="all">{t("allStatus")}</SelectItem>
                   <SelectItem value="open">{t("open")}</SelectItem>
-                  <SelectItem value="assigned">{t("assigned")}</SelectItem>
                   <SelectItem value="accepted">{t("accepted")}</SelectItem>
                   <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
                   <SelectItem value="submitted">{t("submitted")}</SelectItem>
                   <SelectItem value="on_hold">{t("onHold")}</SelectItem>
-                  <SelectItem value="completed">{t("closed")}</SelectItem>
+                    <SelectItem value="closed">{t("closed")}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -528,7 +506,7 @@ export function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground">{t("closed")}</p>
-                  <p className="text-primary">{stats.completed}</p>
+                    <p className="text-primary">{stats.closed}</p>
                 </div>
                 <CheckCircle2 className="h-8 w-8 text-green-500" />
               </div>

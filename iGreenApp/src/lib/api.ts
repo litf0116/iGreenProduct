@@ -132,25 +132,35 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 export const api = {
   // Authentication
   login: async (username: string, password: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    console.log('[API] Login request:', { username, apiUrl: API_BASE_URL });
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Login failed: ${response.status}`);
-    }
+      console.log('[API] Login response status:', response.status);
 
-    const data = await response.json();
-    if (data.success && data.data) {
-      await saveAuthToken(data.data.accessToken);
-      return data.data;
+      const data = await response.json();
+      console.log('[API] Login response data:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || `Login failed: ${response.status}`);
+      }
+
+      if (data.success && data.data) {
+        await saveAuthToken(data.data.accessToken);
+        return data.data;
+      }
+      throw new Error('Invalid response format');
+    } catch (error) {
+      console.error('[API] Login error:', error);
+      throw error;
     }
-    throw new Error('Invalid response format');
   },
 
   logout: async () => {

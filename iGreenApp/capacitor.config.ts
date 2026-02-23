@@ -6,10 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'build',
   bundledWebRuntime: false,
   server: {
-    androidScheme: 'https',
+    androidScheme: 'http',
     cleartext: true,
-    // 允许访问局域网 API
+    // 允许访问 API 服务器
     allowNavigation: [
+      '43.255.212.68',
       '192.168.10.154',
       'localhost',
     ],

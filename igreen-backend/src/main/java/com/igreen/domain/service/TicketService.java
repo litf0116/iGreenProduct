@@ -34,6 +34,7 @@ public class TicketService {
     private final UserMapper userMapper;
     private final SiteMapper siteMapper;
     private final TemplateStepMapper templateStepMapper;
+    private final StatusMappingService statusMappingService;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -631,29 +632,28 @@ public class TicketService {
 
         long total = 0;
         long open = 0;
-        long inProgress = 0;
+        long accepted = 0;
+        long inProcess = 0;
         long submitted = 0;
-        long completed = 0;
         long onHold = 0;
-
+        long closed = 0;
         for (TicketStatusCount count : statusCounts) {
             total += count.getCount();
             switch (count.getStatus()) {
                 case "OPEN" -> open += count.getCount();
-                case "ASSIGNED", "ACCEPTED", "DEPARTED" -> inProgress += count.getCount();
-                case "SUBMITTED" -> submitted += count.getCount();
-                case "COMPLETED" -> completed += count.getCount();
+                case "ASSIGNED" -> accepted += count.getCount();
+                case "ACCEPTED", "DEPARTED", "ARRIVED" -> inProcess += count.getCount();
+                case "REVIEW" -> submitted += count.getCount();
                 case "ON_HOLD" -> onHold += count.getCount();
+                case "COMPLETED", "CANCELLED" -> closed += count.getCount();
             }
         }
-
         return new TicketStatsResponse(
                 (int) total,
                 (int) open,
-                (int) inProgress,
-                (int) submitted,
-                (int) completed,
-                (int) onHold
+
+                (int) inProcess,
+                (int) submitted, (int) onHold, (int) closed
         );
     }
 

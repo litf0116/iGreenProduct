@@ -286,12 +286,13 @@ export const api = {
     await kyInstance.delete(`api/templates/${id}`);
   },
 
-  getTickets: async (params?: PageParams & { type?: string; status?: string; priority?: string; assignedTo?: string; keyword?: string; createdAfter?: string }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
+  getTickets: async (params?: PageParams & { type?: string; status?: string; adminStatus?: string; priority?: string; assignedTo?: string; keyword?: string; createdAfter?: string }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
     const searchParams = new URLSearchParams();
     searchParams.set('page', String((params?.page ?? 0) + 1));
     searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
     if (params?.type) searchParams.set('type', params.type);
     if (params?.status) searchParams.set('status', params.status);
+    if (params?.adminStatus) searchParams.set('adminStatus', params.adminStatus);
     if (params?.priority) searchParams.set('priority', params.priority);
     if (params?.assignedTo) searchParams.set('assignedTo', params.assignedTo);
     if (params?.keyword) searchParams.set('keyword', params.keyword);

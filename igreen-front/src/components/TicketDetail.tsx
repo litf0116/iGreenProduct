@@ -473,7 +473,7 @@ export function TicketDetail({
               <div className="flex items-center gap-2 mt-1">
                 <Avatar className="h-6 w-6 flex-shrink-0">
                   <AvatarFallback className="bg-primary text-white text-xs">
-                    {ticket.assignedToName.charAt(0).toUpperCase()}
+                    {ticket.assignedToName?.charAt(0).toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
                 <p className="text-foreground truncate">{ticket.assignedToName}</p>
@@ -747,7 +747,7 @@ export function TicketDetail({
                 <div key={comment.id} className="flex gap-3 p-3 bg-secondary rounded-lg">
                   <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarFallback className="bg-primary text-white text-xs">
-                      {comment.userName.charAt(0).toUpperCase()}
+                      {comment.userName?.charAt(0).toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
