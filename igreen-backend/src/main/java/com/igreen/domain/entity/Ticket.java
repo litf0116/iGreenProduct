@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +30,7 @@ public class Ticket {
     private String site;
     private String templateId;
     private String assignedTo;
+    private String acceptedUserId;
     private String createdBy;
     private String completedSteps;
     private String stepData;
@@ -48,7 +53,7 @@ public class Ticket {
     private Template template = null;
     @Builder.Default
     @TableField(exist = false)
-    private User assignee = null;
+    private Group assignGroup = null;
     @Builder.Default
     @TableField(exist = false)
     private User creator = null;
@@ -64,4 +69,7 @@ public class Ticket {
     @Builder.Default
     @TableField(exist = false)
     private String templateName = null;
+    @Builder.Default
+    @TableField(exist = false)
+    private String acceptedUserName = null;
 }

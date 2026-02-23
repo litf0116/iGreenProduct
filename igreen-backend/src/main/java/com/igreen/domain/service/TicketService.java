@@ -32,6 +32,7 @@ public class TicketService {
     private final TicketMapper ticketMapper;
     private final TicketCommentMapper ticketCommentMapper;
     private final UserMapper userMapper;
+    private final GroupMapper groupMapper;
     private final SiteMapper siteMapper;
     private final TemplateStepMapper templateStepMapper;
     private final StatusMappingService statusMappingService;
@@ -44,9 +45,10 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        User assignee = userMapper.selectById(request.assignedTo());
-        if (assignee == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        // 验证 assignedTo 是用户组ID
+        Group group = groupMapper.selectById(request.assignedTo());
+        if (group == null) {
+            throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
 
         String relatedTicketIdsJson = null;
@@ -75,7 +77,7 @@ public class TicketService {
 
         ticketMapper.insert(ticket);
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, group, site);
     }
 
     @Transactional(readOnly = true)
@@ -84,10 +86,10 @@ public class TicketService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
 
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional(readOnly = true)
@@ -121,9 +123,9 @@ public class TicketService {
                             (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower)))
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
-                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
                         Site site = siteMapper.selectById(ticket.getSite());
-                        return toResponse(ticket, creator, assignee, site);
+                        return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
 
@@ -209,9 +211,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -227,14 +229,11 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        // OPEN tickets can be accepted by any engineer
-        // ASSIGNED tickets can only be accepted by the assigned engineer
-        if ("OPEN".equals(ticket.getStatus())) {
-            ticket.setAssignedTo(userId);
-        } else if ("ASSIGNED".equals(ticket.getStatus())) {
-            if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
-                throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
-            }
+        // OPEN/ASSIGNED 状态：用户组成员可抢单
+        // 抢单后：assignedTo(组ID)不变，设置acceptedUserId
+        if ("OPEN".equals(ticket.getStatus()) || "ASSIGNED".equals(ticket.getStatus())) {
+            // 设置抢单用户ID，assignedTo保持不变（仍为组ID）
+            ticket.setAcceptedUserId(userId);
         } else {
             throw new BusinessException(ErrorCode.TICKET_ALREADY_ACCEPTED);
         }
@@ -257,9 +256,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -267,7 +266,8 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+        // 验证权限：优先使用 acceptedUserId
+        if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -286,9 +286,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -314,9 +314,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -325,7 +325,8 @@ public class TicketService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // Check if user is the assigned engineer
-        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+        // 验证权限：优先使用 acceptedUserId
+        if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -343,9 +344,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -354,7 +355,8 @@ public class TicketService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // Check if user is the assigned engineer
-        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+        // 验证权限：优先使用 acceptedUserId
+        if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -377,9 +379,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     private void initializeStepDataFromTemplate(Ticket ticket) {
@@ -420,7 +422,8 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+        // 验证权限：优先使用 acceptedUserId
+        if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -443,9 +446,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -453,7 +456,8 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (ticket.getAssignedTo() == null || !userId.equals(ticket.getAssignedTo())) {
+        // 验证权限：优先使用 acceptedUserId
+        if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
@@ -465,9 +469,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -484,9 +488,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -506,9 +510,9 @@ public class TicketService {
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
-        User assignee = ticket.getAssignee();
+        Group assignGroup = ticket.getAssignGroup();
         Site site = siteMapper.selectById(ticket.getSite());
-        return toResponse(ticket, creator, assignee, site);
+        return toResponse(ticket, creator, assignGroup, site);
     }
 
     @Transactional
@@ -572,9 +576,9 @@ public class TicketService {
             List<TicketResponse> ticketResponses = tickets.stream()
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
-                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
                         Site site = siteMapper.selectById(ticket.getSite());
-                        return toResponse(ticket, creator, assignee, site);
+                        return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
 
@@ -594,9 +598,9 @@ public class TicketService {
         List<TicketResponse> ticketResponses = tickets.stream()
                 .map(ticket -> {
                     User creator = userMapper.selectById(ticket.getCreatedBy());
-                    User assignee = userMapper.selectById(ticket.getAssignedTo());
+                    Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
                     Site site = siteMapper.selectById(ticket.getSite());
-                    return toResponse(ticket, creator, assignee, site);
+                    return toResponse(ticket, creator, assignGroup, site);
                 })
                 .collect(Collectors.toList());
 
@@ -612,9 +616,9 @@ public class TicketService {
             List<TicketResponse> ticketResponses = tickets.stream()
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
-                        User assignee = userMapper.selectById(ticket.getAssignedTo());
+                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
                         Site site = siteMapper.selectById(ticket.getSite());
-                        return toResponse(ticket, creator, assignee, site);
+                        return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
 
@@ -651,13 +655,18 @@ public class TicketService {
         return new TicketStatsResponse(
                 (int) total,
                 (int) open,
-
                 (int) inProcess,
                 (int) submitted, (int) onHold, (int) closed
         );
     }
 
-    private TicketResponse toResponse(Ticket ticket, User creator, User assignee, Site site) {
+    private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {
+        // Fetch accepted user if ticket has acceptedUserId
+        User acceptedUser = null;
+        if (ticket.getAcceptedUserId() != null) {
+            acceptedUser = userMapper.selectById(ticket.getAcceptedUserId());
+        }
+
         List<String> completedSteps = new ArrayList<>();
         if (ticket.getCompletedSteps() != null && !ticket.getCompletedSteps().isEmpty()) {
             try {
@@ -698,18 +707,11 @@ public class TicketService {
                 site != null ? site.getName() : null,       // siteName
                 site != null ? site.getAddress() : null,    // siteAddress
                 ticket.getTemplateId(),
-                null,
-                ticket.getAssignedTo(),
-                assignee != null ? assignee.getName() : null,
+                null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null,
                 ticket.getCreatedBy(),
                 creator != null ? creator.getName() : null,
                 ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null,
-                ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null,
-                ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null,
-                completedSteps,
-                stepData,
-                ticket.getAccepted(),
-                ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null,
+                ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null,
                 ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null,
                 ticket.getDeparturePhoto(),
                 ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null,

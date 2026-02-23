@@ -17,6 +17,7 @@
         <result property="stepData" column="step_data"/>
         <result property="accepted" column="accepted"/>
         <result property="acceptedAt" column="accepted_at"/>
+        <result property="acceptedUserId" column="accepted_user_id"/>
         <result property="departureAt" column="departure_at"/>
         <result property="departurePhoto" column="departure_photo"/>
         <result property="arrivalAt" column="arrival_at"/>
@@ -37,10 +38,9 @@
             <result property="name" column="creator_name"/>
             <result property="username" column="creator_username"/>
         </association>
-        <association property="assignee" javaType="com.igreen.domain.entity.User">
+        <association property="assignGroup" javaType="com.igreen.domain.entity.Group">
             <id property="id" column="assignee_id"/>
             <result property="name" column="assignee_name"/>
-            <result property="username" column="assignee_username"/>
         </association>
         <association property="template" javaType="com.igreen.domain.entity.Template">
             <id property="id" column="template_id"/>
@@ -50,7 +50,7 @@
 
     <sql id="Base_Column_List">
         id, title, description, type, status, priority, site, template_id, assigned_to, created_by,
-        completed_steps, step_data, accepted, accepted_at, departure_at, departure_photo,
+        completed_steps, step_data, accepted, accepted_at, accepted_user_id, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
         problem_type, created_at, updated_at, due_date
     </sql>
@@ -58,11 +58,11 @@
     <select id="selectByIdWithDetails" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username,
+               assignee.id as assignee_id, assignee.name as assignee_name,
                template.name as template_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         LEFT JOIN templates template ON t.template_id = template.id
         WHERE t.id = #{id}
     </select>
@@ -70,30 +70,30 @@
     <select id="selectByStatus" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.status = #{status}
     </select>
 
     <select id="selectByAssignedTo" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.assigned_to = #{assignedTo}
     </select>
 
     <select id="selectByCreatedBy" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.created_by = #{createdBy}
     </select>
 
@@ -106,30 +106,30 @@
     <select id="selectByStatusAndAssignedTo" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.status = #{status} AND t.assigned_to = #{assignedTo}
     </select>
 
     <select id="selectByTypeAndPriority" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.type = #{type} AND t.priority = #{priority}
     </select>
 
     <select id="selectOverdueTickets" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.due_date &lt; #{date}
         AND t.status NOT IN
         <foreach item="status" collection="excludedStatuses" open="(" separator="," close=")">
@@ -140,10 +140,10 @@
     <select id="selectByStatusIn" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name, assignee.username as assignee_username
+               assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN users assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         WHERE t.status IN
         <foreach item="status" collection="statuses" open="(" separator="," close=")">
             #{status}

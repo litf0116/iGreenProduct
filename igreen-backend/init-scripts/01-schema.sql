@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     site VARCHAR(255),
     template_id VARCHAR(36),
     assigned_to VARCHAR(36),
+    accepted_user_id VARCHAR(36),
     created_by VARCHAR(36) NOT NULL,
     due_date TIMESTAMP NULL,
     accepted BOOLEAN DEFAULT FALSE,
@@ -100,10 +101,12 @@ CREATE TABLE IF NOT EXISTS tickets (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_tickets_status (status),
     INDEX idx_tickets_assigned_to (assigned_to),
+    INDEX idx_tickets_accepted_user_id (accepted_user_id),
     INDEX idx_tickets_created_by (created_by),
     INDEX idx_tickets_priority (priority),
     INDEX idx_tickets_type (type),
-    FOREIGN KEY (assigned_to) REFERENCES users(id),
+    FOREIGN KEY (assigned_to) REFERENCES `groups`(id),
+    FOREIGN KEY (accepted_user_id) REFERENCES users(id),
     FOREIGN KEY (created_by) REFERENCES users(id),
     FOREIGN KEY (template_id) REFERENCES templates(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

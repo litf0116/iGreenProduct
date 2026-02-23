@@ -28,6 +28,8 @@ public record TicketResponse(
         StepData stepData,
         Boolean accepted,
         String acceptedAt,
+        String acceptedUserId,
+        String acceptedUserName,
         String departureAt,
         String departurePhoto,
         String arrivalAt,
