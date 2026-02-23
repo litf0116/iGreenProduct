@@ -7,7 +7,7 @@ public record TicketUpdateRequest(
     String title,
     String description,
     String type,
-    String site,
+    String siteId,
     String status,
     String priority,
     String assignedTo,

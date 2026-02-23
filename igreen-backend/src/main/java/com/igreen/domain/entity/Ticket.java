@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.igreen.domain.entity.Site;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class Ticket {
     private String type;
     private String status;
     private String priority;
-    private String site;
+    private String siteId;
     private String templateId;
     private String assignedTo;
     private String acceptedUserId;
@@ -57,6 +59,9 @@ public class Ticket {
     @Builder.Default
     @TableField(exist = false)
     private User creator = null;
+    @Builder.Default
+    @TableField(exist = false)
+    private Site site = null;
     @Builder.Default
     @TableField(exist = false)
     private List<TicketComment> comments = new ArrayList<>();

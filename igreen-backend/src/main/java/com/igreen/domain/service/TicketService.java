@@ -51,6 +51,15 @@ public class TicketService {
             throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
 
+        // 验证 siteId（如果提供）
+        Site site = null;
+        if (request.siteId() != null && !request.siteId().isEmpty()) {
+            site = siteMapper.selectById(request.siteId());
+            if (site == null) {
+                throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
+            }
+        }
+
         String relatedTicketIdsJson = null;
         if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
             try {
@@ -64,7 +73,8 @@ public class TicketService {
                 .title(request.title())
                 .description(request.description())
                 .type(request.type())
-                .site(request.site())
+
+                .siteId(request.siteId())
                 .priority(request.priority())
                 .templateId(request.templateId())
                 .assignedTo(request.assignedTo())
@@ -76,7 +86,7 @@ public class TicketService {
                 .build();
 
         ticketMapper.insert(ticket);
-        Site site = siteMapper.selectById(ticket.getSite());
+
         return toResponse(ticket, creator, group, site);
     }
 
@@ -88,7 +98,7 @@ public class TicketService {
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
 
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -124,7 +134,7 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSite());
+                        Site site = siteMapper.selectById(ticket.getSiteId());
                         return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
@@ -150,8 +160,8 @@ public class TicketService {
         if (request.type() != null) {
             ticket.setType(request.type());
         }
-        if (request.site() != null) {
-            ticket.setSite(request.site());
+        if (request.siteId() != null) {
+            ticket.setSiteId(request.siteId());
         }
         if (request.status() != null) {
             ticket.setStatus(request.status());
@@ -212,7 +222,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -257,7 +267,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -287,7 +297,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -315,7 +325,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -345,7 +355,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -380,7 +390,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -447,7 +457,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -470,7 +480,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -489,7 +499,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -511,7 +521,7 @@ public class TicketService {
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
-        Site site = siteMapper.selectById(ticket.getSite());
+        Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
 
@@ -577,7 +587,7 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSite());
+                        Site site = siteMapper.selectById(ticket.getSiteId());
                         return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
@@ -599,7 +609,7 @@ public class TicketService {
                 .map(ticket -> {
                     User creator = userMapper.selectById(ticket.getCreatedBy());
                     Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                    Site site = siteMapper.selectById(ticket.getSite());
+                    Site site = siteMapper.selectById(ticket.getSiteId());
                     return toResponse(ticket, creator, assignGroup, site);
                 })
                 .collect(Collectors.toList());
@@ -617,7 +627,7 @@ public class TicketService {
                     .map(ticket -> {
                         User creator = userMapper.selectById(ticket.getCreatedBy());
                         Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSite());
+                        Site site = siteMapper.selectById(ticket.getSiteId());
                         return toResponse(ticket, creator, assignGroup, site);
                     })
                     .collect(Collectors.toList());
@@ -700,10 +710,7 @@ public class TicketService {
                 ticket.getId(),
                 ticket.getTitle(),
                 ticket.getDescription(),
-                ticket.getType() != null ? ticket.getType().toLowerCase() : null,
-                ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null,
-                ticket.getPriority(),
-                ticket.getSite(),
+                ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,   // siteId
                 site != null ? site.getName() : null,       // siteName
                 site != null ? site.getAddress() : null,    // siteAddress
                 ticket.getTemplateId(),

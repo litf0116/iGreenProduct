@@ -10,7 +10,7 @@ public record TicketCreateRequest(
     @NotBlank @NotNull String title,
     String description,
     @NotNull String type,
-    String site,
+    String siteId,
     String priority,
     @NotBlank String templateId,
     @NotBlank String assignedTo,

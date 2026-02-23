@@ -12,9 +12,9 @@ public record TicketResponse(
         String type,
         String status,
         String priority,
-        String site,
-        String siteName,      // 新增：站点名称
-        String siteAddress,   // 新增：站点地址
+        String siteId,
+        String siteName,
+        String siteAddress,
         String templateId,
         String templateName,
         String assignedTo,

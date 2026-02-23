@@ -9,7 +9,8 @@
         <result property="type" column="type"/>
         <result property="status" column="status"/>
         <result property="priority" column="priority"/>
-        <result property="site" column="site"/>
+
+        <result property="siteId" column="site_id"/>
         <result property="templateId" column="template_id"/>
         <result property="assignedTo" column="assigned_to"/>
         <result property="createdBy" column="created_by"/>
@@ -46,10 +47,15 @@
             <id property="id" column="template_id"/>
             <result property="name" column="template_name"/>
         </association>
+        <association property="site" javaType="com.igreen.domain.entity.Site">
+            <id property="id" column="site_id"/>
+            <result property="name" column="site_name"/>
+            <result property="address" column="site_address"/>
+        </association>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, title, description, type, status, priority, site, template_id, assigned_to, created_by,
+        id, title, description, type, status, priority, site, site_id, template_id, assigned_to, created_by,
         completed_steps, step_data, accepted, accepted_at, accepted_user_id, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
         problem_type, created_at, updated_at, due_date
