@@ -600,10 +600,18 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<TicketResponse> getPendingTickets() {
+    public PageResult<TicketResponse> getPendingTickets(String userId) {
+        // 获取当前工程师的 ID
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+
         // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
         List<String> statuses = Arrays.asList("OPEN");
-        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses);
+        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses,user.getGroupId());
 
         List<TicketResponse> ticketResponses = tickets.stream()
                 .map(ticket -> {

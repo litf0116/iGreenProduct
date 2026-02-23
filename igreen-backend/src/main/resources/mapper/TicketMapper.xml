@@ -55,7 +55,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, title, description, type, status, priority, site, site_id, template_id, assigned_to, created_by,
+        id, title, description, type, status, priority, site_id, template_id, assigned_to, created_by,
         completed_steps, step_data, accepted, accepted_at, accepted_user_id, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
         problem_type, created_at, updated_at, due_date
@@ -65,11 +65,13 @@
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
                assignee.id as assignee_id, assignee.name as assignee_name,
-               template.name as template_name
+               template.name as template_name,
+               site.name as site_name, site.address as site_address
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
         LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
         LEFT JOIN templates template ON t.template_id = template.id
+        LEFT JOIN sites site ON t.site_id = site.id
         WHERE t.id = #{id}
     </select>
 
@@ -154,6 +156,10 @@
         <foreach item="status" collection="statuses" open="(" separator="," close=")">
             #{status}
         </foreach>
+
+        <if test="groupId != null">
+            AND t.assigned_to = #{groupId}
+        </if>
     </select>
 
     <select id="countByAssignedToAndStatus" resultType="long">

@@ -31,7 +31,7 @@ public interface TicketMapper extends com.baomidou.mybatisplus.core.mapper.BaseM
 
     List<Ticket> selectOverdueTickets(@Param("date") LocalDateTime date, @Param("excludedStatuses") List<String> excludedStatuses);
 
-    List<Ticket> selectByStatusIn(@Param("statuses") List<String> statuses);
+    List<Ticket> selectByStatusIn(@Param("statuses") List<String> statuses,@Param("groupId") String groupId);
 
     long countByAssignedToAndStatus(@Param("userId") String userId, @Param("status") String status);
 

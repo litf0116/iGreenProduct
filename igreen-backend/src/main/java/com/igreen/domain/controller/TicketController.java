@@ -212,8 +212,9 @@ public class TicketController {
 
     @Operation(summary = "获取待办工单")
     @GetMapping("/pending")
-    public ResponseEntity<Result<PageResult<TicketResponse>>> getPendingTickets() {
-        return ResponseEntity.ok(Result.success(ticketService.getPendingTickets()));
+    public ResponseEntity<Result<PageResult<TicketResponse>>> getPendingTickets( HttpServletRequest httpRequest) {
+        String userId = getCurrentUserId(httpRequest);
+        return ResponseEntity.ok(Result.success(ticketService.getPendingTickets(userId)));
     }
 
     @Operation(summary = "获取已完成工单")

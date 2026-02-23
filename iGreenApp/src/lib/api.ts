@@ -36,7 +36,10 @@ function transformTicket(backendTicket: any): Ticket {
     createdAt: backendTicket.createdAt,
     tags: [],
     assignee: backendTicket.assignedToName,
-    location: backendTicket.site || backendTicket.assignedToName,
+    location: backendTicket.siteName || backendTicket.site || backendTicket.assignedToName,
+    siteId: backendTicket.siteId,
+    siteName: backendTicket.siteName,
+    siteAddress: backendTicket.siteAddress,
     steps: backendTicket.stepData?.data ? transformSteps(backendTicket.stepData.data) : [],
     history: {
       departedAt: backendTicket.departureAt,
@@ -236,7 +239,7 @@ export const api = {
     // status, stepData, title, arrivalPhoto, type, description, departurePhoto, 
     // departureAt, cause, completionPhoto, solution, completedSteps
     const allowedFields = [
-      'relatedTicketIds', 'dueDate', 'priority', 'site', 'assignedTo', 'arrivalAt',
+      'siteId', 'relatedTicketIds', 'dueDate', 'priority', 'site', 'assignedTo', 'arrivalAt',
       'status', 'stepData', 'title', 'arrivalPhoto', 'type', 'description',
       'departurePhoto', 'departureAt', 'cause', 'completionPhoto', 'solution', 'completedSteps'
     ];

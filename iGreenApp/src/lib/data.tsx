@@ -34,6 +34,9 @@ export interface Ticket {
     tags: string[];
     assignee?: string;
     location?: string;
+    siteId?: string;
+    siteName?: string;
+    siteAddress?: string;
     steps?: TicketStep[];
     history?: {
         departedAt?: string;
