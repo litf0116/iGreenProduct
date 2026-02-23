@@ -1,6 +1,6 @@
 export type TicketStatus =
-  | 'open' | 'assigned' | 'accepted' | 'in_progress' | 'departed'
-  | 'arrived' | 'submitted' | 'review' | 'completed' | 'on_hold' 
+  | 'open' | 'assigned' | 'accepted' | 'departed'
+  | 'arrived' | 'submitted' | 'review' | 'completed'
   | 'cancelled' | 'declined';
 
 // Admin status: 6 statuses for management view

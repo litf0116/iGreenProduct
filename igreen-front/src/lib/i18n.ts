@@ -17,9 +17,11 @@ export const translations = {
     open: "Open",
     accepted: "Accepted",
     inProgress: "In Progress",
+    in_progress: "In Progress",
     submitted: "Submitted",
     closed: "Closed",
     onHold: "On Hold",
+    on_hold: "On Hold",
     cancelled: "Cancelled",
 
     // Actions
@@ -378,9 +380,11 @@ export const translations = {
     open: "เปิด",
     accepted: "รับแล้ว",
     inProgress: "กำลังดำเนินการ",
+    in_progress: "กำลังดำเนินการ",
     submitted: "ส่งแล้ว",
     closed: "ปิด",
     onHold: "พักไว้",
+    on_hold: "พักไว้",
     cancelled: "ยกเลิก",
 
     // Actions
