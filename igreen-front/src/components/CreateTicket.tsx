@@ -34,7 +34,7 @@ interface CreateTicketProps {
     description: string;
     templateId: string;
     type: TicketType;
-    site: string;
+    siteId: string;
     assignedTo: string;
     priority: Priority;
     dueDate: Date;
@@ -88,7 +88,7 @@ export function CreateTicket({
       description,
       templateId,
       type: ticketType,
-      site: isProblemTicket ? "" : site,
+      siteId: isProblemTicket ? "" : site,
       assignedTo,
       priority,
       dueDate,
@@ -188,7 +188,7 @@ export function CreateTicket({
                   </SelectTrigger>
                   <SelectContent>
                     {sites.map((s) => (
-                      <SelectItem key={s.id} value={s.name}>
+                      <SelectItem key={s.id} value={s.id}>
                         {s.name}
                       </SelectItem>
                     ))}

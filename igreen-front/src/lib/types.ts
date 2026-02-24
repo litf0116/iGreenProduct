@@ -114,7 +114,9 @@ export interface Ticket {
   type: TicketType;
   status: TicketStatus;
   priority: Priority;
-  site: string;
+  siteId: string;
+  siteName?: string;
+  siteAddress?: string;
   templateId?: string;
   templateName?: string;
   assignedTo: string;
@@ -224,7 +226,9 @@ export interface TicketResponse {
   type: TicketType;
   status: TicketStatus;
   priority: Priority;
-  site: string;
+  siteId: string;
+  siteName?: string;
+  siteAddress?: string;
   templateId?: string;
   templateName?: string;
   assignedTo: string;
@@ -254,7 +258,7 @@ export interface TicketCreateRequest {
   title: string;
   description: string;
   type: TicketType;
-  site: string;
+  siteId: string;
   priority: Priority;
   templateId?: string;
   assignedTo: string;
@@ -265,7 +269,7 @@ export interface TicketUpdateRequest {
   title?: string;
   description?: string;
   type?: TicketType;
-  site?: string;
+  siteId?: string;
   status?: TicketStatus;
   priority?: Priority;
   assignedTo?: string;

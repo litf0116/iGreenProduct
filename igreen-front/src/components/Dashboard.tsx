@@ -578,7 +578,7 @@ export function Dashboard() {
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell>{ticket.site}</TableCell>
+                        <TableCell>{ticket.siteName || ticket.siteId || "-"}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusBadgeVariant(ticket.status)}>
                             {t(getStatusTranslationKey(ticket.status))}

@@ -456,7 +456,7 @@ export function TicketDetail({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-muted-foreground">{t("site")}</p>
-                <p className="text-foreground mt-1">{ticket.site}</p>
+                <p className="text-foreground mt-1">{ticket.siteName || ticket.siteId || '-'}</p>
               </div>
             </div>
           </Card>
