@@ -17,7 +17,7 @@ LOG_DIR="${LOG_DIR:-${APP_DIR}/logs}"
 LOG_FILE="${LOG_FILE:-${LOG_DIR}/${APP_NAME}.log}"
 
 # JVM参数
-JAVA_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC -Dspring.profiles.active=prod"
+JAVA_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC -Dspring.profiles.active=prod -Dserver.port=8088"
 
 # 颜色输出
 GREEN='\033[0;32m'
