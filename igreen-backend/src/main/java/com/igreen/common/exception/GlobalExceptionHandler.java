@@ -67,12 +67,7 @@ public class GlobalExceptionHandler {
                 .body(Result.error(ex.getMessage(), "INVALID_ARGUMENT"));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Result<Void>> handleGenericException(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Result.error("Server error, please try again later", "INTERNAL_ERROR"));
-    }
+     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleGenericException(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error at {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         StringWriter sw = new StringWriter();
