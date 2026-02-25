@@ -58,7 +58,7 @@ public class UserService {
     @Transactional
     public TokenResponse login(LoginRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, request.username());
+        wrapper.eq(User::getUsername, request.getUsername());
         wrapper.last("LIMIT 1");
         User users = userMapper.selectOne(wrapper);
 
@@ -68,7 +68,7 @@ public class UserService {
 
         User matchedUser = null;
 
-        if (passwordEncoder.matches(request.password(), users.getHashedPassword())) {
+        if (passwordEncoder.matches(request.getPassword(), users.getHashedPassword())) {
             matchedUser = users;
         }
 
