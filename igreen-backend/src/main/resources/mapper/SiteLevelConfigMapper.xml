@@ -2,28 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.igreen.domain.mapper.SiteLevelConfigMapper">
 
-    <resultMap id="SiteLevelConfigResultMap" type="com.igreen.domain.entity.SiteLevelConfig">
-        <id property="id" column="id"/>
-        <result property="levelName" column="level_name"/>
-        <result property="description" column="description"/>
-        <result property="maxConcurrentTickets" column="max_concurrent_tickets"/>
-        <result property="escalationTimeHours" column="escalation_time_hours"/>
-    </resultMap>
-
-    <sql id="Base_Column_List">
-        id, level_name, description, max_concurrent_tickets, escalation_time_hours
-    </sql>
-
     <select id="countByLevelName" resultType="int">
         SELECT COUNT(*)
-        FROM site_level_configs
-        WHERE level_name = #{levelName}
+		FROM site_level_configs
+		WHERE level_name = #{levelName}
     </select>
 
     <select id="countByLevelNameAndIdNot" resultType="int">
         SELECT COUNT(*)
-        FROM site_level_configs
-        WHERE level_name = #{levelName} AND id != #{id}
+		FROM site_level_configs
+		WHERE level_name = #{levelName}
+		  AND id != #{id}
     </select>
 
 </mapper>

@@ -4,13 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.*;
-import com.igreen.domain.entity.*;
-import com.igreen.domain.enums.Priority;
+import com.igreen.domain.entity.ProblemType;
+import com.igreen.domain.entity.SLAConfig;
+import com.igreen.domain.entity.SiteLevelConfig;
 import com.igreen.domain.mapper.ProblemTypeMapper;
 import com.igreen.domain.mapper.SLAConfigMapper;
 import com.igreen.domain.mapper.SiteLevelConfigMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +29,7 @@ public class ConfigService {
 
     @Transactional(readOnly = true)
     public List<SLAConfigResponse> getAllSLAConfigs() {
-        return slaConfigMapper.selectList(new LambdaQueryWrapper<>()).stream()
-                .map(this::toSLAConfigResponse)
-                .collect(Collectors.toList());
+        return slaConfigMapper.selectList(new LambdaQueryWrapper<>()).stream().map(this::toSLAConfigResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -50,12 +48,10 @@ public class ConfigService {
         if (request.id() != null) {
             config = slaConfigMapper.selectById(request.id());
             if (config == null && request.priority() != null) {
-                config = slaConfigMapper.selectByPriority(request.priority().name())
-                        .orElse(null);
+                config = slaConfigMapper.selectByPriority(request.priority().name()).orElse(null);
             }
         } else if (request.priority() != null) {
-            config = slaConfigMapper.selectByPriority(request.priority().name())
-                    .orElse(null);
+            config = slaConfigMapper.selectByPriority(request.priority().name()).orElse(null);
         } else {
             config = null;
         }
@@ -94,19 +90,12 @@ public class ConfigService {
 
     @Transactional(readOnly = true)
     public List<PriorityResponse> getAllPriorities() {
-        return List.of(
-                new PriorityResponse("P1", "P1 - Critical", "Critical priority requiring immediate response"),
-                new PriorityResponse("P2", "P2 - High", "High priority requiring quick response"),
-                new PriorityResponse("P3", "P3 - Medium", "Medium priority with standard response time"),
-                new PriorityResponse("P4", "P4 - Low", "Low priority with extended response time")
-        );
+        return List.of(new PriorityResponse("P1", "P1 - Critical", "Critical priority requiring immediate response"), new PriorityResponse("P2", "P2 - High", "High priority requiring quick response"), new PriorityResponse("P3", "P3 - Medium", "Medium priority with standard response time"), new PriorityResponse("P4", "P4 - Low", "Low priority with extended response time"));
     }
 
     @Transactional(readOnly = true)
     public List<ProblemTypeResponse> getAllProblemTypes() {
-        return problemTypeMapper.selectList(new LambdaQueryWrapper<>()).stream()
-                .map(this::toProblemTypeResponse)
-                .collect(Collectors.toList());
+        return problemTypeMapper.selectList(new LambdaQueryWrapper<>()).stream().map(this::toProblemTypeResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -115,11 +104,7 @@ public class ConfigService {
             throw new BusinessException(ErrorCode.PROBLEM_TYPE_EXISTS);
         }
 
-        ProblemType problemType = ProblemType.builder()
-                .id(UUID.randomUUID().toString())
-                .name(request.name())
-                .description(request.description())
-                .build();
+        ProblemType problemType = ProblemType.builder().id(UUID.randomUUID().toString()).name(request.name()).description(request.description()).build();
 
         problemTypeMapper.insert(problemType);
         return toProblemTypeResponse(problemType);
@@ -157,9 +142,7 @@ public class ConfigService {
 
     @Transactional(readOnly = true)
     public List<SiteLevelConfigResponse> getAllSiteLevelConfigs() {
-        return siteLevelConfigMapper.selectList(new LambdaQueryWrapper<>()).stream()
-                .map(this::toSiteLevelConfigResponse)
-                .collect(Collectors.toList());
+        return siteLevelConfigMapper.selectList(new LambdaQueryWrapper<>()).stream().map(this::toSiteLevelConfigResponse).collect(Collectors.toList());
     }
 
     @Transactional
@@ -168,12 +151,7 @@ public class ConfigService {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
         }
 
-        SiteLevelConfig config = SiteLevelConfig.builder()
-                .id(UUID.randomUUID().toString())
-                .levelName(request.levelName())
-                .description(request.description())
-                .maxConcurrentTickets(request.maxConcurrentTickets())
-                .build();
+        SiteLevelConfig config = SiteLevelConfig.builder().id(UUID.randomUUID().toString()).levelName(request.levelName()).description(request.description()).slaMultiplier(request.slaMultiplier()).build();
 
         siteLevelConfigMapper.insert(config);
         return toSiteLevelConfigResponse(config);
@@ -197,8 +175,8 @@ public class ConfigService {
             config.setDescription(request.description());
         }
 
-        if (request.maxConcurrentTickets() != null) {
-            config.setMaxConcurrentTickets(request.maxConcurrentTickets());
+        if (request.slaMultiplier() != null) {
+            config.setSlaMultiplier(request.slaMultiplier());
         }
 
         siteLevelConfigMapper.updateById(config);
@@ -214,28 +192,14 @@ public class ConfigService {
     }
 
     private SLAConfigResponse toSLAConfigResponse(SLAConfig config) {
-        return new SLAConfigResponse(
-                config.getId(),
-                config.getPriority(),
-                config.getResponseTimeMinutes(),
-                config.getCompletionTimeHours()
-        );
+        return new SLAConfigResponse(config.getId(), config.getPriority(), config.getResponseTimeMinutes(), config.getCompletionTimeHours());
     }
 
     private ProblemTypeResponse toProblemTypeResponse(ProblemType problemType) {
-        return new ProblemTypeResponse(
-                problemType.getId(),
-                problemType.getName(),
-                problemType.getDescription()
-        );
+        return new ProblemTypeResponse(problemType.getId(), problemType.getName(), problemType.getDescription());
     }
 
     private SiteLevelConfigResponse toSiteLevelConfigResponse(SiteLevelConfig config) {
-        return new SiteLevelConfigResponse(
-                config.getId(),
-                config.getLevelName(),
-                config.getDescription(),
-                config.getMaxConcurrentTickets()
-        );
+        return new SiteLevelConfigResponse(config.getId(), config.getLevelName(), config.getDescription(), config.getSlaMultiplier());
     }
 }

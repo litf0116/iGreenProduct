@@ -29,7 +29,7 @@ function transformTicket(backendTicket: any): Ticket {
     title: backendTicket.title,
     description: backendTicket.description || '',
     status: mappedStatus,
-    // 后端优先级如 P1, P2，前端用 low, medium, high, critical
+    // 后端和前端都使用 P1, P2, P3, P4 优先级
     priority: mapBackendPriority(backendTicket.priority),
     type: mapBackendType(backendTicket.type),
     requester: backendTicket.createdByName || 'System',
@@ -61,16 +61,16 @@ function transformTicket(backendTicket: any): Ticket {
 
 function mapBackendPriority(priority: string): TicketPriority {
   const map: Record<string, TicketPriority> = {
-    'P1': 'critical',
-    'P2': 'high',
-    'P3': 'medium',
-    'P4': 'low',
-    'CRITICAL': 'critical',
-    'HIGH': 'high',
-    'MEDIUM': 'medium',
-    'LOW': 'low',
+    'P1': 'P1',
+    'P2': 'P2',
+    'P3': 'P3',
+    'P4': 'P4',
+    'CRITICAL': 'P1',
+    'HIGH': 'P2',
+    'MEDIUM': 'P3',
+    'LOW': 'P4',
   };
-  return map[priority?.toUpperCase()] || 'medium';
+  return map[priority?.toUpperCase()] || 'P3';
 }
 
 function mapBackendType(type: string): TicketType {

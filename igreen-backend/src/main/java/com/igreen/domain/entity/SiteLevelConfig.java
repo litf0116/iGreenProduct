@@ -12,14 +12,14 @@ import lombok.*;
 @AllArgsConstructor
 public class SiteLevelConfig {
 
+    @TableField("id")
     private String id;
     @TableField("level_name")
     private String levelName;
+    @TableField("description")
     private String description;
-    @TableField("max_concurrent_tickets")
-    private Integer maxConcurrentTickets;
-    @TableField("escalation_time_hours")
-    private Integer escalationTimeHours;
+    @TableField("sla_multiplier")
+    private java.math.BigDecimal slaMultiplier;
     @TableField("created_at")
     private java.time.LocalDateTime createdAt;
     @TableField("updated_at")

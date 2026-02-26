@@ -23,11 +23,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseGet(() -> userMapper.selectByUsername(usernameOrEmail)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail)));
 
-        // 使用 email 作为 username，如果 email 为空则使用 username
-        String usernameForUserDetails = user.getEmail() != null ? user.getEmail() : user.getUsername();
-
+        // 使用原始输入作为 username，保持与登录时的一致
         return new org.springframework.security.core.userdetails.User(
-                usernameForUserDetails,
+                usernameOrEmail,
                 user.getHashedPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );

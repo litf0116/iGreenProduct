@@ -76,8 +76,9 @@ public class SecurityConfig {
                         // 允许 OPTIONS 预检请求
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 公开端点
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/swagger-ui/**", "/api/swagger-ui.html").permitAll()
@@ -112,13 +113,13 @@ public class SecurityConfig {
         return (request, response, authException) -> {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            
+
             Map<String, Object> body = new HashMap<>();
             body.put("success", false);
             body.put("code", "UNAUTHORIZED");
             body.put("message", "Authentication required: " + authException.getMessage());
             body.put("data", null);
-            
+
             final ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(response.getOutputStream(), body);
         };

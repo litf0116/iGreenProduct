@@ -2,7 +2,7 @@ import {AlertCircle, CalendarDays, CheckCircle2, ClipboardCheck, Clock, HelpCirc
 import React from "react";
 
 export type TicketStatus = 'open' | 'assigned' | 'departed' | 'arrived' | 'review' | 'completed';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
+export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
 export type TicketType = 'corrective' | 'planned' | 'preventive' | 'problem';
 
 export interface TicketStep {
@@ -63,7 +63,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Station #405 Offline - Downtown Plaza",
         description: "Station is reporting offline status for more than 2 hours. Remote reset failed. Likely network module issue or power cut.",
         status: "open",
-        priority: "critical",
+        priority: "P1",
         type: "corrective",
         requester: "System Monitor",
         createdAt: "2023-10-27T14:30:00Z",
@@ -82,7 +82,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Connector B Damage - Highway Rest Stop 12",
         description: "Customer reported CCS connector locking mechanism is broken. Visual inspection required. Spare part #CCS-Type2-L might be needed.",
         status: "assigned",
-        priority: "high",
+        priority: "P2",
         type: "corrective",
         requester: "Customer Report",
         createdAt: "2023-10-27T10:00:00Z",
@@ -101,7 +101,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Routine Maintenance - Mall of City (Level 2)",
         description: "Quarterly preventive maintenance for cluster A. Check cables, clean screens, test voltage output.",
         status: "open",
-        priority: "medium",
+        priority: "P3",
         type: "preventive",
         requester: "Ops Manager",
         createdAt: "2023-10-26T16:20:00Z",
@@ -159,7 +159,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Scheduled Modem Upgrade - Westside Park",
         description: "Replace 3G modems with 4G LTE units for Stations 1-4 as part of the Q4 connectivity upgrade plan.",
         status: "open",
-        priority: "medium",
+        priority: "P3",
         type: "planned",
         requester: "Network Planning",
         createdAt: "2023-10-25T09:15:00Z",
@@ -176,7 +176,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Payment Terminal Jammed - Central Station",
         description: "Credit card reader is not accepting cards. Physical obstruction detected in the slot.",
         status: "open",
-        priority: "low",
+        priority: "P4",
         type: "corrective",
         requester: "Site Security",
         createdAt: "2023-10-24T11:00:00Z",
@@ -193,7 +193,7 @@ export const MOCK_TICKETS: Ticket[] = [
         title: "Recurring Power Fluctuation - Sector 7",
         description: "Multiple users reporting power output instability. Requires deep analysis and long-term monitoring strategy.",
         status: "assigned",
-        priority: "high",
+        priority: "P2",
         type: "problem",
         requester: "Regional Director",
         createdAt: "2023-10-24T09:00:00Z",
@@ -206,19 +206,18 @@ export const MOCK_TICKETS: Ticket[] = [
 
 export const getPriorityColor = (priority: TicketPriority) => {
     switch (priority) {
-        case 'critical':
+        case 'P1':
             return 'destructive'; // Red
-        case 'high':
+        case 'P2':
             return 'default'; // Black/Dark
-        case 'medium':
+        case 'P3':
             return 'secondary'; // Gray
-        case 'low':
+        case 'P4':
             return 'outline'; // White/Outline
         default:
             return 'secondary';
     }
 };
-
 export const getTicketTypeLabel = (type: TicketType) => {
     switch (type) {
         case 'corrective':

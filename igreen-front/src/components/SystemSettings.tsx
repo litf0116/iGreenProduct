@@ -95,7 +95,7 @@ export function SystemSettings() {
 
   const [showLevelDialog, setShowLevelDialog] = useState(false);
   const [editingLevel, setEditingLevel] = useState<SiteLevelConfig | null>(null);
-  const [levelForm, setLevelForm] = useState({ levelName: "", description: "", maxConcurrentTickets: 5, escalationTimeHours: 4 });
+  const [levelForm, setLevelForm] = useState({ levelName: "", description: "", slaMultiplier: 1.0 });
 
   const [editingSLA, setEditingSLA] = useState<SLAConfig | null>(null);
   const [showSLADialog, setShowSLADialog] = useState(false);
@@ -133,10 +133,10 @@ export function SystemSettings() {
   const handleOpenLevelDialog = (level?: SiteLevelConfig) => {
     if (level) {
       setEditingLevel(level);
-      setLevelForm({ levelName: level.levelName, description: level.description, maxConcurrentTickets: level.maxConcurrentTickets, escalationTimeHours: level.escalationTimeHours });
+      setLevelForm({ levelName: level.levelName, description: level.description, slaMultiplier: level.slaMultiplier });
     } else {
       setEditingLevel(null);
-      setLevelForm({ levelName: "", description: "", maxConcurrentTickets: 5, escalationTimeHours: 4 });
+      setLevelForm({ levelName: "", description: "", slaMultiplier: 1.0  });
     }
     setShowLevelDialog(true);
   };
@@ -432,8 +432,7 @@ export function SystemSettings() {
                       <TableRow key={level.id}>
                         <TableCell className="font-medium">{level.levelName}</TableCell>
                         <TableCell>{level.description}</TableCell>
-                        <TableCell>x{level.maxConcurrentTickets}</TableCell>
-                        <TableCell>{level.escalationTimeHours}h</TableCell>
+                        <TableCell>x{level.slaMultiplier}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="sm" onClick={() => handleOpenLevelDialog(level)}>
@@ -562,25 +561,16 @@ export function SystemSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Max Concurrent Tickets</Label>
+              <Label>SLA Multiplier</Label>
               <Input 
                 type="number"
-                min="1"
-                value={levelForm.maxConcurrentTickets} 
-                onChange={(e) => setLevelForm({...levelForm, maxConcurrentTickets: Number(e.target.value)})} 
-                placeholder="5"
+                min="0"
+                value={levelForm.slaMultiplier} 
+                onChange={(e) => setLevelForm({...levelForm, slaMultiplier: Number(e.target.value)})} 
+                placeholder="1.0"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Escalation Time (Hours)</Label>
-              <Input 
-                type="number"
-                min="1"
-                value={levelForm.escalationTimeHours} 
-                onChange={(e) => setLevelForm({...levelForm, escalationTimeHours: Number(e.target.value)})} 
-                placeholder="4"
-              />
-            </div>
+            <p class="text-xs text-muted-foreground">Factor to multiply SLA times by. Lower means faster response required.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowLevelDialog(false)}>Cancel</Button>

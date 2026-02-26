@@ -74,6 +74,9 @@ igreen-backend/logs/
 openspec/.cache/
 openspec/output/
 
+
+.opencode
+
 # Database
 *.db
 *.sqlite

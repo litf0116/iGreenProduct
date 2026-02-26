@@ -5,8 +5,5 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public record SiteLevelConfigRequest(
-        @NotBlank @Size(max = 50) String levelName,
-        String description,
-        Integer maxConcurrentTickets
-) {}
+public record SiteLevelConfigRequest(String id, @NotBlank @Size(max = 50) String levelName, String description, BigDecimal slaMultiplier) {
+}

@@ -51,12 +51,14 @@ export interface SiteLevelConfig {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
+  slaMultiplier: number;
 }
 
 export interface SiteLevelConfigRequest {
   levelName: string;
   description?: string;
   maxConcurrentTickets: number;
+  slaMultiplier: number;
 }
 
 export interface TicketComment {

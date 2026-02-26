@@ -602,4 +602,12 @@ export const mockSiteLevelConfigs: SiteLevelConfig[] = [
   { id: "SL1", levelName: "VIP", description: "Very Important Sites", maxConcurrentTickets: 3, escalationTimeHours: 2 },
   { id: "SL2", levelName: "Normal", description: "Standard Sites", maxConcurrentTickets: 5, escalationTimeHours: 4 },
   { id: "SL3", levelName: "Low Priority", description: "Low Priority Sites", maxConcurrentTickets: 10, escalationTimeHours: 8 },
+  { id: "SL1", levelName: "VIP", description: "Very Important Sites", maxConcurrentTickets: 3, slaMultiplier: 2 },
+  { id: "SL2", levelName: "Normal", description: "Standard Sites", maxConcurrentTickets: 5, slaMultiplier: 1 },
+  { id: "SL1", levelName: "VIP", description: "Very Important Sites", maxConcurrentTickets: 3, slaMultiplier: 2 },
+  { id: "SL2", levelName: "Normal", description: "Standard Sites", maxConcurrentTickets: 5, slaMultiplier: 1 },
+  { id: "SL3", levelName: "Low Priority", description: "Low Priority Sites", maxConcurrentTickets: 10, slaMultiplier: 0.5 },
+  { id: "SL1", levelName: "VIP", description: "Very Important Sites", maxConcurrentTickets: 3, slaMultiplier: 2 },
+  { id: "SL2", levelName: "Normal", description: "Standard Sites", maxConcurrentTickets: 5, slaMultiplier: 1 },
+  { id: "SL3", levelName: "Low Priority", description: "Low Priority Sites", maxConcurrentTickets: 10, slaMultiplier: 0.5 },
 ];
