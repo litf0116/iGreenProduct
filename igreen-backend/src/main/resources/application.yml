@@ -89,6 +89,7 @@ management:
 logging:
   level:
     root: INFO
+    com: INFO
     com.igreen: DEBUG
     org.springframework.security: INFO
     org.hibernate.SQL: WARN
