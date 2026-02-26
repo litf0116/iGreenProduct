@@ -17,7 +17,7 @@ import java.util.List;
 
 @Tag(name = "配置管理", description = "SLA配置、问题类型、站点级别配置管理接口")
 @RestController
-@RequestMapping("/api/configs")
+@RequestMapping("/configs")
 @RequiredArgsConstructor
 public class ConfigController {
 

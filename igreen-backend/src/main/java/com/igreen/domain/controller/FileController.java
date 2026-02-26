@@ -14,7 +14,7 @@ import java.io.IOException;
 
 @Tag(name = "文件管理", description = "文件上传、删除接口")
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/files")
 @RequiredArgsConstructor
 public class FileController {
 

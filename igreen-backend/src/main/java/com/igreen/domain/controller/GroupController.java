@@ -20,7 +20,7 @@ import java.util.List;
 
 @Tag(name = "分组管理", description = "工程师分组接口")
 @RestController
-@RequestMapping("/api/groups")
+@RequestMapping("/groups")
 @RequiredArgsConstructor
 public class GroupController {
 

@@ -4,11 +4,7 @@ import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.Result;
 import com.igreen.common.utils.JwtUtils;
-import com.igreen.domain.dto.LoginRequest;
-import com.igreen.domain.dto.RefreshRequest;
-import com.igreen.domain.dto.RegisterRequest;
-import com.igreen.domain.dto.TokenResponse;
-import com.igreen.domain.dto.UserResponse;
+import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.mapper.UserMapper;
 import com.igreen.domain.service.UserService;
@@ -20,11 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @Tag(name = "认证", description = "用户登录注册接口")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -38,16 +32,9 @@ public class AuthController {
         TokenResponse response = userService.login(request);
 
         // 生成 refresh token
-        String refreshToken = jwtUtils.generateRefreshToken(
-            jwtUtils.extractUserId(response.accessToken()),
-            jwtUtils.extractUsername(response.accessToken())
-        );
+        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.accessToken()), jwtUtils.extractUsername(response.accessToken()));
 
-        response = new TokenResponse(
-            response.accessToken(),
-            refreshToken,
-            jwtUtils.getExpirationMs() / 1000
-        );
+        response = new TokenResponse(response.accessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
 
         return ResponseEntity.ok(Result.success(response));
     }
@@ -57,15 +44,8 @@ public class AuthController {
     public ResponseEntity<Result<TokenResponse>> register(@Valid @RequestBody RegisterRequest request) {
         TokenResponse response = userService.register(request);
 
-        String refreshToken = jwtUtils.generateRefreshToken(
-            jwtUtils.extractUserId(response.accessToken()),
-            jwtUtils.extractUsername(response.accessToken())
-        );
-        response = new TokenResponse(
-            response.accessToken(),
-            refreshToken,
-            jwtUtils.getExpirationMs() / 1000
-        );
+        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.accessToken()), jwtUtils.extractUsername(response.accessToken()));
+        response = new TokenResponse(response.accessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
 
         return ResponseEntity.ok(Result.success(response));
     }
@@ -80,17 +60,12 @@ public class AuthController {
         String username = jwtUtils.extractUsername(request.refreshToken());
         String userId = jwtUtils.extractUserId(request.refreshToken());
 
-        User user = userMapper.selectByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userMapper.selectByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         String newAccessToken = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name());
         String newRefreshToken = jwtUtils.generateRefreshToken(user.getId(), user.getUsername());
 
-        TokenResponse response = new TokenResponse(
-            newAccessToken,
-            newRefreshToken,
-            jwtUtils.getExpirationMs() / 1000
-        );
+        TokenResponse response = new TokenResponse(newAccessToken, newRefreshToken, jwtUtils.getExpirationMs() / 1000);
 
         return ResponseEntity.ok(Result.success(response));
     }

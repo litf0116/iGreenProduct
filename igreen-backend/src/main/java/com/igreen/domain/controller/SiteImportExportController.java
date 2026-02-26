@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/sites")
+@RequestMapping("/sites")
 @RequiredArgsConstructor
 @Tag(name = "站点导入导出", description = "站点数据的批量导入导出接口")
 public class SiteImportExportController {

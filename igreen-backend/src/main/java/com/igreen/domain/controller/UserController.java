@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Tag(name = "用户管理", description = "用户CRUD接口")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 

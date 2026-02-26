@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "模板管理", description = "工单模板接口")
 @RestController
-@RequestMapping("/api/templates")
+@RequestMapping("/templates")
 @RequiredArgsConstructor
 public class TemplateController {
 

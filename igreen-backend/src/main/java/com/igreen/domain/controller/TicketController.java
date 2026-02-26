@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "工单管理", description = "工单全生命周期接口")
 @RestController
-@RequestMapping("/api/tickets")
+@RequestMapping("/tickets")
 @RequiredArgsConstructor
 public class TicketController {
 

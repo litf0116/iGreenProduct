@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "站点管理", description = "客户站点接口")
 @RestController
-@RequestMapping("/api/sites")
+@RequestMapping("/sites")
 @RequiredArgsConstructor
 public class SiteController {
 
