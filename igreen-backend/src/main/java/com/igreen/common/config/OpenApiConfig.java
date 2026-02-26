@@ -1,0 +1,27 @@
+package com.igreen.common.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("iGreen Product API")
+                        .version("1.0.0")
+                        .description("iGreen Product API Documentation"))
+                .servers(List.of(
+                        new Server()
+                                .url("http://127.0.0.1:8089")
+                                .description("API Server")
+                ));
+    }
+}

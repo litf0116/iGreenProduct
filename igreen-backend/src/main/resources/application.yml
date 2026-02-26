@@ -1,10 +1,10 @@
 spring:
+  application:
+    name: igreen-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
-  threads:
-    virtual:
-      enabled: true
   servlet:
+
     multipart:
       enabled: true
       max-file-size: 20MB
@@ -36,6 +36,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+  mvc:
+    servlet:
+      path: /api
 
 pagehelper:
   helperDialect: mysql
@@ -45,7 +48,6 @@ pagehelper:
 
 server:
   port: ${SERVER_PORT:8089}
-
 app:
   jwt:
     secret-key: ${JWT_SECRET_KEY:aVeryLongAndSecureSecretKeyForJwtTokenGeneration2024}
@@ -68,7 +70,10 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-
+  server-url: http://127.0.0.1:8089/
+  servers:
+    - url: http://127.0.0.1:8089/
+      description: API Server
 knife4j:
   enable: true
   setting:
@@ -76,7 +81,9 @@ knife4j:
     enable-version: true
     enable-footer: true
     footerCustomContent: v1.0.0 | iGreen Product API
-
+  production: false
+  basic:
+    enable: false
 management:
   endpoints:
     web:
@@ -89,8 +96,8 @@ management:
 logging:
   level:
     root: INFO
-    com: INFO
     com.igreen: DEBUG
-    org.springframework.security: INFO
-    org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql: WARN
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.boot.autoconfigure.logging: WARN
+    org.springframework.web: WARN
+    ch.qos.logback: WARN

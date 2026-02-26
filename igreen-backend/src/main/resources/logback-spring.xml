@@ -1,88 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="LOG_PATH" value="${LOG_PATH:-logs}"/>
-    <property name="APP_NAME" value="igreen-backend"/>
+    <!-- root的作用类似于logger父亲，它与logger的作用就是日志收集，过滤，委派给appender作日志输出 -->
+    <!-- appender的作用是控制日志输出 -->
+    <!-- encoder和layout的作用是控制日志输出格式 -->
+    <!-- appender里面只需配置：（1）日志滚动策略（2）日志输出格式（3）过滤日志级别 -->
 
-    <!-- Console Appender with colors -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- 日志格式应用spring boot默认的格式 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 定义日志的存放位置，与项目同级目录下创建一个logs文件夹 -->
+    <springProperty scope="context" name="name" source="spring.application.name" defaultValue="igreen-backend"/>
+    <!-- 使用固定路径，避免springProperty解析问题 -->
+    <property name="LOG_DIR" value="./logs/${name}" />
+
+    <!-- 控制台日志输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoder 默认配置为PatternLayoutEncoder -->
         <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %highlight(%-5level) %magenta(%thread) %cyan(%logger{60}) - %msg%n</pattern>
-            <charset>UTF-8</charset>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
         </encoder>
     </appender>
 
-    <!-- File Appender - Info -->
-    <appender name="FILE_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${APP_NAME}-info.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${APP_NAME}-info.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+    <!-- 配置info日志输出 -->
+    <appender name="info_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- INFO日志滚动输出策略 maxFileSize和maxHistory分别为文件多大滚动和保留多长时间 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- %i：当文件大小超过maxFileSize时，按照i进行文件滚动 -->
+            <FileNamePattern>${LOG_DIR}/%d{yyyy-MM-dd}/info/%i.log</FileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>180</maxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %thread %logger{60} - %msg%n</pattern>
-            <charset>UTF-8</charset>
+
+        <!-- 日志文件输出的格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+
+        <!-- 过滤日志级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
 
-    <!-- File Appender - Error -->
-    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${APP_NAME}-error.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${APP_NAME}-error.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+    <!-- 配置warn日志输出 -->
+    <appender name="warn_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- %i：当文件大小超过maxFileSize时，按照i进行文件滚动 -->
+            <fileNamePattern>${LOG_DIR}/%d{yyyy-MM-dd}/warn/%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>180</maxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] %-5level %thread %logger{60} - %msg%n</pattern>
-            <charset>UTF-8</charset>
+
+        <!-- 日志文件输出的格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
 
-    <!-- Async Appender for performance -->
-    <appender name="ASYNC_INFO" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="FILE_INFO"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
+    <!-- 配置error日志输出 -->
+    <appender name="error_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- %i：当文件大小超过maxFileSize时，按照i进行文件滚动 -->
+            <fileNamePattern>${LOG_DIR}/%d{yyyy-MM-dd}/error/%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>180</maxHistory>
+        </rollingPolicy>
+
+        <!-- 日志文件输出的格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
     </appender>
 
-    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="FILE_ERROR"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-    </appender>
-
-    <!-- Logger configurations -->
-    <logger name="com.igreen" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ASYNC_INFO"/>
-        <appender-ref ref="ASYNC_ERROR"/>
-    </logger>
-
-    <!-- Root logger -->
+    <!-- 将root的打印级别设置为"INFO" -->
+    <!-- root委派appender进行日志输出 -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ASYNC_INFO"/>
-        <appender-ref ref="ASYNC_ERROR"/>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="info_log"/>
+        <appender-ref ref="warn_log"/>
+        <appender-ref ref="error_log"/>
     </root>
 
-    <!-- Profile-specific configuration -->
-    <springProfile name="dev">
-        <root level="DEBUG">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
-
-    <springProfile name="prod">
-        <root level="INFO">
-            <appender-ref ref="ASYNC_INFO"/>
-            <appender-ref ref="ASYNC_ERROR"/>
-        </root>
-    </springProfile>
 </configuration>
