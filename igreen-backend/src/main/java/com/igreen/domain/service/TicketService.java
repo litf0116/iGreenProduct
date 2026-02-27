@@ -34,7 +34,7 @@ public class TicketService {
     private final UserMapper userMapper;
     private final GroupMapper groupMapper;
     private final SiteMapper siteMapper;
-    private final TemplateStepMapper templateStepMapper;
+    private final TemplateService templateService;
     private final StatusMappingService statusMappingService;
     private final ObjectMapper objectMapper;
 
@@ -86,6 +86,13 @@ public class TicketService {
                 .build();
 
         ticketMapper.insert(ticket);
+        
+        // Initialize stepData from template if ticket has templateId
+        if (ticket.getTemplateId() != null) {
+            initializeStepDataFromTemplate(ticket);
+            // 更新工单以包含 stepData
+            ticketMapper.updateById(ticket);
+        }
 
         return toResponse(ticket, creator, group, site);
     }
@@ -396,18 +403,17 @@ public class TicketService {
 
     private void initializeStepDataFromTemplate(Ticket ticket) {
         try {
-            // Fetch template steps from database
-            LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
-            stepWrapper.eq(TemplateStep::getTemplateId, ticket.getTemplateId());
-            stepWrapper.orderByAsc(TemplateStep::getSortOrder);
-            List<TemplateStep> templateSteps = templateStepMapper.selectList(stepWrapper);
+            // 从 templateService 获取模板数据
+            Template template = templateService.getTemplateById(ticket.getTemplateId());
+            List<TemplateStep> templateSteps = template.getSteps();
 
             if (templateSteps != null && !templateSteps.isEmpty()) {
                 // Convert template steps to the format expected by frontend
                 List<Map<String, Object>> steps = new ArrayList<>();
-                for (TemplateStep step : templateSteps) {
+                for (int i = 0; i < templateSteps.size(); i++) {
+                    TemplateStep step = templateSteps.get(i);
                     Map<String, Object> stepMap = new HashMap<>();
-                    stepMap.put("id", step.getId());
+                    stepMap.put("id", "step-" + (i + 1)); // 使用索引作为 id
                     stepMap.put("name", step.getName());
                     stepMap.put("description", step.getDescription() != null ? step.getDescription() : "");
                     stepMap.put("completed", false);

@@ -1,8 +1,10 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record RegisterRequest(
     @NotBlank(message = "姓名不能为空")
     @Size(min = 1, max = 255, message = "姓名长度必须在1-255之间")

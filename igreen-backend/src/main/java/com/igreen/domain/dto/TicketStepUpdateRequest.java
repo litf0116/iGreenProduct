@@ -1,5 +1,6 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketStepUpdateRequest {

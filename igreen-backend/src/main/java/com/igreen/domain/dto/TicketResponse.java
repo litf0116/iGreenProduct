@@ -2,6 +2,7 @@ package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import java.util.List;
 
 public record TicketResponse(
@@ -40,4 +41,5 @@ public record TicketResponse(
         List<TicketCommentResponse> comments,
         List<String> relatedTicketIds,
         String problemType
-) {}
+) {
+}

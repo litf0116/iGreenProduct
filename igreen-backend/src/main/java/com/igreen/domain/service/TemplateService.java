@@ -1,6 +1,5 @@
 package com.igreen.domain.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.CreateTemplateRequest;
@@ -9,9 +8,7 @@ import com.igreen.domain.dto.TemplateStepRequest;
 import com.igreen.domain.entity.Template;
 import com.igreen.domain.entity.TemplateField;
 import com.igreen.domain.entity.TemplateStep;
-import com.igreen.domain.mapper.TemplateFieldMapper;
 import com.igreen.domain.mapper.TemplateMapper;
-import com.igreen.domain.mapper.TemplateStepMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,6 @@ import java.util.UUID;
 public class TemplateService {
 
     private final TemplateMapper templateMapper;
-    private final TemplateStepMapper templateStepMapper;
-    private final TemplateFieldMapper templateFieldMapper;
 
     @Transactional
     public Template createTemplate(CreateTemplateRequest request) {
@@ -40,9 +35,12 @@ public class TemplateService {
         template.setId(UUID.randomUUID().toString());
         template.setName(request.name());
         template.setDescription(request.description());
-        templateMapper.insert(template);
 
-        createStepsAndFields(template.getId(), request.steps());
+        // 将 steps 转换为实体对象并设置到 template 中
+        List<TemplateStep> steps = convertStepsRequest(request.steps());
+        template.setSteps(steps); // 这会自动将 steps 序列化为 JSON 并保存到 stepConfig
+
+        templateMapper.insert(template);
 
         return getTemplateById(template.getId());
     }
@@ -64,52 +62,51 @@ public class TemplateService {
             existing.setDescription(request.description());
         }
 
-        templateMapper.updateById(existing);
-
         if (request.steps() != null) {
-            templateFieldMapper.deleteByTemplateId(id);
-            templateStepMapper.delete(new LambdaQueryWrapper<TemplateStep>().eq(TemplateStep::getTemplateId, id));
-            createStepsAndFields(id, request.steps());
+            // 将 steps 转换为实体对象并设置到 existing 中
+            List<TemplateStep> steps = convertStepsRequest(request.steps());
+            existing.setSteps(steps); // 这会自动将 steps 序列化为 JSON 并保存到 stepConfig
         }
+
+        templateMapper.updateById(existing);
 
         return getTemplateById(id);
     }
 
-    private void createStepsAndFields(String templateId, List<TemplateStepRequest> steps) {
-        if (steps == null || steps.isEmpty()) {
-            return;
+    private List<TemplateStep> convertStepsRequest(List<TemplateStepRequest> stepsRequests) {
+        if (stepsRequests == null || stepsRequests.isEmpty()) {
+            return new ArrayList<>();
         }
 
+        List<TemplateStep> steps = new ArrayList<>();
         int order = 1;
-        for (TemplateStepRequest stepRequest : steps) {
-            TemplateStep step = new TemplateStep();
-            step.setId(UUID.randomUUID().toString());
-            step.setTemplateId(templateId);
-            step.setName(stepRequest.name());
-            step.setDescription(stepRequest.description());
-            step.setSortOrder(stepRequest.order() != null ? stepRequest.order() : order++);
-            templateStepMapper.insert(step);
 
-            createFields(step.getId(), stepRequest.fields());
+        for (TemplateStepRequest stepRequest : stepsRequests) {
+            TemplateStep step = TemplateStep.builder().name(stepRequest.name()).description(stepRequest.description()).sortOrder(stepRequest.order() != null ? stepRequest.order() : order++).fields(convertFieldsRequest(stepRequest.fields())).build();
+
+            steps.add(step);
         }
+
+        return steps;
     }
 
-    private void createFields(String stepId, List<TemplateFieldRequest> fields) {
-        if (fields == null || fields.isEmpty()) {
-            return;
+    private List<TemplateField> convertFieldsRequest(List<TemplateFieldRequest> fieldsRequests) {
+        if (fieldsRequests == null || fieldsRequests.isEmpty()) {
+            return new ArrayList<>();
         }
 
-        for (TemplateFieldRequest fieldRequest : fields) {
-            TemplateField field = new TemplateField();
-            field.setId(UUID.randomUUID().toString());
-            field.setStepId(stepId);
-            field.setName(fieldRequest.name());
-            field.setType(fieldRequest.type());
-            field.setRequired(fieldRequest.required());
-            field.setOptions(fieldRequest.options());
-            templateFieldMapper.insert(field);
+        List<TemplateField> fields = new ArrayList<>();
+
+        for (TemplateFieldRequest fieldRequest : fieldsRequests) {
+            TemplateField field = TemplateField.builder().name(fieldRequest.name()).type(fieldRequest.type()).required(fieldRequest.required()).options(fieldRequest.options()).build();
+
+            fields.add(field);
         }
+
+        return fields;
     }
+
+    // 保留这些方法是为了向后兼容，但不再使用
 
     @Transactional(readOnly = true)
     public Template getTemplateById(String id) {
@@ -118,33 +115,21 @@ public class TemplateService {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
-        LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
-        stepWrapper.eq(TemplateStep::getTemplateId, id);
-        stepWrapper.orderByAsc(TemplateStep::getSortOrder);
-        List<TemplateStep> steps = templateStepMapper.selectList(stepWrapper);
-        for (TemplateStep step : steps) {
-            List<TemplateField> fields = templateFieldMapper.selectByStepId(step.getId());
-            step.setFields(fields);
-        }
-        template.setSteps(steps);
+        // 从 stepConfig 反序列化 steps，getSteps() 方法会自动处理
+        template.getSteps();
 
         return template;
     }
 
     @Transactional(readOnly = true)
     public List<Template> getAllTemplates() {
-        List<Template> templates = templateMapper.selectList(new LambdaQueryWrapper<>());
+        List<Template> templates = templateMapper.selectList(null);
+
+        // 为每个 template 从 stepConfig 反序列化 steps
         for (Template template : templates) {
-            LambdaQueryWrapper<TemplateStep> stepWrapper = new LambdaQueryWrapper<>();
-            stepWrapper.eq(TemplateStep::getTemplateId, template.getId());
-            stepWrapper.orderByAsc(TemplateStep::getSortOrder);
-            List<TemplateStep> steps = templateStepMapper.selectList(stepWrapper);
-            for (TemplateStep step : steps) {
-                List<TemplateField> fields = templateFieldMapper.selectByStepId(step.getId());
-                step.setFields(fields);
-            }
-            template.setSteps(steps);
+            template.getSteps();
         }
+
         return templates;
     }
 
@@ -153,8 +138,9 @@ public class TemplateService {
         if (templateMapper.selectById(id) == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
-        templateFieldMapper.deleteByTemplateId(id);
-        templateStepMapper.delete(new LambdaQueryWrapper<TemplateStep>().eq(TemplateStep::getTemplateId, id));
+
+        // 只需要删除 template 表的记录，因为 steps 和 fields 数据已经存储在 JSON 字段中
         templateMapper.deleteById(id);
     }
+
 }

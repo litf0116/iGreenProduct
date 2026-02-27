@@ -1,5 +1,6 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
+
 @AllArgsConstructor
 public final class UserCreateRequest {
     @NotBlank

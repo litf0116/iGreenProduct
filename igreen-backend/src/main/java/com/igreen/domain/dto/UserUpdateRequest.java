@@ -1,9 +1,11 @@
 package com.igreen.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
 import jakarta.validation.constraints.Size;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record UserUpdateRequest(
         String name,
         String username,

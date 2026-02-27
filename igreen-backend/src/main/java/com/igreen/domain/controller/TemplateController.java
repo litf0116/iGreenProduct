@@ -45,7 +45,6 @@ public class TemplateController {
     public ResponseEntity<Result<Template>> createTemplate(@Valid @RequestBody CreateTemplateRequest request) {
         return ResponseEntity.ok(Result.success(templateService.createTemplate(request)));
     }
-
     @Operation(summary = "更新模板")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
