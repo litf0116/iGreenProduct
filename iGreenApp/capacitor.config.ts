@@ -8,7 +8,13 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'http',
     cleartext: true,
-    // 允许访问 API 服务器
+    // 允许访问 API 服务器和域名
+    allowNavigation: [
+      '43.255.212.68',
+      '192.168.10.154',
+      'localhost',
+      '127.0.0.1',
+    ],
     allowNavigation: [
       '43.255.212.68',
       '192.168.10.154',
