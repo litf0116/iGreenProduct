@@ -340,7 +340,7 @@ export function TemplateManager({
                                 </div>
 
                                 {steps?.map((step, stepIndex) => (
-                                    <Card key={stepIndex} className="p-4 space-y-4">
+                                    <Card key={step.id} className="p-4 space-y-4">
                                         <div className="flex items-start gap-2">
                                             <GripVertical className="h-5 w-5 text-muted-foreground mt-2"/>
                                             <div className="flex-1 space-y-4">
@@ -384,7 +384,7 @@ export function TemplateManager({
 
                                                     {(step.fields || []).map((field, fieldIndex) => (
                                                         <div
-                                                            key={fieldIndex}
+                                                            key={field.id}
                                                             className="flex items-center gap-2 p-2 bg-muted rounded"
                                                         >
                                                             <Input
