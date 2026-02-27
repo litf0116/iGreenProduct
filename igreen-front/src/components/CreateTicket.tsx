@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Template, User, Priority, TicketType, Group, Ticket } from "../lib/types";
 import { translations, TranslationKey, Language } from "../lib/i18n";
+import { api } from "../lib/api";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -9,7 +10,7 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { CalendarIcon, Check } from "lucide-react";
+import { CalendarIcon, Check, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import {
   Command,
@@ -20,12 +21,13 @@ import {
   CommandList,
 } from "./ui/command";
 import { cn } from "../lib/utils";
+import { toast } from "sonner";
 
 interface CreateTicketProps {
-  templates: Template[];
-  users: User[];
-  groups: Group[];
-  sites: { id: string; name: string }[];
+  templates?: Template[];
+  users?: User[];
+  groups?: Group[];
+  sites?: { id: string; name: string }[];
   tickets?: Ticket[];
   problemTypes?: { id: string; name: string }[];
   language: Language;
@@ -45,17 +47,26 @@ interface CreateTicketProps {
 }
 
 export function CreateTicket({
-  templates,
-  users,
-  groups,
-  sites,
-  tickets = [],
-  problemTypes = [],
+  templates: externalTemplates,
+  users: externalUsers,
+  groups: externalGroups,
+  sites: externalSites,
+  tickets: externalTickets = [],
+  problemTypes: externalProblemTypes = [],
   language,
   onSubmit,
   onCancel,
 }: CreateTicketProps) {
   const t = (key: TranslationKey) => translations[language][key];
+
+  const [templates, setTemplates] = useState<Template[]>(externalTemplates || []);
+  const [users, setUsers] = useState<User[]>(externalUsers || []);
+  const [groups, setGroups] = useState<Group[]>(externalGroups || []);
+  const [sites, setSites] = useState<{ id: string; name: string }[]>(externalSites || []);
+  const [tickets, setTickets] = useState<Ticket[]>(externalTickets || []);
+  const [problemTypes, setProblemTypes] = useState<{ id: string; name: string }[]>(externalProblemTypes || []);
+  const [loading, setLoading] = useState(!externalTemplates || !externalUsers || !externalGroups || !externalSites);
+  const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -69,17 +80,65 @@ export function CreateTicket({
   const [problemType, setProblemType] = useState("");
   const [openCombobox, setOpenCombobox] = useState(false);
 
+  useEffect(() => {
+    if (externalTemplates && externalUsers && externalGroups && externalSites) {
+      setTemplates(externalTemplates);
+      setUsers(externalUsers);
+      setGroups(externalGroups);
+      setSites(externalSites);
+      setTickets(externalTickets || []);
+      setProblemTypes(externalProblemTypes || []);
+      setLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData] = await Promise.all([
+          externalTemplates ? Promise.resolve(externalTemplates) : api.getTemplates(),
+          externalUsers ? Promise.resolve(externalUsers) : api.getUsers({}),
+          externalGroups ? Promise.resolve(externalGroups) : api.getGroups(),
+          externalSites ? Promise.resolve(externalSites) : api.getSites({}),
+          externalTickets ? Promise.resolve(externalTickets) : api.getTickets({}),
+          externalProblemTypes ? Promise.resolve(externalProblemTypes) : api.getProblemTypes()
+        ]);
+
+        setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData?.records || []));
+        setUsers(Array.isArray(usersData) ? usersData : (usersData?.records || []));
+        setGroups(Array.isArray(groupsData) ? groupsData : (groupsData?.records || []));
+        setSites(Array.isArray(sitesData) ? sitesData : (sitesData?.records || []));
+        setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
+        setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData?.records || []));
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("Failed to load data");
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [externalTemplates, externalUsers, externalGroups, externalSites, externalTickets, externalProblemTypes]);
+
+  useEffect(() => {
+    if (externalTemplates) setTemplates(Array.isArray(externalTemplates) ? externalTemplates : (externalTemplates?.records || []));
+    if (externalUsers) setUsers(Array.isArray(externalUsers) ? externalUsers : (externalUsers?.records || []));
+    if (externalGroups) setGroups(Array.isArray(externalGroups) ? externalGroups : (externalGroups?.records || []));
+    if (externalSites) setSites(Array.isArray(externalSites) ? externalSites : (externalSites?.records || []));
+    if (externalTickets) setTickets(Array.isArray(externalTickets) ? externalTickets : (externalTickets?.records || []));
+    if (externalProblemTypes) setProblemTypes(Array.isArray(externalProblemTypes) ? externalProblemTypes : (externalProblemTypes?.records || []));
+  }, [externalTemplates, externalUsers, externalGroups, externalSites, externalTickets, externalProblemTypes]);
+
   const selectedTemplate = templates.find((t) => t.id === templateId);
-
-  // Filter only corrective tickets for relation
   const correctiveTickets = tickets.filter(t => t.type === "corrective");
-
   const isProblemTicket = ticketType === "problem";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !templateId || !assignedTo) return;
-    // Site is not required for problem tickets
     if (!isProblemTicket && !site) return;
     if (isProblemTicket && !problemType) return;
 
@@ -107,6 +166,52 @@ export function CreateTicket({
 
   const priorities: Priority[] = ["P1", "P2", "P3", "P4"];
   const ticketTypes: TicketType[] = ["planned", "preventive", "corrective", "problem"];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+        <span className="ml-2">Loading data...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-destructive">{error}</p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => {
+            setError(null);
+            setLoading(true);
+            Promise.all([
+              externalTemplates ? Promise.resolve(externalTemplates) : api.getTemplates(),
+              externalUsers ? Promise.resolve(externalUsers) : api.getUsers({}),
+              externalGroups ? Promise.resolve(externalGroups) : api.getGroups(),
+              externalSites ? Promise.resolve(externalSites) : api.getSites({}),
+              externalTickets ? Promise.resolve(externalTickets) : api.getTickets({}),
+              externalProblemTypes ? Promise.resolve(externalProblemTypes) : api.getProblemTypes()
+            ]).then(([templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData]) => {
+              setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData?.records || []));
+              setUsers(Array.isArray(usersData) ? usersData : (usersData?.records || []));
+              setGroups(Array.isArray(groupsData) ? groupsData : (groupsData?.records || []));
+              setSites(Array.isArray(sitesData) ? sitesData : (sitesData?.records || []));
+              setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
+              setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData?.records || []));
+              setLoading(false);
+            }).catch(() => {
+              setError("Failed to load data");
+              setLoading(false);
+            });
+          }}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
