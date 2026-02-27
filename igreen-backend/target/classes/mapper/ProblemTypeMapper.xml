@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igreen.domain.mapper.ProblemTypeMapper">
+
+    <resultMap id="ProblemTypeResultMap" type="com.igreen.domain.entity.ProblemType">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, description, created_at, updated_at
+    </sql>
+
+    <select id="selectByName" resultMap="ProblemTypeResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM problem_types
+        WHERE name = #{name}
+    </select>
+
+    <select id="countByNameAndIdNot" resultType="int">
+        SELECT COUNT(*)
+        FROM problem_types
+        WHERE name = #{name} AND id != #{id}
+    </select>
+
+</mapper>

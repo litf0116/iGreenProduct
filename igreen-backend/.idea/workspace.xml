@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="feat(template): 实现模板步骤配置的JSON存储和自动序列化&#10;&#10;- 新增 FieldType 枚举定义字段类型&#10;- 新增 TemplateStepConfig 类用于模板步骤配置&#10;- 修改 Template 实体类实现 stepConfig JSON 字段的自动序列化和反序列化&#10;- 移除 TemplateField 和 TemplateStep 的数据库映射，改为 JSON 存储&#10;- 更新 TemplateService 服务类使用新的 JSON 存储方式&#10;- 修改 TicketService 使用 TemplateService 获取模板步骤数据&#10;- 更新 TicketResponse 记录类语法格式">
+      <change afterPath="$PROJECT_DIR$/com/igreen/common/utils/FieldType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/com/igreen/common/utils/TemplateStepConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TemplateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TemplateController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TicketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TicketController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TemplateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TemplateService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/AccountSettings.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/CreateTicket.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/CreateTicket.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/LanguageSelector.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Login.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SystemSettings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/SystemSettings.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TicketDetail.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/mac/workspace/iGreenProduct/igreen-backend" value="38Mca6b0kZDBmLyFHpKRBC1rJhx" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="edit-panel" value="GPT-5 mini" />
+      <entry key="chat-panel" value="GPT-5 mini" />
+      <entry key="agent-panel" value="GPT-5 mini" />
+    </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="274" />
+    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="38Mca6b0kZDBmLyFHpKRBC1rJhx" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.igreen-backend [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.igreen-backend [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.igreen-backend [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.igreen-backend [package].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.IGreenApplication.executor&quot;: &quot;Debug&quot;,
+    &quot;checkBoxType&quot;: &quot;false&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/mac/workspace/iGreenProduct/igreen-backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/mac/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
+    ],
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL Dialect&quot;: [
+      &quot;MySQL&quot;
+    ]
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="IGreenApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="igreen-backend" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.igreen.IGreenApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.igreen.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.31033.133" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="" />
+      <created>1768612940937</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1768612940937</updated>
+      <workItem from="1770128898868" duration="3253000" />
+      <workItem from="1770219867722" duration="2981000" />
+      <workItem from="1770391984222" duration="1491000" />
+      <workItem from="1770471640853" duration="9522000" />
+      <workItem from="1770724210224" duration="5758000" />
+      <workItem from="1770786174646" duration="4562000" />
+      <workItem from="1770819165691" duration="2928000" />
+      <workItem from="1770905811641" duration="619000" />
+      <workItem from="1770980855603" duration="828000" />
+      <workItem from="1771051256030" duration="423000" />
+      <workItem from="1771823701306" duration="7029000" />
+      <workItem from="1772002890867" duration="10176000" />
+      <workItem from="1772033734988" duration="9140000" />
+      <workItem from="1772163353830" duration="4981000" />
+      <workItem from="1772178366020" duration="11000" />
+    </task>
+    <task id="LOCAL-00001" summary="feat(ui): 添加基础UI组件库和图片加载fallback功能&#10;&#10;- 实现ImageWithFallback组件用于处理图片加载失败显示默认svg图标&#10;- 集成radix-ui和lucide-react创建Accordion手风琴组件&#10;- 创建Alert警告提示组件支持不同变体样式&#10;- 实现AlertDialog模态对话框组件&#10;- 添加AspectRatio纵横比容器组件&#10;- 创建Avatar头像组件支持图片和备用显示&#10;- 实现Badge徽章标签组件多种样式&#10;- 添加Breadcrumb面包屑导航组件&#10;- 创建Button按钮组件支持多种变体和尺寸&#10;- 集成react-day-picker实现Calendar日历组件&#10;- 实现Card卡片布局组件及其子组件&#10;- 添加embla-carousel-react集成Carousel轮播图组件&#10;- 创建基于recharts的Chart图表容器组件">
+      <option name="closed" value="true" />
+      <created>1769529828151</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1769529828151</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat(config): 迁移至 EasyExcel 并新增工单系统配置功能&#10;&#10;- 集成 Alibaba EasyExcel 替代 Apache POI 处理 Excel 导入导出功能&#10;- 新增 SLA 配置表、问题类型表和站点等级配置表的数据库结构&#10;- 添加获取所有优先级配置的 API 接口用于工单系统&#10;- 实现站点数据的搜索功能支持按名称和描述模糊查询&#10;- 更新枚举类序列化方式使用小写字符串格式&#10;- 移除用户创建时的邮箱验证要求和响应中的邮箱字段&#10;- 在前端创建工单界面中添加工单类型选择下拉框&#10;- 修复前端工程师角色过滤逻辑使用大写枚举值&#10;- 调整仪表板组件中的工单状态和类型的大小写处理">
+      <option name="closed" value="true" />
+      <created>1769781232897</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1769781232897</updated>
+    </task>
+    <task id="LOCAL-00003" summary="docs(sisyphus): 添加开发进度分析报告和执行计划文档&#10;&#10;- 创建 development-progress-analysis.md 包含项目整体架构和技术栈概览&#10;- 添加后端服务igreen-backend的API端点实现状态和数据库表结构说明&#10;- 记录管理端igreen-front的页面组件和API对接情况&#10;- 描述工程师APP的工单工作流支持和待完善功能&#10;- 生成 EXECUTION_PLAN.md 文档包含问题清单和优先级分类&#10;- 添加 TypeScript 类型错误修复和 sonner 依赖修复方案&#10;- 设计站点数据导入导出功能的详细实现步骤&#10;- 制定 APK 打包和 Google Maps 集成的实施计划&#10;- 创建 SITE_IMPORT_EXPORT_API_DESIGN.md 详细的API设计文档&#10;- 定义站点导入导出的数据模型和实体类结构&#10;- 规划导入导出API端点和请求响应格式规范">
+      <option name="closed" value="true" />
+      <created>1769781297322</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1769781297322</updated>
+    </task>
+    <task id="LOCAL-00004" summary="refactor(group): 优化群组搜索功能实现&#10;&#10;- 移除不必要的通配符拼接操作&#10;- 简化Lambda查询表达式结构&#10;- 保持搜索关键词的日志输出&#10;- 统一关键词处理逻辑">
+      <option name="closed" value="true" />
+      <created>1769781398625</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769781398625</updated>
+    </task>
+    <task id="LOCAL-00005" summary="refactor(group): 优化群组搜索功能并移除重复代码&#10;&#10;- 重构 searchGroups 方法中的查询逻辑，提高代码可读性&#10;- 移除重复的 LambdaQueryWrapper 创建操作&#10;- 添加更详细的调试日志信息&#10;- 清理 UserService 中的冗余邮箱验证代码&#10;- 统一查询条件构建方式，便于后续维护">
+      <option name="closed" value="true" />
+      <created>1769782466087</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1769782466087</updated>
+    </task>
+    <task id="LOCAL-00006" summary="style(logging): 更新日志配置以改进格式和颜色支持&#10;&#10;- 为控制台输出添加颜色高亮显示&#10;- 统一所有日志输出格式，使用标准的时间戳格式&#10;- 调整日志模式以提高可读性&#10;- 将日志记录器名称长度从36增加到60个字符&#10;- 标准化文件日志输出格式与控制台一致">
+      <option name="closed" value="true" />
+      <created>1769782788335</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1769782788335</updated>
+    </task>
+    <task id="LOCAL-00007" summary="docs(tickets): 记录工单分配问题并完善文档&#10;&#10;- 添加工单分配功能问题记录文档，分析当前实现状态和冲突&#10;- 添加TicketDetail使用Capacitor Camera的修复计划文档&#10;- 添加应用图标配置到web manifest文件&#10;- 在capacitor配置中添加局域网访问允许列表&#10;- 更新应用标题为iGreen工程师工单系统&#10;- 添加存储功能测试脚本，验证Capacitor Preferences集成&#10;- 在国际化文件中添加工程师和经理角色翻译">
+      <option name="closed" value="true" />
+      <created>1770225707573</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1770225707573</updated>
+    </task>
+    <task id="LOCAL-00008" summary="refactor(domain): 将UserCreateRequest从record改为普通类并更新相关测试&#10;&#10;- 将UserCreateRequest从record语法转换为使用lombok的普通final类&#10;- 添加了完整的构造函数、getter方法和equals/hashCode/toString实现&#10;- 移除了UserCreateRequest中的email字段，更新了所有相关的测试用例&#10;- 更新了Capacitor插件路径配置以适配pnpm包管理器&#10;- 修复了前端组件导入格式和图标引用格式&#10;- 将应用图标文件名从icon.png更新为favicon.png">
+      <option name="closed" value="true" />
+      <created>1770394185097</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1770394185097</updated>
+    </task>
+    <task id="LOCAL-00009" summary="refactor(user): 优化用户服务登录查询逻辑并添加密码工具类&#10;&#10;- 修改登录查询使用 selectOne 替代 selectList 提升性能&#10;- 添加 LIMIT 1 限制避免多余数据查询&#10;- 新增 DirectPasswordTest 工具类用于密码验证测试&#10;- 新增 PasswordHashGenerator 工具类用于生成密码哈希&#10;- 新增 TestPasswordMatch 工具类用于密码匹配验证&#10;- 将服务器端口从 8000 调整为 8080">
+      <option name="closed" value="true" />
+      <created>1770733871677</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1770733871677</updated>
+    </task>
+    <task id="LOCAL-00010" summary="fix(auth): 修改用户角色权限校验逻辑&#10;&#10;- 修正了ADMIN和MANAGER角色跳过国家校验的条件判断&#10;- 将端口配置从8000调整为8080以避免冲突">
+      <option name="closed" value="true" />
+      <created>1770734639816</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1770734639816</updated>
+    </task>
+    <task id="LOCAL-00011" summary="fix(auth): 修改用户角色权限校验逻辑&#10;&#10;- 修正了ADMIN和MANAGER角色跳过国家校验的条件判断&#10;- 将端口配置从8000调整为8080以避免冲突">
+      <option name="closed" value="true" />
+      <created>1770772457249</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1770772457249</updated>
+    </task>
+    <task id="LOCAL-00012" summary="refactor(domain): 更新UserCreateRequest DTO以使用Lombok注解并修改字段访问方式&#10;&#10;- 为UserCreateRequest类添加@NoArgsConstructor和@AllArgsConstructor注解&#10;- 移除手动编写的构造函数、getter方法和equals/hashCode/toString方法&#10;- 将final字段改为普通私有字段并使用Lombok自动生成getter/setter&#10;- 在UserService中将record-style访问方式改为传统getter方法调用&#10;- 简化DTO的代码结构并提高可维护性">
+      <option name="closed" value="true" />
+      <created>1770805112844</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1770805112844</updated>
+    </task>
+    <task id="LOCAL-00013" summary="feat(config): 更新用户详情服务和安全配置&#10;&#10;- 在 CustomUserDetailsService 中使用 email 作为 username，如果 email 为空则使用 username&#10;- 更新 SecurityConfig 中的 Swagger 文档路径配置，添加 /api 前缀支持&#10;- 修复 TicketController 中分页参数验证，将最小页码从 0 改为 1&#10;- 修复 UserController 中分页参数验证，将最小页码从 0 改为 1&#10;- 在 Ticket 实体中添加 JsonSerialize 注解处理 ID 序列化&#10;- 在 UserService 中创建用户时自动生成邮箱地址&#10;- 移除日志配置中 Spring 和 Hibernate 的冗余日志设置&#10;- 在前端文件上传功能中添加文件验证和错误处理&#10;- 更新 Dialog 组件添加描述支持&#10;- 将 API 调用中的票证 ID 类型从数字改为字符串&#10;- 修改 Mock 数据中的票证 ID 为字符串类型&#10;- 移除应用中的种子数据功能&#10;- 更新环境配置中的 API 地址&#10;- 添加后端 API 测试脚本和文档&#10;- 更新 AGENTS.md 文档中的构建和代码风格指南">
+      <option name="closed" value="true" />
+      <created>1770829337141</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1770829337141</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat(jackson): 添加Long类型序列化配置避免前端精度丢失&#10;&#10;- 在Jackson配置中注册SimpleModule处理Long类型序列化&#10;- 配置Long和long类型统一序列化为字符串格式&#10;- 在TicketResponse中添加@JsonSerialize注解确保ID字段正确序列化&#10;- 解决JavaScript大整数精度丢失问题">
+      <option name="closed" value="true" />
+      <created>1770832512885</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1770832512885</updated>
+    </task>
+    <task id="LOCAL-00015" summary="feat(ticket): 支持工单分配给用户组并实现抢单功能&#10;&#10;- 数据库表tickets新增accepted_user_id字段存储抢单用户ID&#10;- 修改Ticket实体类新增acceptedUserId字段和assignGroup关联&#10;- 更新TicketResponse响应类新增acceptedUserId和acceptedUserName字段&#10;- 创建工单时验证assignedTo改为查询Group而非User&#10;- 实现抢单逻辑保持assignedTo组ID不变并记录acceptedUserId&#10;- 所有操作权限验证改为优先使用acceptedUserId&#10;- 更新数据映射配置将assigned_to外键指向groups表&#10;- 完善工单响应构造逻辑支持返回抢单用户信息">
+      <option name="closed" value="true" />
+      <created>1771852866184</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1771852866184</updated>
+    </task>
+    <task id="LOCAL-00016" summary="refactor(ticket): 将工单中的站点字段从site改为siteId并添加站点关联查询&#10;&#10;- 将TicketCreateRequest、TicketResponse、TicketUpdateRequest中的site字段重命名为siteId&#10;- 在Ticket实体类中将site字段改为siteId，并添加Site关联对象&#10;- 更新TicketService中所有相关方法以使用siteId进行查询和设置&#10;- 添加对siteId的有效性验证逻辑&#10;- 更新MyBatis映射文件中的字段映射和关联查询配置">
+      <option name="closed" value="true" />
+      <created>1771855951800</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1771855951800</updated>
+    </task>
+    <task id="LOCAL-00017" summary="feat(ticket): 更新待办工单获取功能以支持用户分组过滤&#10;&#10;- 修改 getPendingTickets 方法以接收并验证用户ID参数&#10;- 在 TicketMapper 中添加 groupId 参数以实现分组过滤功能&#10;- 更新 TicketService 中的查询逻辑以基于用户组过滤工单&#10;- 优化数据库查询以关联站点信息并返回完整数据&#10;- 在前端 API 层添加站点详细信息字段映射&#10;- 更新数据模型以包含站点 ID、名称和地址信息&#10;- 修改工单创建表单以使用 siteId 字段替换旧的 site 字段">
+      <option name="closed" value="true" />
+      <created>1771856406758</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1771856406758</updated>
+    </task>
+    <task id="LOCAL-00018" summary="refactor(ticket): 统一使用 siteId 替代 site 字段&#10;&#10;- 将 CreateTicket 组件中的 site 字段改为 siteId&#10;- 更新 Dashboard 组件中票据表格的站点显示逻辑&#10;- 修改 TicketDetail 组件中站点详情的显示方式&#10;- 在类型定义中将 Ticket 接口的 site 字段替换为 siteId，并添加 siteName 和 siteAddress 可选字段&#10;- 更新 CreateTicketProps 类型定义以使用 siteId 字段&#10;- 修改 UpdateTicketData 类型定义中的站点字段命名">
+      <option name="closed" value="true" />
+      <created>1771895475679</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1771895475679</updated>
+    </task>
+    <task id="LOCAL-00019" summary="refactor(dto): 更新登录请求数据传输对象&#10;&#10;- 将 LoginRequest 从 record 类型重构为 final 类，并添加完整的构造函数&#10;- 添加了 Lombok Data 注解以自动生成 getter 方法&#10;- 保留了用户名和密码的非空验证注解&#10;- 添加了 equals、hashCode 和 toString 方法实现&#10;- 在前端 mock 数据中将 site 字段拆分为 siteId 和 siteName 两个独立字段&#10;- 更新了所有相关的测试数据以匹配新的字段结构">
+      <option name="closed" value="true" />
+      <created>1772013108943</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1772013108943</updated>
+    </task>
+    <task id="LOCAL-00020" summary="refactor(exception): 重构全局异常处理器中的通用异常处理方法&#10;&#10;- 移除了原来简单的服务器错误响应实现&#10;- 添加了 StringWriter 来更好地处理异常信息&#10;- 保持了对所有未预期异常的统一处理机制&#10;- 为后续的异常信息详细记录提供了基础结构">
+      <option name="closed" value="true" />
+      <created>1772014845394</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1772014845394</updated>
+    </task>
+    <task id="LOCAL-00021" summary="config(app): 修改应用端口配置&#10;&#10;- 在JVM参数中添加默认端口8088设置&#10;- 将生产环境配置文件中的默认端口从8080改为8088&#10;- 保持端口配置的一致性">
+      <option name="closed" value="true" />
+      <created>1772017665097</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1772017665097</updated>
+    </task>
+    <task id="LOCAL-00022" summary="config(server): 修改开发环境服务器端口配置&#10;&#10;- 将服务器端口从 8080 更改为 8088&#10;- 更新开发环境应用配置以避免端口冲突">
+      <option name="closed" value="true" />
+      <created>1772018725815</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1772018725815</updated>
+    </task>
+    <task id="LOCAL-00023" summary="chore(config): 更新服务器端口配置并移除虚拟线程设置&#10;&#10;- 将 application.yml 中默认端口从 8080 修改为 8089&#10;- 将 application-dev.yml 中端口从 8088 修改为 8089&#10;- 将 application-prod.yml 中端口从 8088 修改为 8089&#10;- 移除 application-prod.yml 中的虚拟线程配置项&#10;- 删除应用目录下的 JAR 控制脚本文件">
+      <option name="closed" value="true" />
+      <created>1772021532001</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1772021532001</updated>
+    </task>
+    <task id="LOCAL-00024" summary="config(logging): 调整日志级别配置&#10;&#10;- 在application.yml中为com包设置INFO级别日志&#10;- 在application-prod.yml中为com包设置INFO级别日志&#10;- 将前端开发环境API端口从8000改为8088">
+      <option name="closed" value="true" />
+      <created>1772071296058</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1772071296058</updated>
+    </task>
+    <task id="LOCAL-00025" summary="refactor(controller): 移除API路径中的/api前缀并优化代码结构&#10;&#10;- 移除所有控制器类中的/api路径前缀，统一使用简洁的根路径&#10;- 将AuthController中的多余空行和格式化代码进行优化&#10;- 简化DTO导入方式，使用通配符导入替代逐个导入&#10;- 优化JWT令牌生成和用户查询的代码行长度&#10;- 统一所有控制器的基础路径映射规则">
+      <option name="closed" value="true" />
+      <created>1772080513685</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1772080513685</updated>
+    </task>
+    <task id="LOCAL-00026" summary="refactor(config): 统一系统配置和API优先级处理&#10;&#10;- 修改CustomUserDetailsService使用原始输入作为username保持登录一致性&#10;- 调整SecurityConfig允许/auth/**和/health端点公开访问&#10;- 重构SiteLevelConfig相关DTO和实体类将maxConcurrentTickets和escalationTimeHours替换为slaMultiplier&#10;- 更新ConfigService适配新的站点级别配置结构&#10;- 修改SystemSettings组件适配新的SLA倍数配置界面&#10;- 调整前后端优先级映射统一使用P1-P4标准&#10;- 添加代理配置脚本和文档支持本地远程开发环境切换&#10;- 移除多余的结果映射和SQL片段优化数据库查询&#10;- 更新mock数据和类型定义适配新配置字段结构">
+      <option name="closed" value="true" />
+      <created>1772084785304</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1772084785304</updated>
+    </task>
+    <task id="LOCAL-00027" summary="```&#10;config(api): 更新API服务器地址配置&#10;&#10;- 将API_BASE_URL从环境变量改为硬编码配置&#10;- 设置生产环境服务器地址为 http://43.255.212.68:8088&#10;- 添加多个备用服务器地址供不同环境使用&#10;- 移除环境变量配置方式并更新相关说明文档&#10;- 配置Capacitor允许访问多个IP地址和域名&#10;```">
+      <option name="closed" value="true" />
+      <created>1772167359268</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1772167359268</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat(config): 迁移至 EasyExcel 并新增工单系统配置功能&#10;&#10;- 集成 Alibaba EasyExcel 替代 Apache POI 处理 Excel 导入导出功能&#10;- 新增 SLA 配置表、问题类型表和站点等级配置表的数据库结构&#10;- 添加获取所有优先级配置的 API 接口用于工单系统&#10;- 实现站点数据的搜索功能支持按名称和描述模糊查询&#10;- 更新枚举类序列化方式使用小写字符串格式&#10;- 移除用户创建时的邮箱验证要求和响应中的邮箱字段&#10;- 在前端创建工单界面中添加工单类型选择下拉框&#10;- 修复前端工程师角色过滤逻辑使用大写枚举值&#10;- 调整仪表板组件中的工单状态和类型的大小写处理" />
+    <MESSAGE value="docs(sisyphus): 添加开发进度分析报告和执行计划文档&#10;&#10;- 创建 development-progress-analysis.md 包含项目整体架构和技术栈概览&#10;- 添加后端服务igreen-backend的API端点实现状态和数据库表结构说明&#10;- 记录管理端igreen-front的页面组件和API对接情况&#10;- 描述工程师APP的工单工作流支持和待完善功能&#10;- 生成 EXECUTION_PLAN.md 文档包含问题清单和优先级分类&#10;- 添加 TypeScript 类型错误修复和 sonner 依赖修复方案&#10;- 设计站点数据导入导出功能的详细实现步骤&#10;- 制定 APK 打包和 Google Maps 集成的实施计划&#10;- 创建 SITE_IMPORT_EXPORT_API_DESIGN.md 详细的API设计文档&#10;- 定义站点导入导出的数据模型和实体类结构&#10;- 规划导入导出API端点和请求响应格式规范" />
+    <MESSAGE value="refactor(group): 优化群组搜索功能实现&#10;&#10;- 移除不必要的通配符拼接操作&#10;- 简化Lambda查询表达式结构&#10;- 保持搜索关键词的日志输出&#10;- 统一关键词处理逻辑" />
+    <MESSAGE value="refactor(group): 优化群组搜索功能并移除重复代码&#10;&#10;- 重构 searchGroups 方法中的查询逻辑，提高代码可读性&#10;- 移除重复的 LambdaQueryWrapper 创建操作&#10;- 添加更详细的调试日志信息&#10;- 清理 UserService 中的冗余邮箱验证代码&#10;- 统一查询条件构建方式，便于后续维护" />
+    <MESSAGE value="style(logging): 更新日志配置以改进格式和颜色支持&#10;&#10;- 为控制台输出添加颜色高亮显示&#10;- 统一所有日志输出格式，使用标准的时间戳格式&#10;- 调整日志模式以提高可读性&#10;- 将日志记录器名称长度从36增加到60个字符&#10;- 标准化文件日志输出格式与控制台一致" />
+    <MESSAGE value="docs(tickets): 记录工单分配问题并完善文档&#10;&#10;- 添加工单分配功能问题记录文档，分析当前实现状态和冲突&#10;- 添加TicketDetail使用Capacitor Camera的修复计划文档&#10;- 添加应用图标配置到web manifest文件&#10;- 在capacitor配置中添加局域网访问允许列表&#10;- 更新应用标题为iGreen工程师工单系统&#10;- 添加存储功能测试脚本，验证Capacitor Preferences集成&#10;- 在国际化文件中添加工程师和经理角色翻译" />
+    <MESSAGE value="refactor(domain): 将UserCreateRequest从record改为普通类并更新相关测试&#10;&#10;- 将UserCreateRequest从record语法转换为使用lombok的普通final类&#10;- 添加了完整的构造函数、getter方法和equals/hashCode/toString实现&#10;- 移除了UserCreateRequest中的email字段，更新了所有相关的测试用例&#10;- 更新了Capacitor插件路径配置以适配pnpm包管理器&#10;- 修复了前端组件导入格式和图标引用格式&#10;- 将应用图标文件名从icon.png更新为favicon.png" />
+    <MESSAGE value="refactor(user): 优化用户服务登录查询逻辑并添加密码工具类&#10;&#10;- 修改登录查询使用 selectOne 替代 selectList 提升性能&#10;- 添加 LIMIT 1 限制避免多余数据查询&#10;- 新增 DirectPasswordTest 工具类用于密码验证测试&#10;- 新增 PasswordHashGenerator 工具类用于生成密码哈希&#10;- 新增 TestPasswordMatch 工具类用于密码匹配验证&#10;- 将服务器端口从 8000 调整为 8080" />
+    <MESSAGE value="fix(auth): 修改用户角色权限校验逻辑&#10;&#10;- 修正了ADMIN和MANAGER角色跳过国家校验的条件判断&#10;- 将端口配置从8000调整为8080以避免冲突" />
+    <MESSAGE value="refactor(domain): 更新UserCreateRequest DTO以使用Lombok注解并修改字段访问方式&#10;&#10;- 为UserCreateRequest类添加@NoArgsConstructor和@AllArgsConstructor注解&#10;- 移除手动编写的构造函数、getter方法和equals/hashCode/toString方法&#10;- 将final字段改为普通私有字段并使用Lombok自动生成getter/setter&#10;- 在UserService中将record-style访问方式改为传统getter方法调用&#10;- 简化DTO的代码结构并提高可维护性" />
+    <MESSAGE value="feat(config): 更新用户详情服务和安全配置&#10;&#10;- 在 CustomUserDetailsService 中使用 email 作为 username，如果 email 为空则使用 username&#10;- 更新 SecurityConfig 中的 Swagger 文档路径配置，添加 /api 前缀支持&#10;- 修复 TicketController 中分页参数验证，将最小页码从 0 改为 1&#10;- 修复 UserController 中分页参数验证，将最小页码从 0 改为 1&#10;- 在 Ticket 实体中添加 JsonSerialize 注解处理 ID 序列化&#10;- 在 UserService 中创建用户时自动生成邮箱地址&#10;- 移除日志配置中 Spring 和 Hibernate 的冗余日志设置&#10;- 在前端文件上传功能中添加文件验证和错误处理&#10;- 更新 Dialog 组件添加描述支持&#10;- 将 API 调用中的票证 ID 类型从数字改为字符串&#10;- 修改 Mock 数据中的票证 ID 为字符串类型&#10;- 移除应用中的种子数据功能&#10;- 更新环境配置中的 API 地址&#10;- 添加后端 API 测试脚本和文档&#10;- 更新 AGENTS.md 文档中的构建和代码风格指南" />
+    <MESSAGE value="feat(jackson): 添加Long类型序列化配置避免前端精度丢失&#10;&#10;- 在Jackson配置中注册SimpleModule处理Long类型序列化&#10;- 配置Long和long类型统一序列化为字符串格式&#10;- 在TicketResponse中添加@JsonSerialize注解确保ID字段正确序列化&#10;- 解决JavaScript大整数精度丢失问题" />
+    <MESSAGE value="feat(ticket): 支持工单分配给用户组并实现抢单功能&#10;&#10;- 数据库表tickets新增accepted_user_id字段存储抢单用户ID&#10;- 修改Ticket实体类新增acceptedUserId字段和assignGroup关联&#10;- 更新TicketResponse响应类新增acceptedUserId和acceptedUserName字段&#10;- 创建工单时验证assignedTo改为查询Group而非User&#10;- 实现抢单逻辑保持assignedTo组ID不变并记录acceptedUserId&#10;- 所有操作权限验证改为优先使用acceptedUserId&#10;- 更新数据映射配置将assigned_to外键指向groups表&#10;- 完善工单响应构造逻辑支持返回抢单用户信息" />
+    <MESSAGE value="refactor(ticket): 将工单中的站点字段从site改为siteId并添加站点关联查询&#10;&#10;- 将TicketCreateRequest、TicketResponse、TicketUpdateRequest中的site字段重命名为siteId&#10;- 在Ticket实体类中将site字段改为siteId，并添加Site关联对象&#10;- 更新TicketService中所有相关方法以使用siteId进行查询和设置&#10;- 添加对siteId的有效性验证逻辑&#10;- 更新MyBatis映射文件中的字段映射和关联查询配置" />
+    <MESSAGE value="feat(ticket): 更新待办工单获取功能以支持用户分组过滤&#10;&#10;- 修改 getPendingTickets 方法以接收并验证用户ID参数&#10;- 在 TicketMapper 中添加 groupId 参数以实现分组过滤功能&#10;- 更新 TicketService 中的查询逻辑以基于用户组过滤工单&#10;- 优化数据库查询以关联站点信息并返回完整数据&#10;- 在前端 API 层添加站点详细信息字段映射&#10;- 更新数据模型以包含站点 ID、名称和地址信息&#10;- 修改工单创建表单以使用 siteId 字段替换旧的 site 字段" />
+    <MESSAGE value="refactor(ticket): 统一使用 siteId 替代 site 字段&#10;&#10;- 将 CreateTicket 组件中的 site 字段改为 siteId&#10;- 更新 Dashboard 组件中票据表格的站点显示逻辑&#10;- 修改 TicketDetail 组件中站点详情的显示方式&#10;- 在类型定义中将 Ticket 接口的 site 字段替换为 siteId，并添加 siteName 和 siteAddress 可选字段&#10;- 更新 CreateTicketProps 类型定义以使用 siteId 字段&#10;- 修改 UpdateTicketData 类型定义中的站点字段命名" />
+    <MESSAGE value="refactor(dto): 更新登录请求数据传输对象&#10;&#10;- 将 LoginRequest 从 record 类型重构为 final 类，并添加完整的构造函数&#10;- 添加了 Lombok Data 注解以自动生成 getter 方法&#10;- 保留了用户名和密码的非空验证注解&#10;- 添加了 equals、hashCode 和 toString 方法实现&#10;- 在前端 mock 数据中将 site 字段拆分为 siteId 和 siteName 两个独立字段&#10;- 更新了所有相关的测试数据以匹配新的字段结构" />
+    <MESSAGE value="refactor(exception): 重构全局异常处理器中的通用异常处理方法&#10;&#10;- 移除了原来简单的服务器错误响应实现&#10;- 添加了 StringWriter 来更好地处理异常信息&#10;- 保持了对所有未预期异常的统一处理机制&#10;- 为后续的异常信息详细记录提供了基础结构" />
+    <MESSAGE value="config(app): 修改应用端口配置&#10;&#10;- 在JVM参数中添加默认端口8088设置&#10;- 将生产环境配置文件中的默认端口从8080改为8088&#10;- 保持端口配置的一致性" />
+    <MESSAGE value="config(server): 修改开发环境服务器端口配置&#10;&#10;- 将服务器端口从 8080 更改为 8088&#10;- 更新开发环境应用配置以避免端口冲突" />
+    <MESSAGE value="chore(config): 更新服务器端口配置并移除虚拟线程设置&#10;&#10;- 将 application.yml 中默认端口从 8080 修改为 8089&#10;- 将 application-dev.yml 中端口从 8088 修改为 8089&#10;- 将 application-prod.yml 中端口从 8088 修改为 8089&#10;- 移除 application-prod.yml 中的虚拟线程配置项&#10;- 删除应用目录下的 JAR 控制脚本文件" />
+    <MESSAGE value="config(logging): 调整日志级别配置&#10;&#10;- 在application.yml中为com包设置INFO级别日志&#10;- 在application-prod.yml中为com包设置INFO级别日志&#10;- 将前端开发环境API端口从8000改为8088" />
+    <MESSAGE value="refactor(controller): 移除API路径中的/api前缀并优化代码结构&#10;&#10;- 移除所有控制器类中的/api路径前缀，统一使用简洁的根路径&#10;- 将AuthController中的多余空行和格式化代码进行优化&#10;- 简化DTO导入方式，使用通配符导入替代逐个导入&#10;- 优化JWT令牌生成和用户查询的代码行长度&#10;- 统一所有控制器的基础路径映射规则" />
+    <MESSAGE value="refactor(config): 统一系统配置和API优先级处理&#10;&#10;- 修改CustomUserDetailsService使用原始输入作为username保持登录一致性&#10;- 调整SecurityConfig允许/auth/**和/health端点公开访问&#10;- 重构SiteLevelConfig相关DTO和实体类将maxConcurrentTickets和escalationTimeHours替换为slaMultiplier&#10;- 更新ConfigService适配新的站点级别配置结构&#10;- 修改SystemSettings组件适配新的SLA倍数配置界面&#10;- 调整前后端优先级映射统一使用P1-P4标准&#10;- 添加代理配置脚本和文档支持本地远程开发环境切换&#10;- 移除多余的结果映射和SQL片段优化数据库查询&#10;- 更新mock数据和类型定义适配新配置字段结构" />
+    <MESSAGE value="```&#10;config(api): 更新API服务器地址配置&#10;&#10;- 将API_BASE_URL从环境变量改为硬编码配置&#10;- 设置生产环境服务器地址为 http://43.255.212.68:8088&#10;- 添加多个备用服务器地址供不同环境使用&#10;- 移除环境变量配置方式并更新相关说明文档&#10;- 配置Capacitor允许访问多个IP地址和域名&#10;```" />
+    <option name="LAST_COMMIT_MESSAGE" value="```&#10;config(api): 更新API服务器地址配置&#10;&#10;- 将API_BASE_URL从环境变量改为硬编码配置&#10;- 设置生产环境服务器地址为 http://43.255.212.68:8088&#10;- 添加多个备用服务器地址供不同环境使用&#10;- 移除环境变量配置方式并更新相关说明文档&#10;- 配置Capacitor允许访问多个IP地址和域名&#10;```" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

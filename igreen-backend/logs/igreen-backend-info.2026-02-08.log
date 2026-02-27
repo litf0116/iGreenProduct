@@ -1,0 +1,39 @@
+[2026-02-08 19:59:31.026] INFO  main com.igreen.IGreenApplication - Starting IGreenApplication using Java 17.0.15 with PID 55581 (/Users/mac/workspace/iGreenProduct/igreen-backend/target/classes started by mac in /Users/mac/workspace/iGreenProduct/igreen-backend)
+[2026-02-08 19:59:31.028] INFO  main com.igreen.IGreenApplication - The following 1 profile is active: "dev"
+[2026-02-08 19:59:33.164] INFO  main o.s.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2026-02-08 19:59:33.199] INFO  main o.s.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 24 ms. Found 0 JPA repository interfaces.
+[2026-02-08 19:59:35.521] INFO  main o.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8000 (http)
+[2026-02-08 19:59:35.548] INFO  main org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8000"]
+[2026-02-08 19:59:35.552] INFO  main org.apache.catalina.core.StandardService - Starting service [Tomcat]
+[2026-02-08 19:59:35.553] INFO  main org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+[2026-02-08 19:59:35.719] INFO  main o.a.catalina.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+[2026-02-08 19:59:35.720] INFO  main o.s.b.web.servlet.context.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4499 ms
+[2026-02-08 19:59:36.847] WARN  main com.baomidou.mybatisplus.core.injector.methods.Insert - [com.igreen.domain.mapper.GroupMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+[2026-02-08 19:59:36.854] WARN  main com.baomidou.mybatisplus.core.injector.methods.Update - [com.igreen.domain.mapper.GroupMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+[2026-02-08 19:59:36.863] WARN  main com.baomidou.mybatisplus.core.injector.methods.SelectList - [com.igreen.domain.mapper.GroupMapper.selectList] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectList]
+[2026-02-08 19:59:36.864] WARN  main com.baomidou.mybatisplus.core.injector.methods.DeleteById - [com.igreen.domain.mapper.GroupMapper.deleteById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.DeleteById]
+[2026-02-08 19:59:36.869] WARN  main com.baomidou.mybatisplus.core.injector.methods.SelectById - [com.igreen.domain.mapper.GroupMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+[2026-02-08 19:59:38.236] INFO  main o.s.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+[2026-02-08 19:59:38.280] INFO  main com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+[2026-02-08 19:59:38.948] INFO  main com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@608c7b5b
+[2026-02-08 19:59:38.952] INFO  main com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+[2026-02-08 19:59:39.117] WARN  main org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+[2026-02-08 19:59:40.033] INFO  main o.s.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+[2026-02-08 19:59:40.864] WARN  main o.s.b.a.orm.jpa.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+[2026-02-08 19:59:42.220] INFO  main o.s.boot.actuate.endpoint.web.EndpointLinksResolver - Exposing 2 endpoint(s) beneath base path '/actuator'
+[2026-02-08 19:59:42.379] INFO  main org.springframework.security.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@921dbcf, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@163b8acc, com.igreen.common.config.SecurityConfig$1@24090832, org.springframework.security.web.context.SecurityContextHolderFilter@6aa7d7a0, org.springframework.security.web.header.HeaderWriterFilter@741f8cf, org.springframework.web.filter.CorsFilter@7e38d2a2, org.springframework.security.web.authentication.logout.LogoutFilter@1106a9cc, com.igreen.common.config.RateLimitFilter@569a26ab, com.igreen.common.utils.JwtAuthenticationFilter@2411b935, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@526a1b51, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@303a484e, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@79408109, org.springframework.security.web.session.SessionManagementFilter@4a66949a, org.springframework.security.web.access.ExceptionTranslationFilter@3884e858, org.springframework.security.web.access.intercept.AuthorizationFilter@1ccdbae4]
+[2026-02-08 19:59:43.925] INFO  main org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8000"]
+[2026-02-08 19:59:43.967] INFO  main o.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8000 (http) with context path ''
+[2026-02-08 19:59:43.989] INFO  main com.igreen.IGreenApplication - Started IGreenApplication in 14.005 seconds (process running for 16.54)
+[2026-02-08 19:59:44.000] INFO  main com.igreen.common.config.DatabaseInitConfig - 开始初始化数据库表结构...
+[2026-02-08 19:59:44.001] INFO  main com.igreen.common.config.DatabaseInitConfig - 检查并修复 sla_configs 表结构...
+[2026-02-08 19:59:44.122] INFO  main com.igreen.common.config.DatabaseInitConfig - sla_configs 表结构修复完成
+[2026-02-08 19:59:44.122] INFO  main com.igreen.common.config.DatabaseInitConfig - 检查并修复 site_level_configs 表结构...
+[2026-02-08 19:59:44.158] INFO  main com.igreen.common.config.DatabaseInitConfig - site_level_configs 表结构修复完成
+[2026-02-08 19:59:44.158] INFO  main com.igreen.common.config.DatabaseInitConfig - 数据库表结构初始化完成
+[2026-02-08 19:59:44.763] INFO  RMI TCP Connection(4)-127.0.0.1 o.a.catalina.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+[2026-02-08 19:59:44.763] INFO  RMI TCP Connection(4)-127.0.0.1 org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+[2026-02-08 19:59:44.770] INFO  RMI TCP Connection(4)-127.0.0.1 org.springframework.web.servlet.DispatcherServlet - Completed initialization in 6 ms
+[2026-02-08 20:56:11.596] INFO  SpringApplicationShutdownHook o.s.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+[2026-02-08 20:56:11.620] INFO  SpringApplicationShutdownHook com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+[2026-02-08 20:56:11.626] INFO  SpringApplicationShutdownHook com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
