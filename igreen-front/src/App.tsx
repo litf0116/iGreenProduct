@@ -87,7 +87,7 @@ function AppLayout() {
                 api.getUsers({page: 0, size: 100}).catch(() => ({records: []})),
             ]);
 
-            setTickets(ticketsRes.records || ticketsRes || []);
+            setTickets(Array.isArray(ticketsRes?.records) ? ticketsRes.records : []);
             setTemplates(templatesRes || []);
             setSites(sitesRes.records || sitesRes || []);
             setGroups(groupsRes || []);
@@ -155,10 +155,10 @@ function AppLayout() {
     };
 
     const stats = {
-        total: tickets.length,
-        pending: tickets.filter((t) => t.status === "open").length,
-        inProgress: tickets.filter((t) => t.status === "in_progress" || t.status === "accepted").length,
-        completed: tickets.filter((t) => t.status === "completed").length,
+        total: Array.isArray(tickets) ? tickets.length : 0,
+        pending: Array.isArray(tickets) ? tickets.filter((t) => t.status === "open").length : 0,
+        inProgress: Array.isArray(tickets) ? tickets.filter((t) => t.status === "in_progress" || t.status === "accepted").length : 0,
+        completed: Array.isArray(tickets) ? tickets.filter((t) => t.status === "completed").length : 0,
     };
 
     const handleLogout = () => {
@@ -184,10 +184,7 @@ function AppLayout() {
     const handleUpdateSite = async (id: string, siteData: Partial<Site>) => {
         try {
             const updatedSite = await api.updateSite(id, siteData);
-            setSites((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((s) => (s.id === id ? updatedSite : s)),
-            }));
+            setSites((prev) => prev.map((s) => (s.id === id ? updatedSite : s)));
             toast.success(t("siteUpdated"));
         } catch (error: any) {
             toast.error(error.message || "Failed to update site");
@@ -197,10 +194,7 @@ function AppLayout() {
     const handleDeleteSite = async (id: string) => {
         try {
             await api.deleteSite(id);
-            setSites((prev) => ({
-                ...prev,
-                records: (prev.records || prev).filter((s) => s.id !== id),
-            }));
+            setSites((prev) => prev.filter((s) => s.id !== id));
             toast.success(t("siteDeleted"));
         } catch (error: any) {
             toast.error(error.message || "Failed to delete site");
@@ -237,17 +231,11 @@ function AppLayout() {
         try {
             if (userData.id) {
                 const updated = await api.updateUser(userData.id, userData);
-                setUsers((prev) => ({
-                    ...prev,
-                    records: (prev.records || prev).map((u) => (u.id === userData.id ? updated : u)),
-                }));
+                setUsers((prev) => prev.map((u) => (u.id === userData.id ? updated : u)));
                 toast.success(t("userUpdated"));
             } else {
                 const created = await api.createUser(userData);
-                setUsers((prev) => ({
-                    ...prev,
-                    records: [...(prev.records || prev), created],
-                }));
+                setUsers((prev) => [...prev, created]);
                 toast.success(t("userCreated"));
             }
         } catch (error: any) {
@@ -258,10 +246,7 @@ function AppLayout() {
     const handleDeleteUser = async (id: string) => {
         try {
             await api.deleteUser(id);
-            setUsers((prev) => ({
-                ...prev,
-                records: (prev.records || prev).filter((u) => u.id !== id),
-            }));
+            setUsers((prev) => prev.filter((u) => u.id !== id));
             toast.success("User deleted");
         } catch (error: any) {
             toast.error(error.message || "Failed to delete user");
@@ -335,10 +320,7 @@ function AppLayout() {
     const handleAcceptTicket = async (ticketId: string, comment?: string) => {
         try {
             const updated = await api.acceptTicket(ticketId, comment);
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Ticket accepted");
         } catch (error: any) {
@@ -349,10 +331,7 @@ function AppLayout() {
     const handleDeclineTicket = async (ticketId: string, reason: string) => {
         try {
             const updated = await api.declineTicket(ticketId, reason);
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Ticket declined");
         } catch (error: any) {
@@ -364,10 +343,7 @@ function AppLayout() {
         try {
             const updated = await api.updateTicket(ticketId, {status: "ON_HOLD" as TicketStatus});
             await api.addComment(ticketId, reason, "GENERAL");
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.info("Ticket put on hold");
         } catch (error: any) {
@@ -378,10 +354,7 @@ function AppLayout() {
     const handleResumeTicket = async (ticketId: string) => {
         try {
             const updated = await api.updateTicket(ticketId, {status: "IN_PROGRESS" as TicketStatus});
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Ticket resumed");
         } catch (error: any) {
@@ -396,10 +369,7 @@ function AppLayout() {
                 status: "assigned" as TicketStatus,
             });
             await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success(`Ticket reassigned to ${newAssigneeName}`);
         } catch (error: any) {
@@ -410,10 +380,7 @@ function AppLayout() {
     const handleDeparture = async (ticketId: string, photo?: string) => {
         try {
             const updated = await api.departTicket(ticketId, photo);
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Departure marked successfully");
         } catch (error: any) {
@@ -424,10 +391,7 @@ function AppLayout() {
     const handleArrival = async (ticketId: string, photo?: string) => {
         try {
             const updated = await api.arriveTicket(ticketId, photo);
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Arrival marked successfully");
         } catch (error: any) {
@@ -439,10 +403,7 @@ function AppLayout() {
         try {
             const updated = await api.completeTicket(ticketId, photo);
             await api.updateTicket(ticketId, {cause, solution});
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Ticket submitted for confirmation");
         } catch (error: any) {
@@ -453,10 +414,7 @@ function AppLayout() {
     const handleConfirmCompletion = async (ticketId: string) => {
         try {
             const updated = await api.reviewTicket(ticketId);
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.success("Ticket confirmed and closed");
         } catch (error: any) {
@@ -468,10 +426,7 @@ function AppLayout() {
         try {
             const updated = await api.updateTicket(ticketId, {status: "IN_PROGRESS" as TicketStatus});
             await api.addComment(ticketId, `Completion rejected: ${reason}`, "COMMENT");
-            setTickets((prev) => ({
-                ...prev,
-                records: (prev.records || prev).map((t) => (t.id === ticketId ? updated : t)),
-            }));
+            setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             toast.info("Ticket returned to In Progress");
         } catch (error: any) {
