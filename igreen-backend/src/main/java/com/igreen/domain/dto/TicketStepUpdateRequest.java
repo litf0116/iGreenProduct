@@ -1,7 +1,7 @@
 package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotNull;
+import com.igreen.domain.entity.TemplateFieldValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,4 +38,6 @@ public class TicketStepUpdateRequest {
     private List<String> afterPhotoUrls;
 
     private String timestamp;
+
+    private List<TemplateFieldValue> fieldValues;
 }

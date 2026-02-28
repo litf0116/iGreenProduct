@@ -439,21 +439,23 @@ export function Dashboard({ tickets, language, onCreateTicket, onViewTicket }: D
                           </span>
                         </TableCell>
                         <TableCell>
-                          {ticket.completedSteps.length > 0 && (
-                            <div className="flex items-center gap-2 min-w-[100px]">
-                              <div className="flex-1 bg-muted rounded-full h-2">
-                                <div
-                                  className="bg-[#0ea5e9] h-2 rounded-full transition-all"
-                                  style={{
-                                    width: `${(ticket.completedSteps.length / (ticket.completedSteps.length + 1)) * 100}%`,
-                                  }}
-                                />
-                              </div>
-                              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                                {ticket.completedSteps.length}
-                              </span>
+                          <div className="flex items-center gap-2 min-w-[100px]">
+                            <div className="flex-1 bg-muted rounded-full h-2">
+                              <div
+                                className="bg-[#0ea5e9] h-2 rounded-full transition-all"
+                                style={{
+                                  width: ticket?.stepData?.data?.steps?.length > 0
+                                    ? `${(ticket.stepData.data.steps.filter(s => s.completed).length / ticket.stepData.data.steps.length) * 100}%`
+                                    : '100%',
+                                }}
+                              />
                             </div>
-                          )}
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">
+                              {ticket?.stepData?.data?.steps?.length > 0
+                                ? `${ticket.stepData.data.steps.filter(s => s.completed).length}/${ticket.stepData.data.steps.length}`
+                                : '0/0'}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button

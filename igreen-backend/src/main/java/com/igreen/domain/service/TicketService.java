@@ -2,6 +2,7 @@ package com.igreen.domain.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -14,6 +15,8 @@ import com.igreen.domain.enums.CommentType;
 import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,41 +55,21 @@ public class TicketService {
         }
 
         // 验证 siteId（如果提供）
-        Site site = null;
-        if (request.siteId() != null && !request.siteId().isEmpty()) {
-            site = siteMapper.selectById(request.siteId());
-            if (site == null) {
-                throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
-            }
+        Site site = siteMapper.selectById(request.siteId());
+        if (site == null) {
+            throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
         }
+
 
         String relatedTicketIdsJson = null;
         if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
-            try {
-                relatedTicketIdsJson = objectMapper.writeValueAsString(request.relatedTicketIds());
-            } catch (JsonProcessingException e) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST);
-            }
+            relatedTicketIdsJson = String.join(",", request.relatedTicketIds());
         }
 
-        Ticket ticket = Ticket.builder()
-                .title(request.title())
-                .description(request.description())
-                .type(request.type())
-
-                .siteId(request.siteId())
-                .priority(request.priority())
-                .templateId(request.templateId())
-                .assignedTo(request.assignedTo())
-                .createdBy(currentUserId)
-                .dueDate(request.dueDate())
-                .status("OPEN")
-                .problemType(request.problemType())
-                .relatedTicketIds(relatedTicketIdsJson)
-                .build();
+        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status("OPEN").problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
-        
+
         // Initialize stepData from template if ticket has templateId
         if (ticket.getTemplateId() != null) {
             initializeStepDataFromTemplate(ticket);
@@ -99,8 +82,7 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public TicketResponse getTicketById(Long id) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         User creator = ticket.getCreator();
         Group assignGroup = ticket.getAssignGroup();
@@ -110,8 +92,7 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status,
-            String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
+    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageHelper.startPage(page, size);
         try {
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
@@ -134,17 +115,12 @@ public class TicketService {
             List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
             final String keywordLower = keyword != null ? keyword.toLowerCase() : null;
-            List<TicketResponse> ticketResponses = tickets.stream()
-                    .filter(ticket -> keywordLower == null ||
-                            (ticket.getTitle() != null && ticket.getTitle().toLowerCase().contains(keywordLower)) ||
-                            (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower)))
-                    .map(ticket -> {
-                        User creator = userMapper.selectById(ticket.getCreatedBy());
-                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSiteId());
-                        return toResponse(ticket, creator, assignGroup, site);
-                    })
-                    .collect(Collectors.toList());
+            List<TicketResponse> ticketResponses = tickets.stream().filter(ticket -> keywordLower == null || (ticket.getTitle() != null && ticket.getTitle().toLowerCase().contains(keywordLower)) || (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower))).map(ticket -> {
+                User creator = userMapper.selectById(ticket.getCreatedBy());
+                Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
+                Site site = siteMapper.selectById(ticket.getSiteId());
+                return toResponse(ticket, creator, assignGroup, site);
+            }).collect(Collectors.toList());
 
             PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
             return PageResult.of(pageInfo, ticketResponses);
@@ -155,8 +131,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse updateTicket(Long id, TicketUpdateRequest request) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (request.title() != null) {
             ticket.setTitle(request.title());
@@ -189,9 +164,9 @@ public class TicketService {
                 throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
         }
-        if (request.stepData() != null) {
+        if (request.stepValues() != null) {
             try {
-                ticket.setStepData(objectMapper.writeValueAsString(request.stepData().data()));
+                ticket.setStepData(objectMapper.writeValueAsString(request.stepValues()));
             } catch (JsonProcessingException e) {
                 throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
@@ -243,8 +218,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse acceptTicket(Long id, TicketAcceptRequest request, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // OPEN/ASSIGNED 状态：用户组成员可抢单
         // 抢单后：assignedTo(组ID)不变，设置acceptedUserId
@@ -260,14 +234,8 @@ public class TicketService {
         ticket.setAcceptedAt(LocalDateTime.now());
 
         if (request.comment() != null) {
-            TicketComment comment = TicketComment.builder()
-                    .id(UUID.randomUUID().toString())
-                    .comment(request.comment())
-                    .type(CommentType.ACCEPT)
-                    .ticketId(id)
-                    .userId(userId)
-                    .build();
-        ticketCommentMapper.insert(comment);
+            TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(CommentType.ACCEPT).ticketId(id).userId(userId).build();
+            ticketCommentMapper.insert(comment);
         }
 
         ticketMapper.updateById(ticket);
@@ -280,8 +248,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse declineTicket(Long id, TicketDeclineRequest request, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // 验证权限：优先使用 acceptedUserId
         if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
@@ -291,13 +258,7 @@ public class TicketService {
         ticket.setStatus("CANCELLED");
         ticket.setAccepted(false);
 
-        TicketComment comment = TicketComment.builder()
-                .id(UUID.randomUUID().toString())
-                .comment(request.comment())
-                .type(CommentType.DECLINE)
-                .ticketId(id)
-                .userId(userId)
-                .build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(CommentType.DECLINE).ticketId(id).userId(userId).build();
         ticketCommentMapper.insert(comment);
 
         ticketMapper.updateById(ticket);
@@ -310,8 +271,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse cancelTicket(Long id, TicketCancelRequest request, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (!ticket.getCreatedBy().equals(userId)) {
             throw new BusinessException(ErrorCode.NOT_CREATOR);
@@ -319,13 +279,7 @@ public class TicketService {
 
         ticket.setStatus("CANCELLED");
 
-        TicketComment comment = TicketComment.builder()
-                .id(UUID.randomUUID().toString())
-                .comment(request.reason())
-                .type(CommentType.CANCEL)
-                .ticketId(id)
-                .userId(userId)
-                .build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.reason()).type(CommentType.CANCEL).ticketId(id).userId(userId).build();
         ticketCommentMapper.insert(comment);
 
         ticketMapper.updateById(ticket);
@@ -338,8 +292,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse departTicket(Long id, String departurePhoto, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // Check if user is the assigned engineer
         // 验证权限：优先使用 acceptedUserId
@@ -368,8 +321,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse arriveTicket(Long id, String arrivalPhoto, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // Check if user is the assigned engineer
         // 验证权限：优先使用 acceptedUserId
@@ -409,23 +361,31 @@ public class TicketService {
 
             if (templateSteps != null && !templateSteps.isEmpty()) {
                 // Convert template steps to the format expected by frontend
-                List<Map<String, Object>> steps = new ArrayList<>();
+                List<TemplateStepValue> steps = new ArrayList<>();
                 for (int i = 0; i < templateSteps.size(); i++) {
                     TemplateStep step = templateSteps.get(i);
-                    Map<String, Object> stepMap = new HashMap<>();
-                    stepMap.put("id", "step-" + (i + 1)); // 使用索引作为 id
-                    stepMap.put("name", step.getName());
-                    stepMap.put("description", step.getDescription() != null ? step.getDescription() : "");
-                    stepMap.put("completed", false);
-                    stepMap.put("status", "pending");
-                    stepMap.put("sortOrder", step.getSortOrder());
-                    steps.add(stepMap);
+                    TemplateStepValue templateStepValue = new TemplateStepValue();
+                    BeanUtils.copyProperties(step, templateStepValue);
+                    templateStepValue.setId(ticket.getId() + "_" + step.getId());
+                    templateStepValue.setStatus("pending");
+                    templateStepValue.setCompleted(false);
+
+                    // 添加动态字段支持：将模板字段转换为步骤字段
+                    if (step.getFields() != null && !step.getFields().isEmpty()) {
+                        List<TemplateFieldValue> fieldValues = new ArrayList<>();
+                        for (TemplateField field : step.getFields()) {
+                            TemplateFieldValue fieldValue = new TemplateFieldValue();
+                            BeanUtils.copyProperties(field, fieldValue);
+                            fieldValue.setValue("");
+                            fieldValues.add(fieldValue);
+                        }
+                        templateStepValue.setFieldValues(fieldValues);
+                    }
+
+                    steps.add(templateStepValue);
                 }
 
-                Map<String, Object> stepDataMap = new HashMap<>();
-                stepDataMap.put("steps", steps);
-
-                ticket.setStepData(objectMapper.writeValueAsString(stepDataMap));
+                ticket.setStepData(objectMapper.writeValueAsString(steps));
                 log.info("Initialized stepData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
             }
         } catch (JsonProcessingException e) {
@@ -435,8 +395,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse submitTicket(Long id, StepData stepData, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // 验证权限：优先使用 acceptedUserId
         if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
@@ -469,8 +428,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse completeTicket(Long id, String completionPhoto, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // 验证权限：优先使用 acceptedUserId
         if (ticket.getAcceptedUserId() == null || !userId.equals(ticket.getAcceptedUserId())) {
@@ -511,8 +469,7 @@ public class TicketService {
 
     @Transactional
     public TicketResponse reviewTicket(Long id, String cause, String userId) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         if (cause != null && !cause.trim().isEmpty()) {
             // 有原因 → 管理员拒绝，退回给工程师，状态回退到 ARRIVED
@@ -538,44 +495,20 @@ public class TicketService {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
 
-        TicketComment comment = TicketComment.builder()
-                .id(UUID.randomUUID().toString())
-                .comment(request.comment())
-                .type(request.type() != null ? request.type() : CommentType.GENERAL)
-                .ticketId(ticketId)
-                .userId(userId)
-                .build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(request.type() != null ? request.type() : CommentType.GENERAL).ticketId(ticketId).userId(userId).build();
 
         ticketCommentMapper.insert(comment);
 
         User user = userMapper.selectById(userId);
-        return new TicketCommentResponse(
-                comment.getId(),
-                comment.getComment(),
-                comment.getType().name(),
-                userId,
-                user != null ? user.getName() : null,
-                ticketId,
-                comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null
-        );
+        return new TicketCommentResponse(comment.getId(), comment.getComment(), comment.getType().name(), userId, user != null ? user.getName() : null, ticketId, comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null);
     }
 
     @Transactional(readOnly = true)
     public List<TicketCommentResponse> getTicketComments(Long ticketId) {
-        return ticketCommentMapper.selectByTicketIdWithUser(ticketId).stream()
-                .map(comment -> {
-                    User user = userMapper.selectById(comment.getUserId());
-                    return new TicketCommentResponse(
-                            comment.getId(),
-                            comment.getComment(),
-                            comment.getType().name(),
-                            comment.getUserId(),
-                            user != null ? user.getName() : null,
-                            ticketId,
-                            comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null
-                    );
-                })
-                .collect(Collectors.toList());
+        return ticketCommentMapper.selectByTicketIdWithUser(ticketId).stream().map(comment -> {
+            User user = userMapper.selectById(comment.getUserId());
+            return new TicketCommentResponse(comment.getId(), comment.getComment(), comment.getType().name(), comment.getUserId(), user != null ? user.getName() : null, ticketId, comment.getCreatedAt() != null ? comment.getCreatedAt().format(DATE_TIME_FORMATTER) : null);
+        }).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -584,19 +517,15 @@ public class TicketService {
         try {
             List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
             if (status != null && !status.isEmpty()) {
-                tickets = tickets.stream()
-                        .filter(t -> status.equalsIgnoreCase(t.getStatus()))
-                        .collect(Collectors.toList());
+                tickets = tickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).collect(Collectors.toList());
             }
 
-            List<TicketResponse> ticketResponses = tickets.stream()
-                    .map(ticket -> {
-                        User creator = userMapper.selectById(ticket.getCreatedBy());
-                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSiteId());
-                        return toResponse(ticket, creator, assignGroup, site);
-                    })
-                    .collect(Collectors.toList());
+            List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
+                User creator = userMapper.selectById(ticket.getCreatedBy());
+                Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
+                Site site = siteMapper.selectById(ticket.getSiteId());
+                return toResponse(ticket, creator, assignGroup, site);
+            }).collect(Collectors.toList());
 
             PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
             return PageResult.of(pageInfo, ticketResponses);
@@ -614,19 +543,21 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
+        Group group = groupMapper.selectById(user.getGroupId());
+        if (group != null) {
+            throw new BusinessException("用户租不存在");
+        }
 
         // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
         List<String> statuses = Arrays.asList("OPEN");
-        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses,user.getGroupId());
+        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses, user.getGroupId());
 
-        List<TicketResponse> ticketResponses = tickets.stream()
-                .map(ticket -> {
-                    User creator = userMapper.selectById(ticket.getCreatedBy());
-                    Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                    Site site = siteMapper.selectById(ticket.getSiteId());
-                    return toResponse(ticket, creator, assignGroup, site);
-                })
-                .collect(Collectors.toList());
+        List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
+            User creator = userMapper.selectById(ticket.getCreatedBy());
+            Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
+            Site site = siteMapper.selectById(ticket.getSiteId());
+            return toResponse(ticket, creator, assignGroup, site);
+        }).collect(Collectors.toList());
 
         return new PageResult<>(ticketResponses, ticketResponses.size(), 0, ticketResponses.size(), false);
     }
@@ -637,14 +568,12 @@ public class TicketService {
         try {
             List<Ticket> tickets = ticketMapper.selectByStatus("COMPLETED");
 
-            List<TicketResponse> ticketResponses = tickets.stream()
-                    .map(ticket -> {
-                        User creator = userMapper.selectById(ticket.getCreatedBy());
-                        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
-                        Site site = siteMapper.selectById(ticket.getSiteId());
-                        return toResponse(ticket, creator, assignGroup, site);
-                    })
-                    .collect(Collectors.toList());
+            List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
+                User creator = userMapper.selectById(ticket.getCreatedBy());
+                Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
+                Site site = siteMapper.selectById(ticket.getSiteId());
+                return toResponse(ticket, creator, assignGroup, site);
+            }).collect(Collectors.toList());
 
             PageInfo<Ticket> pageInfo = new PageInfo<>(tickets);
             return PageResult.of(pageInfo, ticketResponses);
@@ -676,12 +605,7 @@ public class TicketService {
                 case "COMPLETED", "CANCELLED" -> closed += count.getCount();
             }
         }
-        return new TicketStatsResponse(
-                (int) total,
-                (int) open,
-                (int) inProcess,
-                (int) submitted, (int) onHold, (int) closed
-        );
+        return new TicketStatsResponse((int) total, (int) open, (int) inProcess, (int) submitted, (int) onHold, (int) closed);
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {
@@ -700,50 +624,28 @@ public class TicketService {
             }
         }
 
-        StepData stepData = null;
+        List<TemplateStepValue> stepValues = new ArrayList<>();
         if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
             try {
-                stepData = new StepData(objectMapper.readValue(ticket.getStepData(), Map.class));
+                stepValues = objectMapper.readValue(ticket.getStepData(), new TypeReference<ArrayList<TemplateStepValue>>() {
+                });
             } catch (JsonProcessingException e) {
                 log.error("Error parsing step data", e);
             }
         }
 
         List<String> relatedTicketIds = new ArrayList<>();
-        if (ticket.getRelatedTicketIds() != null && !ticket.getRelatedTicketIds().isEmpty()) {
-            try {
-                relatedTicketIds = Arrays.asList(objectMapper.readValue(ticket.getRelatedTicketIds(), String[].class));
-            } catch (JsonProcessingException e) {
-                log.error("Error parsing related ticket ids", e);
-            }
+        if (StringUtils.isNotBlank(ticket.getRelatedTicketIds())) {
+            relatedTicketIds = List.of(ticket.getRelatedTicketIds().split(","));
         }
+
 
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(
-                ticket.getId(),
-                ticket.getTitle(),
-                ticket.getDescription(),
-                ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,   // siteId
-                site != null ? site.getName() : null,       // siteName
-                site != null ? site.getAddress() : null,    // siteAddress
-                ticket.getTemplateId(),
-                null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null,
-                ticket.getCreatedBy(),
-                creator != null ? creator.getName() : null,
-                ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null,
-                ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null,
-                ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null,
-                ticket.getDeparturePhoto(),
-                ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null,
-                ticket.getArrivalPhoto(),
-                ticket.getCompletionPhoto(),
-                ticket.getCause(),
-                ticket.getSolution(),
-                comments,
-                relatedTicketIds,
-                ticket.getProblemType()
-        );
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,   // siteId
+                                  site != null ? site.getName() : null,       // siteName
+                                  site != null ? site.getAddress() : null,    // siteAddress
+                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepValues, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
     }
 
     @Transactional
@@ -754,70 +656,26 @@ public class TicketService {
         }
 
         // 解析现有的 stepData
-        Map<String, Object> stepDataMap = new HashMap<>();
+        List<TemplateStepValue> stepValues = new ArrayList<>();
         if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
             try {
-                stepDataMap = objectMapper.readValue(ticket.getStepData(), Map.class);
+                stepValues = objectMapper.readValue(ticket.getStepData(), new TypeReference<List<TemplateStepValue>>() {
+                });
             } catch (JsonProcessingException e) {
                 log.error("Error parsing step data", e);
             }
         }
 
-        // 更新步骤数据
-        Map<String, Object> stepData = new HashMap<>();
-        if (stepDataMap.containsKey("steps")) {
-            Object existingSteps = stepDataMap.get("steps");
-            if (existingSteps instanceof List) {
-                List<Map<String, Object>> steps = new ArrayList<>();
-                for (Object s : (List<?>) existingSteps) {
-                    if (s instanceof Map) {
-                        Map<String, Object> step = new HashMap<>((Map<String, Object>) s);
-                        if (stepId.equals(step.get("id"))) {
-                            // 更新当前步骤
-                            if (request.getCompleted() != null) {
-                                step.put("completed", request.getCompleted());
-                            }
-                            if (request.getDescription() != null) {
-                                step.put("description", request.getDescription());
-                            }
-                            if (request.getStatus() != null) {
-                                step.put("status", request.getStatus());
-                            }
-                            if (request.getCause() != null) {
-                                step.put("cause", request.getCause());
-                            }
-                            if (request.getPhotoUrl() != null) {
-                                step.put("photoUrl", request.getPhotoUrl());
-                            }
-                            if (request.getPhotoUrls() != null) {
-                                step.put("photoUrls", request.getPhotoUrls());
-                            }
-                            if (request.getBeforePhotoUrl() != null) {
-                                step.put("beforePhotoUrl", request.getBeforePhotoUrl());
-                            }
-                            if (request.getBeforePhotoUrls() != null) {
-                                step.put("beforePhotoUrls", request.getBeforePhotoUrls());
-                            }
-                            if (request.getAfterPhotoUrl() != null) {
-                                step.put("afterPhotoUrl", request.getAfterPhotoUrl());
-                            }
-                            if (request.getAfterPhotoUrls() != null) {
-                                step.put("afterPhotoUrls", request.getAfterPhotoUrls());
-                            }
-                            if (request.getTimestamp() != null) {
-                                step.put("timestamp", request.getTimestamp());
-                            }
-                        }
-                        steps.add(step);
-                    }
-                }
-                stepData.put("steps", steps);
-            }
-        }
+        stepValues.stream().filter(stepValue -> stepValue.getId().equals(stepId)).forEach(stepValue -> {
+            stepValue.setFieldValues(request.getFieldValues());
+            stepValue.setCompleted(request.getCompleted());
+            stepValue.setStatus(request.getStatus());
+            stepValue.setTimestamp(request.getTimestamp());
+        });
 
         // 保存更新后的 stepData
         try {
-            String stepDataJson = objectMapper.writeValueAsString(stepData);
+            String stepDataJson = objectMapper.writeValueAsString(stepValues);
             ticket.setStepData(stepDataJson);
             ticketMapper.updateById(ticket);
         } catch (JsonProcessingException e) {

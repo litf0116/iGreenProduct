@@ -148,10 +148,10 @@
     <select id="selectByStatusIn" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
-               assignee.id as assignee_id, assignee.name as assignee_name
+               `groups`.id as assignee_id, `groups`.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
+        LEFT JOIN `groups` `groups` ON t.assigned_to = `groups`.id
         WHERE t.status IN
         <foreach item="status" collection="statuses" open="(" separator="," close=")">
             #{status}

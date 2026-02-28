@@ -5,31 +5,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="feat(template): 实现模板步骤配置的JSON存储和自动序列化&#10;&#10;- 新增 FieldType 枚举定义字段类型&#10;- 新增 TemplateStepConfig 类用于模板步骤配置&#10;- 修改 Template 实体类实现 stepConfig JSON 字段的自动序列化和反序列化&#10;- 移除 TemplateField 和 TemplateStep 的数据库映射，改为 JSON 存储&#10;- 更新 TemplateService 服务类使用新的 JSON 存储方式&#10;- 修改 TicketService 使用 TemplateService 获取模板步骤数据&#10;- 更新 TicketResponse 记录类语法格式">
-      <change afterPath="$PROJECT_DIR$/com/igreen/common/utils/FieldType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/com/igreen/common/utils/TemplateStepConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TemplateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TemplateController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateFieldValue.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStepValue.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.archive/sned_app/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../.archive/sned_app/src/components/Dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/error/0.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/error/0.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/info/0.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/info/0.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/warn/0.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/igreen-backend/2026-02-28/warn/0.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TicketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/controller/TicketController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/StepData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/StepData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketStepUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketStepUpdateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketUpdateRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TemplateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TemplateService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/AccountSettings.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/CreateTicket.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/CreateTicket.test.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.test.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/LanguageSelector.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Login.test.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/SignUp.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/SystemSettings.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/SystemSettings.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/StepData.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/StepData.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketStepUpdateRequest$TicketStepUpdateRequestBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketStepUpdateRequest$TicketStepUpdateRequestBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketStepUpdateRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketStepUpdateRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketUpdateRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/dto/TicketUpdateRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateField$TemplateFieldBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateField$TemplateFieldBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateField.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateField.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateStep$TemplateStepBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateStep$TemplateStepBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateStep.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/entity/TemplateStep.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/igreen/domain/service/TicketService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/igreen/domain/service/TicketService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TicketDetail.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,8 +59,15 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="274" />
+    <option name="cachedIndexableFilesCount" value="281" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -80,48 +91,53 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Maven.igreen-backend [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.igreen-backend [compile].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.igreen-backend [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.igreen-backend [package].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Spring Boot.IGreenApplication.executor&quot;: &quot;Debug&quot;,
-    &quot;checkBoxType&quot;: &quot;false&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/mac/workspace/iGreenProduct/igreen-backend&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/mac/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.igreen-backend [clean].executor": "Run",
+    "Maven.igreen-backend [compile].executor": "Run",
+    "Maven.igreen-backend [install].executor": "Run",
+    "Maven.igreen-backend [package].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.IGreenApplication.executor": "Debug",
+    "checkBoxType": "false",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "20250228__february-updates",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/mac/workspace/iGreenProduct/igreen-backend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.sourceCode.JAVA",
+    "show.migrate.to.gradle.popup": "false",
+    "ts.external.directory.path": "/Users/mac/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mysql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql"
     ],
-    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL Dialect&quot;: [
-      &quot;MySQL&quot;
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL Dialect": [
+      "MySQL"
     ]
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveInnerDialog.RECENTS_KEY">
+      <recent name="com.igreen.domain.entity" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="IGreenApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="igreen-backend" />
@@ -136,11 +152,17 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.IGreenApplication" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.31033.133" />
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
       </set>
     </attachedChunks>
   </component>
@@ -166,6 +188,7 @@
       <workItem from="1772033734988" duration="9140000" />
       <workItem from="1772163353830" duration="4981000" />
       <workItem from="1772178366020" duration="11000" />
+      <workItem from="1772252910119" duration="7920000" />
     </task>
     <task id="LOCAL-00001" summary="feat(ui): 添加基础UI组件库和图片加载fallback功能&#10;&#10;- 实现ImageWithFallback组件用于处理图片加载失败显示默认svg图标&#10;- 集成radix-ui和lucide-react创建Accordion手风琴组件&#10;- 创建Alert警告提示组件支持不同变体样式&#10;- 实现AlertDialog模态对话框组件&#10;- 添加AspectRatio纵横比容器组件&#10;- 创建Avatar头像组件支持图片和备用显示&#10;- 实现Badge徽章标签组件多种样式&#10;- 添加Breadcrumb面包屑导航组件&#10;- 创建Button按钮组件支持多种变体和尺寸&#10;- 集成react-day-picker实现Calendar日历组件&#10;- 实现Card卡片布局组件及其子组件&#10;- 添加embla-carousel-react集成Carousel轮播图组件&#10;- 创建基于recharts的Chart图表容器组件">
       <option name="closed" value="true" />

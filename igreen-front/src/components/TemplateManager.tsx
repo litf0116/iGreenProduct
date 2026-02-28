@@ -1,6 +1,6 @@
-import {useState, useEffect} from "react";
-import {Template, TemplateStep, TemplateField, FieldType} from "../lib/types";
-import {translations, TranslationKey, Language} from "../lib/i18n";
+import {useEffect, useState} from "react";
+import {FieldType, Template, TemplateField, TemplateStep} from "../lib/types";
+import {Language, TranslationKey, translations} from "../lib/i18n";
 import {api} from "../lib/api";
 import {Card} from "./ui/card";
 import {Button} from "./ui/button";
@@ -9,7 +9,7 @@ import {Textarea} from "./ui/textarea";
 import {Label} from "./ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog";
-import {Plus, Trash2, Edit, GripVertical, Loader2} from "lucide-react";
+import {Edit, GripVertical, Loader2, Plus, Trash2} from "lucide-react";
 import {Badge} from "./ui/badge";
 import {Checkbox} from "./ui/checkbox";
 import {toast} from "sonner";
@@ -222,14 +222,14 @@ export function TemplateManager({
 
                 const created = await api.createTemplate(templateData);
                 // Replace temp with real data
-                setTemplates((prev) =>
-                    prev.map((t) => (t.id === tempId ? created : t))
-                );
+                // setTemplates((prev) =>
+                //     prev.map((t) => (t.id === tempId ? created : t))
+                // );
                 toast.success(t("templateCreated") || "Template created");
             }
         } catch (err) {
             console.error("Failed to save template:", err);
-            // Rollback on error - refetch
+            // Rollback on error - refetch    
             if (editingTemplate) {
                 const original = await api.getTemplate(editingTemplate.id);
                 setTemplates((prev) =>
@@ -474,11 +474,11 @@ export function TemplateManager({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {templates.map((template) => (
+                {templates?.filter(t => t != undefined).map((template) => (
                     <Card key={template.id} className="p-6 space-y-4">
                         <div className="space-y-2">
                             <div className="flex items-start justify-between">
-                                <h3 className="text-primary">{template.name}</h3>
+                                <h3 className="text-primary">{template?.name}</h3>
                                 <div className="flex gap-1">
                                     <Button
                                         onClick={() => handleOpenDialog(template)}
@@ -496,7 +496,7 @@ export function TemplateManager({
                                     </Button>
                                 </div>
                             </div>
-                            <p className="text-muted-foreground">{template.description}</p>
+                            <p className="text-muted-foreground">{template?.description}</p>
                         </div>
 
                         <div className="space-y-2">
