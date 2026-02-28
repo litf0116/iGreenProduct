@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {useNavigate, useSearchParams, useLocation} from "react-router-dom";
+import {useLocation, useNavigate, useSearchParams} from "react-router-dom";
 import {Card} from "./ui/card";
 import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
@@ -10,7 +10,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger,} from "./ui/select";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
 import {Ticket, TicketStatus, TicketType} from "../lib/types";
 import {TranslationKey, translations} from "../lib/i18n";
-import {useDataStore, useUIStore} from "../store";
+import {useUIStore} from "../store";
 import api from "../lib/api";
 import {toast} from "sonner";
 import {AlertCircle, Calendar, CheckCircle2, ClipboardList, Clock, Filter, Plus, Search,} from "lucide-react";
@@ -57,6 +57,7 @@ function getCreatedAfter(filter: TimeFilter): string | null {
 
     return format(start);
 }
+
 export function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -155,17 +156,17 @@ export function Dashboard() {
             setIsLoading(false);
         }
     }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, t]);
-    
+
     // 每次查询条件变化时触发数据重新加载，添加防抖机制
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             loadTickets();
             loadStats();
         }, 200); // 200ms 防抖，避免频繁请求
-        
+
         return () => clearTimeout(timeoutId);
     }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, loadTickets, loadStats]);
-    
+
     // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
     useEffect(() => {
         if (location.pathname === "/dashboard") {
@@ -619,13 +620,13 @@ export function Dashboard() {
                           </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {ticket.completedSteps.length > 0 && (
+                                                    {ticket?.completedSteps.length >= 0 && (
                                                         <div className="flex items-center gap-2 min-w-[100px]">
                                                             <div className="flex-1 bg-muted rounded-full h-2">
                                                                 <div
                                                                     className="bg-[#0ea5e9] h-2 rounded-full transition-all"
                                                                     style={{
-                                                                        width: `${(ticket.completedSteps.length / (ticket.completedSteps.length + 1)) * 100}%`,
+                                                                        width: `${(ticket?.stepData?.data.steps.filter(a => a.completed == true).length / (ticket?.stepData?.data.steps.length + 1)) * 100}%`,
                                                                     }}
                                                                 />
                                                             </div>
