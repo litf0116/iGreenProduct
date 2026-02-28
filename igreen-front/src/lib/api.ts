@@ -103,7 +103,7 @@ export const api = {
     }> => {
         const searchParams = new URLSearchParams();
         searchParams.set('page', String((params?.page ?? 0) + 1));
-        searchParams.set('size', String(params?.size ?? DEFAULT_PAGE_SIZE));
+        searchParams.set('size', String(params?.size ?? 100));
         if (params?.keyword) searchParams.set('keyword', params.keyword);
         return kyInstance.get(`api/users?${searchParams}`).json();
     },

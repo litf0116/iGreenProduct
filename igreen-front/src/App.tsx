@@ -645,11 +645,6 @@ function AppLayout() {
 
                                     <TabsContent value="create" className="p-6 mt-0">
                                         <CreateTicket
-                                            templates={templates}
-                                            users={users}
-                                            groups={groups}
-                                            sites={sites.map((s) => ({id: s.id, name: s.name}))}
-                                            tickets={tickets}
                                             language={language}
                                             onCancel={() => navigate("/dashboard")}
                                         />

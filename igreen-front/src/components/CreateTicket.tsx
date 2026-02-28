@@ -59,13 +59,13 @@ export function CreateTicket({
                              }: CreateTicketProps) {
     const t = (key: TranslationKey) => translations[language][key];
 
-    const [templates, setTemplates] = useState<Template[]>(externalTemplates || []);
-    const [users, setUsers] = useState<User[]>(externalUsers || []);
-    const [groups, setGroups] = useState<Group[]>(externalGroups || []);
-    const [sites, setSites] = useState<{ id: string; name: string }[]>(externalSites || []);
-    const [tickets, setTickets] = useState<Ticket[]>(externalTickets || []);
-    const [problemTypes, setProblemTypes] = useState<{ id: string; name: string }[]>(externalProblemTypes || []);
-    const [loading, setLoading] = useState(!externalTemplates || !externalUsers || !externalGroups || !externalSites);
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [problemTypes, setProblemTypes] = useState<{ id: string; name: string }[]>([]);
+    const [loading, setLoading] = useState(!groups || !sites);
     const [error, setError] = useState<string | null>(null);
 
     const [title, setTitle] = useState("");
@@ -81,28 +81,19 @@ export function CreateTicket({
     const [openCombobox, setOpenCombobox] = useState(false);
 
     useEffect(() => {
-        if (externalTemplates && externalUsers && externalGroups && externalSites) {
-            setTemplates(externalTemplates);
-            setUsers(externalUsers);
-            setGroups(externalGroups);
-            setSites(externalSites);
-            setTickets(externalTickets || []);
-            setProblemTypes(externalProblemTypes || []);
-            setLoading(false);
-            return;
-        }
+
 
         const fetchData = async () => {
             setLoading(true);
             setError(null);
             try {
                 const [templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData] = await Promise.all([
-                    externalTemplates ? Promise.resolve(externalTemplates) : api.getTemplates(),
-                    externalUsers ? Promise.resolve(externalUsers) : api.getUsers({}),
-                    externalGroups ? Promise.resolve(externalGroups) : api.getGroups(),
-                    externalSites ? Promise.resolve(externalSites) : api.getSites({}),
-                    externalTickets ? Promise.resolve(externalTickets) : api.getTickets({}),
-                    externalProblemTypes ? Promise.resolve(externalProblemTypes) : api.getProblemTypes()
+                    api.getTemplates(),
+                    api.getUsers({}),
+                    api.getGroups(),
+                    api.getSites({}),
+                    api.getTickets({}),
+                    api.getProblemTypes()
                 ]);
 
                 setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData || []));
@@ -220,19 +211,19 @@ export function CreateTicket({
                         setError(null);
                         setLoading(true);
                         Promise.all([
-                            externalTemplates ? Promise.resolve(externalTemplates) : api.getTemplates(),
-                            externalUsers ? Promise.resolve(externalUsers) : api.getUsers({}),
-                            externalGroups ? Promise.resolve(externalGroups) : api.getGroups(),
-                            externalSites ? Promise.resolve(externalSites) : api.getSites({}),
-                            externalTickets ? Promise.resolve(externalTickets) : api.getTickets({}),
-                            externalProblemTypes ? Promise.resolve(externalProblemTypes) : api.getProblemTypes()
+                            api.getTemplates(),
+                            api.getUsers({}),
+                            api.getGroups(),
+                            api.getSites({}),
+                            api.getTickets({}),
+                            api.getProblemTypes()
                         ]).then(([templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData]) => {
-                            setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData?.records || []));
+                            setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData || []));
                             setUsers(Array.isArray(usersData) ? usersData : (usersData?.records || []));
-                            setGroups(Array.isArray(groupsData) ? groupsData : (groupsData?.records || []));
+                            setGroups(Array.isArray(groupsData) ? groupsData : (groupsData || []));
                             setSites(Array.isArray(sitesData) ? sitesData : (sitesData?.records || []));
                             setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
-                            setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData?.records || []));
+                            setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData || []));
                             setLoading(false);
                         }).catch(() => {
                             setError("Failed to load data");
