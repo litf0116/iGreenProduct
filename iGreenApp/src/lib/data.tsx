@@ -5,6 +5,38 @@ export type TicketStatus = 'open' | 'assigned' | 'departed' | 'arrived' | 'revie
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
 export type TicketType = 'corrective' | 'planned' | 'preventive' | 'problem';
 
+// =====================
+// Dynamic Form Types
+// =====================
+export type FieldType = 'TEXT' | 'NUMBER' | 'DATE' | 'PHOTOS' | 'TOGGLE_GROUP' | 'SIGNATURE';
+
+export interface TemplateField {
+    id: string;
+    name: string;
+    type: FieldType;
+    required: boolean;
+    description?: string;
+    config?: Record<string, any>;
+}
+
+export interface TemplateFieldValue extends TemplateField {
+    value?: string;
+    values?: string[];
+}
+
+export interface TemplateStepConfig {
+    id: string;
+    name: string;
+    fields: TemplateField[];
+}
+
+export interface TicketTypeTemplate {
+    id: string;
+    name: string;
+    type: TicketType;
+    steps: TemplateStepConfig[];
+}
+
 export interface TicketStep {
     id: string;
     label: string;

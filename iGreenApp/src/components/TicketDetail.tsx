@@ -1,57 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState} from 'react';
 import {
-  X,
-  Clock,
-  Calendar,
-  User,
-  Tag,
-  CheckCircle2,
-  Zap,
-  MapPin,
-  Camera,
-  FileText,
-  Navigation,
-  CheckSquare,
-  ArrowRight,
-  ShieldCheck,
-  AlertCircle,
-  ThumbsUp,
-  ThumbsDown,
-  MinusCircle,
-  Image as ImageIcon,
-  Wrench,
-  CalendarDays,
-  ClipboardCheck,
-  HelpCircle
+    AlertCircle,
+    ArrowRight,
+    Calendar,
+    CalendarDays,
+    Camera,
+    CheckCircle2,
+    CheckSquare,
+    FileText,
+    HelpCircle,
+    Image as ImageIcon,
+    MapPin,
+    MinusCircle,
+    Navigation,
+    ShieldCheck,
+    ThumbsDown,
+    ThumbsUp,
+    User,
+    Wrench,
+    X,
+    Zap
 } from 'lucide-react';
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { Textarea } from "./ui/textarea";
-import { Input } from "./ui/input";
-import { Checkbox } from "./ui/checkbox";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
-import {
-  Ticket,
-  TicketStep,
-  getPriorityColor,
-  getStatusIcon,
-  getTicketTypeLabel,
-  getTicketTypeColor,
-  getTicketTypeIcon,
-  TicketStatus
-} from '../lib/data';
-import { toast } from "sonner@2.0.3";
-import { useLanguage } from './LanguageContext';
-import { api } from '../lib/api';
-import { takePhoto, pickPhoto } from '../lib/camera';
+import {Badge} from "./ui/badge";
+import {Button} from "./ui/button";
+import {Separator} from "./ui/separator";
+import {Textarea} from "./ui/textarea";
+import {Input} from "./ui/input";
+import {Checkbox} from "./ui/checkbox";
+import {ToggleGroup, ToggleGroupItem} from "./ui/toggle-group";
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from "./ui/sheet";
+import type {TemplateField} from '../lib/data';
+import {getPriorityColor, getTicketTypeColor, getTicketTypeIcon, getTicketTypeLabel, Ticket, TicketStep} from '../lib/data';
+import {toast} from "sonner@2.0.3";
+import {useLanguage} from './LanguageContext';
+import {api} from '../lib/api';
+import {pickPhoto, takePhoto} from '../lib/camera';
+import {FIELD_ID_TO_LEGACY_FIELD, getTemplateByType} from '../config/fieldConfigs';
 
 // Photo Uploader Component - Independent component to avoid Hooks rules violation
 interface PhotoUploaderProps {
@@ -135,6 +119,71 @@ function PhotoUploader({ stepId, fieldPrefix, isCorrectiveOrPlanned, existingPho
       </div>
     </div>
   );
+}
+
+// =====================
+// Dynamic Field Renderer
+// =====================
+interface DynamicFieldRendererProps {
+    field: TemplateField;
+    value: any;
+    onChange: (fieldId: string, value: any) => void;
+    ticketId: string;
+    loadingImage: string | null;
+    onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto', isCorrectiveOrPlanned?: boolean) => void;
+}
+
+function DynamicFieldRenderer({field, value, onChange, ticketId, loadingImage, onAddPhoto}: DynamicFieldRendererProps) {
+    const fieldPrefixMap: Record<string, 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto'> = {
+        'field-before-photos': 'beforePhoto',
+        'field-after-photos': 'afterPhoto',
+        'field-feedback-photos': 'feedbackPhoto',
+        'field-problem-photos': 'problemPhoto'
+    };
+
+    switch (field.type) {
+        case 'TEXT':
+            return (
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-900">{field.name}</label>
+                    <Textarea
+                        placeholder={field.description || `Enter ${field.name.toLowerCase()}...`}
+                        value={value || ''}
+                        onChange={(e) => onChange(field.id, e.target.value)}
+                        className={field.config?.multiline ? "min-h-[100px]" : ""}
+                    />
+                </div>
+            );
+
+        case 'DATE':
+            return (
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-900">{field.name}</label>
+                    <Input
+                        type="date"
+                        value={value || ''}
+                        onChange={(e) => onChange(field.id, e.target.value)}
+                    />
+                </div>
+            );
+
+        case 'PHOTOS':
+            const fieldPrefix = fieldPrefixMap[field.id] || 'problemPhoto';
+            return (
+                <PhotoUploader
+                    stepId={String(ticketId)}
+                    fieldPrefix={fieldPrefix}
+                    isCorrectiveOrPlanned={true}
+                    existingPhotos={value || []}
+                    label={field.name}
+                    loadingImage={loadingImage}
+                    onAddPhoto={onAddPhoto}
+                />
+            );
+
+        default:
+            return null;
+    }
 }
 
 interface TicketDetailProps {
@@ -335,6 +384,49 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
           setLoadingImage(null);
       }
   };
+
+    // =====================
+    // Dynamic Form Handlers
+    // =====================
+
+    // Get field value from ticket using legacy field name
+    const getFieldValue = (fieldId: string): any => {
+        const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
+        if (!legacyField) return undefined;
+        return (ticket as any)[legacyField];
+    };
+
+    // Handle dynamic field value change
+    const handleFieldChange = (fieldId: string, value: any) => {
+        const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
+        if (legacyField) {
+            onUpdateTicket(ticket.id, {[legacyField]: value});
+        }
+    };
+
+    // Check if form is complete based on template
+    const isFormComplete = (): boolean => {
+        const template = getTemplateByType(ticket.type);
+        if (!template) return false;
+
+        for (const step of template.steps) {
+            for (const field of step.fields) {
+                const value = getFieldValue(field.id);
+                if (field.required) {
+                    if (field.type === 'PHOTOS') {
+                        if (!value || (Array.isArray(value) && value.length === 0)) {
+                            return false;
+                        }
+                    } else {
+                        if (!value) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    };
 
   const handleFinish = async () => {
       if (ticket.type === 'corrective') {
@@ -590,146 +682,58 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
               );
 
           case 'arrived':
-              if (ticket.type === 'corrective') {
+              // Dynamic form for Corrective, Planned, Problem types
+              const template = getTemplateByType(ticket.type);
+              if (template && (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem')) {
+                  const typeColors = {
+                      corrective: {
+                          bg: 'bg-orange-50',
+                          border: 'border-orange-100',
+                          iconBg: 'bg-orange-100',
+                          iconColor: 'text-orange-600',
+                          titleColor: 'text-orange-900',
+                          subTitleColor: 'text-orange-700',
+                          btnColor: 'bg-orange-600 hover:bg-orange-700'
+                      },
+                      planned: {
+                          bg: 'bg-blue-50',
+                          border: 'border-blue-100',
+                          iconBg: 'bg-blue-100',
+                          iconColor: 'text-blue-600',
+                          titleColor: 'text-blue-900',
+                          subTitleColor: 'text-blue-700',
+                          btnColor: 'bg-blue-600 hover:bg-blue-700'
+                      },
+                      problem: {
+                          bg: 'bg-rose-50',
+                          border: 'border-rose-100',
+                          iconBg: 'bg-rose-100',
+                          iconColor: 'text-rose-600',
+                          titleColor: 'text-rose-900',
+                          subTitleColor: 'text-rose-700',
+                          btnColor: 'bg-rose-600 hover:bg-rose-700'
+                      }
+                  };
+                  const colors = typeColors[ticket.type];
+                  const IconComponent = ticket.type === 'corrective' ? Wrench : ticket.type === 'planned' ? CalendarDays : HelpCircle;
+                  
                   return (
                       <div className="space-y-6">
-                          <div className="flex items-center justify-between bg-orange-50 p-4 rounded-lg border border-orange-100">
+                          <div className={`flex items-center justify-between ${colors.bg} p-4 rounded-lg ${colors.border}`}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-                                    <Wrench className="w-5 h-5" />
+                                <div
+                                    className={`w-10 h-10 ${colors.iconBg} rounded-full flex items-center justify-center ${colors.iconColor}`}>
+                                    <IconComponent className="w-5 h-5"/>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-orange-900">On Site - Corrective Maintenance</h3>
-                                    <p className="text-xs text-orange-700">Arrived at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
+                                    <h3 className={`font-semibold ${colors.titleColor}`}>On Site - {template.name}</h3>
+                                    <p className={`text-xs ${colors.subTitleColor}`}>Arrived
+                                        at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-6 p-1">
-                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-900">Root Cause</label>
-                                    <Textarea
-                                        placeholder="Describe the root cause of the issue..."
-                                        value={ticket.rootCause || ''}
-                                        onChange={(e) => onUpdateTicket(ticket.id, { rootCause: e.target.value })}
-                                        className="min-h-[100px]"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-900">Solution</label>
-                                    <Textarea
-                                        placeholder="Describe the solution implemented..."
-                                        value={ticket.solution || ''}
-                                        onChange={(e) => onUpdateTicket(ticket.id, { solution: e.target.value })}
-                                        className="min-h-[100px]"
-                                    />
-                                </div>
-                             </div>
-
-                             <div className="grid grid-cols-2 gap-4">
-<PhotoUploader
-    stepId="corrective"
-    fieldPrefix="beforePhoto"
-    isCorrectiveOrPlanned={true}
-    existingPhotos={ticket.beforePhotoUrls || (ticket.beforePhotoUrl ? [ticket.beforePhotoUrl] : [])}
-    label="Before"
-    loadingImage={loadingImage}
-    onAddPhoto={handleAddPhoto}
-/>
-<PhotoUploader
-    stepId="corrective"
-    fieldPrefix="afterPhoto"
-    isCorrectiveOrPlanned={true}
-    existingPhotos={ticket.afterPhotoUrls || (ticket.afterPhotoUrl ? [ticket.afterPhotoUrl] : [])}
-    label="After"
-    loadingImage={loadingImage}
-    onAddPhoto={handleAddPhoto}
-/>
-                            </div>
-                        </div>
-
-                        <Button
-                            size="lg"
-                            className={`w-full ${ticket.rootCause && ticket.solution && (ticket.beforePhotoUrl || ticket.beforePhotoUrls?.length) && (ticket.afterPhotoUrl || ticket.afterPhotoUrls?.length) ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-300 cursor-not-allowed'}`}
-                            onClick={handleFinish}
-                            disabled={!(ticket.rootCause && ticket.solution && (ticket.beforePhotoUrl || ticket.beforePhotoUrls?.length) && (ticket.afterPhotoUrl || ticket.afterPhotoUrls?.length))}
-                        >
-                            Finish Maintenance
-                        </Button>
-                      </div>
-                  );
-              }
-
-              if (ticket.type === 'planned') {
-                  return (
-                      <div className="space-y-6">
-                          <div className="flex items-center justify-between bg-blue-50 p-4 rounded-lg border border-blue-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                                    <CalendarDays className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-blue-900">On Site - Planned Maintenance</h3>
-                                    <p className="text-xs text-blue-700">Arrived at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6 p-1">
-                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-900">Feedback / Notes</label>
-                                    <Textarea
-                                        placeholder="Enter maintenance feedback and notes..."
-                                        value={ticket.feedback || ''}
-                                        onChange={(e) => onUpdateTicket(ticket.id, { feedback: e.target.value })}
-                                        className="min-h-[150px]"
-                                    />
-                                </div>
-                             </div>
-
-                             <div className="space-y-2">
-<PhotoUploader
-    stepId="planned"
-    fieldPrefix="feedbackPhoto"
-    isCorrectiveOrPlanned={true}
-    existingPhotos={ticket.feedbackPhotoUrls || []}
-    label="Maintenance Photos"
-    loadingImage={loadingImage}
-    onAddPhoto={handleAddPhoto}
-/>
-                            </div>
-                        </div>
-
-                        <Button
-                            size="lg"
-                            className={`w-full ${ticket.feedback && ticket.feedbackPhotoUrls?.length ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-300 cursor-not-allowed'}`}
-                            onClick={handleFinish}
-                            disabled={!(ticket.feedback && ticket.feedbackPhotoUrls?.length)}
-                        >
-                            Finish Maintenance
-                        </Button>
-                      </div>
-                  );
-              }
-
-              if (ticket.type === 'problem') {
-                  return (
-                      <div className="space-y-6">
-                          <div className="flex items-center justify-between bg-rose-50 p-4 rounded-lg border border-rose-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
-                                    <HelpCircle className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-rose-900">Problem Management</h3>
-                                    <p className="text-xs text-rose-700">Started at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {ticket.relatedTicketId && (
+                          {ticket.type === 'problem' && ticket.relatedTicketId && (
                             <Button
                                 variant="outline"
                                 className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 flex items-center gap-2"
@@ -743,45 +747,27 @@ export function TicketDetail({ ticket, onClose, onUpdateTicket, onViewRelatedTic
 
                         <div className="space-y-6 p-1">
                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-900">Solution / Action Plan</label>
-                                    <Textarea
-                                        placeholder="Describe the solution or action plan..."
-                                        value={ticket.solution || ''}
-                                        onChange={(e) => onUpdateTicket(ticket.id, { solution: e.target.value })}
-                                        className="min-h-[100px]"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-900">Estimated Date for Resolution (mm/dd/yy)</label>
-                                    <Input
-                                        type="date"
-                                        value={ticket.estimatedResolutionTime || ''}
-                                        onChange={(e) => onUpdateTicket(ticket.id, { estimatedResolutionTime: e.target.value })}
-                                    />
-                                </div>
+                                 {template.steps[0]?.fields.map(field => (
+                                     <DynamicFieldRenderer
+                                         key={field.id}
+                                         field={field}
+                                         value={getFieldValue(field.id)}
+                                         onChange={handleFieldChange}
+                                         ticketId={template.steps[0].id}
+                                         loadingImage={loadingImage}
+                                         onAddPhoto={handleAddPhoto}
+                                     />
+                                 ))}
                              </div>
-
-                             <div className="space-y-2">
-<PhotoUploader
-    stepId="problem"
-    fieldPrefix="problemPhoto"
-    isCorrectiveOrPlanned={true}
-    existingPhotos={ticket.problemPhotoUrls || []}
-    label="Evidence Photos"
-    loadingImage={loadingImage}
-    onAddPhoto={handleAddPhoto}
-/>
-                            </div>
                         </div>
 
                         <Button
                             size="lg"
-                            className={`w-full ${ticket.solution && ticket.estimatedResolutionTime && ticket.problemPhotoUrls?.length ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-300 cursor-not-allowed'}`}
+                            className={`w-full ${isFormComplete() ? colors.btnColor : 'bg-slate-300 cursor-not-allowed'}`}
                             onClick={handleFinish}
-                            disabled={!(ticket.solution && ticket.estimatedResolutionTime && ticket.problemPhotoUrls?.length)}
+                            disabled={!isFormComplete()}
                         >
-                            Finish Management
+                            Finish {ticket.type === 'problem' ? 'Management' : 'Maintenance'}
                         </Button>
                       </div>
                   );

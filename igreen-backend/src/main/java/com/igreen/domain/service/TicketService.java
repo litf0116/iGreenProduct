@@ -403,7 +403,7 @@ public class TicketService {
         }
 
         try {
-            if (stepData != null && stepData.data() != null) {
+            if (stepData != null && stepData.getData() != null) {
                 String existingData = ticket.getStepData();
                 Map<String, Object> dataMap;
                 if (existingData != null && !existingData.isEmpty()) {
@@ -411,7 +411,7 @@ public class TicketService {
                 } else {
                     dataMap = new HashMap<>();
                 }
-                dataMap.putAll(stepData.data());
+                dataMap.putAll(stepData.getData());
                 ticket.setStepData(objectMapper.writeValueAsString(dataMap));
             }
         } catch (JsonProcessingException e) {

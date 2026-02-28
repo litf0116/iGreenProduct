@@ -10,8 +10,10 @@ public enum FieldType {
     NUMBER,
     DATE,
     LOCATION,
-    PHOTO,
-    SIGNATURE;
+    PHOTO,          // 单张照片（向后兼容）
+    PHOTOS,         // 多张照片（新增）
+    SIGNATURE,      // 签名
+    TOGGLE_GROUP;   // 三态选择（pass/fail/na）- 新增
 
     @JsonValue
     public String getValue() {

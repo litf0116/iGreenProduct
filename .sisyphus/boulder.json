@@ -1,11 +1,6 @@
 {
-  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/fix-status-mapping.md",
-  "started_at": "2026-02-01T01:46:45.000Z",
-  "session_ids": [
-    "ses_3ea9a6021ffeqOA3JASrCwh9aY",
-    "ses_3c2d49260ffeiJVDG7bQ1XMbJk"
-  ],
-  "plan_name": "fix-status-mapping",
-  "completed": true,
-  "completed_at": "2026-02-01T01:50:00.000Z"
+  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/dynamic-form-frontend.md",
+  "started_at": "2026-02-28T18:44:20.3NZ",
+  "session_ids": ["ses_35aba3c23ffey0dbZsk731zYSM"],
+  "plan_name": "dynamic-form-frontend"
 }
