@@ -263,15 +263,6 @@ export interface TicketCreateRequest {
     templateId?: string;
     assignedTo: string;
     dueDate: string;
-export interface TicketCreateRequest {
-    title: string;
-    description: string;
-    type: TicketType;
-    siteId: string;
-    priority: Priority;
-    templateId?: string;
-    assignedTo: string;
-    dueDate: string;
     relatedTicketIds?: string[];
     problemType?: string;
 }

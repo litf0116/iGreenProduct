@@ -3,7 +3,7 @@
  * 连接到 Spring Boot 后端API
  * 使用 Ky HTTP 客户端，支持双token认证和自动刷新
  */
-import type {
+import {
     User,
     Template,
     Ticket,

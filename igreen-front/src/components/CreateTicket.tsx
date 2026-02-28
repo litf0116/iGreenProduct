@@ -25,12 +25,6 @@ import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
 
 interface CreateTicketProps {
-    templates?: Template[];
-    users?: User[];
-    groups?: Group[];
-    sites?: { id: string; name: string }[];
-    tickets?: Ticket[];
-    problemTypes?: { id: string; name: string }[];
     language: Language;
     onSubmit: (ticket: {
         title: string;
@@ -46,18 +40,9 @@ interface CreateTicketProps {
     onCancel: () => void;
 }
 
-export function CreateTicket({
-                                 templates: externalTemplates,
-                                 users: externalUsers,
-                                 groups: externalGroups,
-                                 sites: externalSites,
-                                 tickets: externalTickets = [],
-                                 problemTypes: externalProblemTypes = [],
-                                 language,
-                                 onSubmit,
-                                 onCancel,
-                             }: CreateTicketProps) {
-    const t = (key: TranslationKey) => translations[language][key];
+export function CreateTicket(props: CreateTicketProps) {
+    const t = (key: TranslationKey) => translations[props.language][key];
+    const navigate = useNavigate();
 
     const [templates, setTemplates] = useState<Template[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -65,7 +50,7 @@ export function CreateTicket({
     const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [problemTypes, setProblemTypes] = useState<{ id: string; name: string }[]>([]);
-    const [loading, setLoading] = useState(!groups || !sites);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [title, setTitle] = useState("");
@@ -101,9 +86,9 @@ export function CreateTicket({
                 setGroups(Array.isArray(groupsData) ? groupsData : (groupsData || []));
                 setSites(Array.isArray(sitesData) ? sitesData : (sitesData?.records || []));
                 setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
-                debugger;
                 setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData || []));
             } catch (err) {
+                debugger;
                 console.error("Failed to fetch data:", err);
                 setError("Failed to load data");
                 toast.error("Failed to load data");
@@ -113,16 +98,8 @@ export function CreateTicket({
         };
 
         fetchData();
-    }, [externalTemplates, externalUsers, externalGroups, externalSites, externalTickets, externalProblemTypes]);
+    }, []);
 
-    useEffect(() => {
-        if (externalTemplates) setTemplates(Array.isArray(externalTemplates) ? externalTemplates : (externalTemplates || []));
-        if (externalUsers) setUsers(Array.isArray(externalUsers) ? externalUsers : (externalUsers || []));
-        if (externalGroups) setGroups(Array.isArray(externalGroups) ? externalGroups : (externalGroups || []));
-        if (externalSites) setSites(Array.isArray(externalSites) ? externalSites : (externalSites || []));
-        if (externalTickets) setTickets(Array.isArray(externalTickets) ? externalTickets : (externalTickets || []));
-        if (externalProblemTypes) setProblemTypes(Array.isArray(externalProblemTypes) ? externalProblemTypes : (externalProblemTypes || []));
-    }, [externalTemplates, externalUsers, externalGroups, externalSites, externalTickets, externalProblemTypes]);
 
     const selectedTemplate = templates.find((t) => t.id === templateId);
     const correctiveTickets = tickets.filter(t => t.type === "corrective");
@@ -154,7 +131,7 @@ export function CreateTicket({
             });
 
             toast.success(t("ticketCreated"));
-            useNavigate()("/dashboard");
+            navigate("/dashboard");
         } catch (error: any) {
             toast.error(error.message || "Failed to create ticket");
         }
@@ -284,7 +261,7 @@ export function CreateTicket({
                             <div className="space-y-1">
                                 <p className="text-muted-foreground">Steps:</p>
                                 {selectedTemplate.steps.map((step, index) => (
-                                    <div key={step.id} className="text-muted-foreground ml-4">
+                                    <div key={`step-${step.id || index}-${index}`} className="text-muted-foreground ml-4">
                                         {index + 1}. {step.name} ({step.fields.length} fields)
                                     </div>
                                 ))}
@@ -335,14 +312,11 @@ export function CreateTicket({
                                             <SelectValue placeholder="Select problem type"/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {problemTypes?.map((pt) => {
-                                                console.log(pt);
-                                                debugger;
-                                                return ( // 输出 pt 的值
-                                                    <SelectItem key={pt.id} value={pt.id}>
-                                                        {pt.name}
-                                                    </SelectItem>)
-                                            })}
+                                            {problemTypes?.map((pt) => (
+                                                <SelectItem key={pt.id} value={pt.id}>
+                                                    {pt.name}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
