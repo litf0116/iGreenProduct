@@ -77,6 +77,21 @@ function AppLayout() {
 
     const t = (key: TranslationKey) => translations[language][key];
 
+    // Helper to ensure all steps and fields have unique IDs
+    const normalizeTemplateData = (templates: Template[]): Template[] => {
+        return templates.map((template) => ({
+            ...template,
+            steps: (template.steps || []).map((step, stepIndex) => ({
+                ...step,
+                id: step.id || `step_${template.id}_${stepIndex}_${Date.now()}`,
+                fields: (step.fields || []).map((field, fieldIndex) => ({
+                    ...field,
+                    id: field.id || `field_${step.id || stepIndex}_${fieldIndex}_${Date.now()}`,
+                })),
+            })),
+        }));
+    };
+
     const loadInitialData = useCallback(async () => {
         try {
             const [ticketsRes, templatesRes, sitesRes, groupsRes, usersRes] = await Promise.all([
@@ -88,7 +103,7 @@ function AppLayout() {
             ]);
 
             setTickets(Array.isArray(ticketsRes?.records) ? ticketsRes.records : []);
-            setTemplates(templatesRes || []);
+            setTemplates(normalizeTemplateData(templatesRes || []));
             setSites(sitesRes.records || sitesRes || []);
             setGroups(groupsRes || []);
             setUsers(usersRes.records || usersRes || []);
@@ -265,37 +280,7 @@ function AppLayout() {
         toast.success(t("importSuccess"));
     };
 
-    const handleCreateTicket = async (ticketData: {
-        title: string;
-        description: string;
-        templateId: string;
-        type: TicketType;
-        site: string;
-        assignedTo: string;
-        priority: Priority;
-        dueDate: Date;
-        relatedTicketIds?: string[];
-        problemType?: string;
-    }) => {
-        try {
-            const created = await api.createTicket({
-                ...ticketData,
-                dueDate: ticketData.dueDate.toISOString(),
-                relatedTicketIds: ticketData.relatedTicketIds,
-            });
 
-            // 乐观更新：立即添加到本地状态
-            setTickets((prev) => {
-                const currentTickets = Array.isArray(prev) ? prev : [];
-                return [created, ...currentTickets];
-            });
-
-            toast.success(t("ticketCreated"));
-            navigate("/dashboard");
-        } catch (error: any) {
-            toast.error(error.message || "Failed to create ticket");
-        }
-    };
 
     const handleSaveTemplate = async (templateData: Partial<Template>) => {
         try {
@@ -666,7 +651,6 @@ function AppLayout() {
                                             sites={sites.map((s) => ({id: s.id, name: s.name}))}
                                             tickets={tickets}
                                             language={language}
-                                            onSubmit={handleCreateTicket}
                                             onCancel={() => navigate("/dashboard")}
                                         />
                                     </TabsContent>

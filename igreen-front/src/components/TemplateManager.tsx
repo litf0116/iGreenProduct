@@ -50,7 +50,20 @@ export function TemplateManager({
         "photo",
         "signature",
     ];
-
+    // Helper to ensure all steps and fields have unique IDs
+    const normalizeTemplateData = (templates: Template[]): Template[] => {
+        return templates.map((template) => ({
+            ...template,
+            steps: (template.steps || []).map((step, stepIndex) => ({
+                ...step,
+                id: step.id || `step_${template.id}_${stepIndex}_${Date.now()}`,
+                fields: (step.fields || []).map((field, fieldIndex) => ({
+                    ...field,
+                    id: field.id || `field_${step.id || stepIndex}_${fieldIndex}_${Date.now()}`,
+                })),
+            })),
+        }));
+    };
     // Fetch templates on mount if not provided externally
     useEffect(() => {
         if (externalTemplates) {
@@ -64,7 +77,8 @@ export function TemplateManager({
             setError(null);
             try {
                 const data = await api.getTemplates();
-                setTemplates(data || []);
+                const normalizedData = normalizeTemplateData(data || []);
+                setTemplates(normalizedData);
             } catch (err) {
                 console.error("Failed to fetch templates:", err);
                 setError("Failed to load templates");
