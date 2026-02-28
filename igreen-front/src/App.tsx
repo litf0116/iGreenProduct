@@ -283,7 +283,18 @@ function AppLayout() {
                 dueDate: ticketData.dueDate.toISOString(),
                 relatedTicketIds: ticketData.relatedTicketIds,
             });
-            setTickets((prev) => Array.isArray(prev) ? [created, ...prev] : [created]);
+
+            // 乐观更新：立即添加到本地状态
+            setTickets((prev) => {
+                const currentTickets = Array.isArray(prev) ? prev : [];
+                return [created, ...currentTickets];
+            });
+            
+            // 触发 tickets 重新加载以确保数据同步
+            setTimeout(() => {
+                loadInitialData();
+            }, 500);
+
             toast.success(t("ticketCreated"));
             navigate("/dashboard");
         } catch (error: any) {
@@ -659,7 +670,6 @@ function AppLayout() {
                                             groups={groups}
                                             sites={sites.map((s) => ({id: s.id, name: s.name}))}
                                             tickets={tickets}
-                                            problemTypes={problemTypes}
                                             language={language}
                                             onSubmit={handleCreateTicket}
                                             onCancel={() => navigate("/dashboard")}

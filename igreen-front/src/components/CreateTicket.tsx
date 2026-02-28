@@ -40,7 +40,6 @@ interface CreateTicketProps {
     assignedTo: string;
     priority: Priority;
     dueDate: Date;
-    relatedTicketIds?: string[];
     problemType?: string;
   }) => void;
   onCancel: () => void;
