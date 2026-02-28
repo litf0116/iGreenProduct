@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Ticket, Template, TicketStatus, TicketComment} from "../lib/types";
+import {Ticket, Template, TicketStatus, TicketComment, Group} from "../lib/types";
 import {translations, TranslationKey, Language} from "../lib/i18n";
 import {Card} from "./ui/card";
 import {Badge} from "./ui/badge";
@@ -72,6 +72,7 @@ interface TicketDetailProps {
     language: Language;
     currentUserId: string;
     users: { id: string; name: string; role: string }[];
+    groups?: Group[]; // 添加 groups 属性
     onClose: () => void;
     onAccept?: (comment: string) => void;
     onDecline?: (comment: string) => void;
@@ -91,6 +92,7 @@ export function TicketDetail({
                                  language,
                                  currentUserId,
                                  users,
+                                 groups,
                                  onClose,
                                  onAccept,
                                  onDecline,
@@ -168,10 +170,10 @@ export function TicketDetail({
     };
 
     const handleReassign = () => {
-        if (onReassign && selectedAssignee) {
-            const newAssignee = users.find(u => u.id === selectedAssignee);
-            if (newAssignee) {
-                onReassign(selectedAssignee, newAssignee.name);
+        if (onReassign && selectedAssignee && groups) {
+            const newAssigneeGroup = groups.find(g => g.id === selectedAssignee);
+            if (newAssigneeGroup) {
+                onReassign(selectedAssignee, newAssigneeGroup.name);
                 setSelectedAssignee("");
                 setShowReassignDialog(false);
             }
@@ -888,17 +890,17 @@ export function TicketDetail({
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-2">
-                        <Label>{t("selectEngineer")} *</Label>
+                        <Label>{t("assignTo")} *</Label>
                         <Select value={selectedAssignee} onValueChange={setSelectedAssignee}>
                             <SelectTrigger>
-                                <SelectValue placeholder={t("selectEngineer")}/>
+                                <SelectValue placeholder={t("assignTo")}/>
                             </SelectTrigger>
                             <SelectContent>
-                                {users
-                                    .filter(u => u.role === "engineer" && u.id !== ticket.assignedTo)
-                                    .map(user => (
-                                        <SelectItem key={user.id} value={user.id}>
-                                            {user.name}
+                                {groups && groups
+                                    .filter((g) => g.status === "active" && g.id !== ticket.assignedTo)
+                                    .map((group) => (
+                                        <SelectItem key={group.id} value={group.id}>
+                                            {group.name}
                                         </SelectItem>
                                     ))}
                             </SelectContent>

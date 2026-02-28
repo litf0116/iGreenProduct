@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams, useLocation} from "react-router-dom";
 import {Card} from "./ui/card";
 import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
@@ -60,6 +60,7 @@ function getCreatedAfter(filter: TimeFilter): string | null {
 
 export function Dashboard() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     // 从 store 获取数据和状态
     const tickets = useDataStore((state) => state.tickets);
@@ -139,6 +140,7 @@ export function Dashboard() {
     }, [activeTab]);
 
     // 组件挂载时从 API 加载数据
+    // 组件挂载时从 API 加载数据到 dataStore
     const loadTickets = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -151,6 +153,7 @@ export function Dashboard() {
                 keyword: searchQuery || undefined,
                 createdAfter: getCreatedAfter(timeFilter)
             });
+            // 更新到 dataStore
             setTickets(response.records || response || []);
         } catch (error) {
             console.error("Failed to load tickets:", error);
@@ -158,12 +161,20 @@ export function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, setTickets, t]);
 
     useEffect(() => {
         loadTickets();
         loadStats();
     }, [loadTickets, loadStats]);
+    
+    // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
+    useEffect(() => {
+        if (location.pathname === "/dashboard") {
+            loadTickets();
+            loadStats();
+        }
+    }, [location.pathname, loadTickets, loadStats]);
 
     // Filter tickets by time
     const filterByTime = (ticket: Ticket): boolean => {
