@@ -57,21 +57,12 @@ function getCreatedAfter(filter: TimeFilter): string | null {
 
     return format(start);
 }
-
 export function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 从 store 获取数据和状态
-    const tickets = useDataStore((state) => state.tickets);
-    const setTickets = useDataStore((state) => state.setTickets);
-    const language = useUIStore((state) => state.language);
-    const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
-    const openModal = useUIStore((state) => state.openModal);
-
-    const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
-
-    // Loading state
+    // 本地状态管理，不使用 dataStore
+    const [tickets, setTickets] = useState<Ticket[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [statsLoading, setStatsLoading] = useState(true);
     const [stats, setStats] = useState({
@@ -82,13 +73,15 @@ export function Dashboard() {
         onHold: 0,
         closed: 0,
     });
-
     const [activeTab, setActiveTab] = useState<TicketType>("corrective");
     const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+    const language = useUIStore((state) => state.language);
+    const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
+    const openModal = useUIStore((state) => state.openModal);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
     const [priorityFilter, setPriorityFilter] = useState<string>("all");
-
+    const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
     const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect(() => {
@@ -153,7 +146,7 @@ export function Dashboard() {
                 keyword: searchQuery || undefined,
                 createdAfter: getCreatedAfter(timeFilter)
             });
-            // 更新到 dataStore
+            // 设置到本地状态
             setTickets(response.records || response || []);
         } catch (error) {
             console.error("Failed to load tickets:", error);
@@ -161,12 +154,17 @@ export function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, setTickets, t]);
-
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, t]);
+    
+    // 每次查询条件变化时触发数据重新加载，添加防抖机制
     useEffect(() => {
-        loadTickets();
-        loadStats();
-    }, [loadTickets, loadStats]);
+        const timeoutId = setTimeout(() => {
+            loadTickets();
+            loadStats();
+        }, 200); // 200ms 防抖，避免频繁请求
+        
+        return () => clearTimeout(timeoutId);
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, loadTickets, loadStats]);
     
     // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
     useEffect(() => {
