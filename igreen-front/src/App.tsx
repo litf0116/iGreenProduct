@@ -1,21 +1,8 @@
-import {useState, useEffect, useCallback} from "react";
-import {Routes, Route, Navigate, useNavigate, useLocation} from "react-router-dom";
-import {Language} from "./lib/i18n";
-import {translations, TranslationKey} from "./lib/i18n";
+import {useCallback, useEffect, useState} from "react";
+import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import {Language, TranslationKey, translations} from "./lib/i18n";
 import api from "./lib/api";
-import {
-    Ticket,
-    Template,
-    Priority,
-    Site,
-    Group,
-    User as UserType,
-    SLAConfig,
-    ProblemType,
-    SiteLevelConfig,
-    TicketStatus,
-    TicketType,
-} from "./lib/types";
+import {Group, ProblemType, Site, SiteLevelConfig, SLAConfig, Template, TicketStatus, User as UserType,} from "./lib/types";
 import {LanguageSelector} from "./components/LanguageSelector";
 import {Dashboard} from "./components/Dashboard";
 import {CreateTicket} from "./components/CreateTicket";
@@ -36,15 +23,15 @@ import {LogOut} from "lucide-react";
 import {Sheet, SheetContent} from "./components/ui/sheet";
 import appLogo from "figma:asset/e2d3be716f2b03621853146ef3c8dd02abba30cb.png";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 import {toast} from "sonner";
 import {Toaster} from "./components/ui/sonner";
-import {useUIStore, useDataStore} from "./store";
+import {useDataStore, useUIStore} from "./store";
 
 // Layout component with navigation
 function AppLayout() {
@@ -357,7 +344,7 @@ function AppLayout() {
         try {
             const updated = await api.updateTicket(ticketId, {
                 assignedTo: newAssigneeId,
-                status: "assigned" as TicketStatus,
+              status: "opened" as TicketStatus,
             });
             await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
