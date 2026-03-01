@@ -4,22 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities">
-      <change afterPath="$PROJECT_DIR$/../.sisyphus/plans/ticket-detail-refactor.md" afterDir="false" />
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="update">
       <change beforePath="$PROJECT_DIR$/../iGreenApp/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../iGreenApp/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/LanguageContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/LanguageContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/mapper/TicketMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/mapper/TicketMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketStatsResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketStatsResponse.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -420,7 +411,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772311260997</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="update">
+      <option name="closed" value="true" />
+      <created>1772354194264</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1772354194264</updated>
+    </task>
+    <task id="LOCAL-00032" summary="update">
+      <option name="closed" value="true" />
+      <created>1772354956419</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1772354956420</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -438,7 +445,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor(group): 优化群组搜索功能实现&#10;&#10;- 移除不必要的通配符拼接操作&#10;- 简化Lambda查询表达式结构&#10;- 保持搜索关键词的日志输出&#10;- 统一关键词处理逻辑" />
     <MESSAGE value="refactor(group): 优化群组搜索功能并移除重复代码&#10;&#10;- 重构 searchGroups 方法中的查询逻辑，提高代码可读性&#10;- 移除重复的 LambdaQueryWrapper 创建操作&#10;- 添加更详细的调试日志信息&#10;- 清理 UserService 中的冗余邮箱验证代码&#10;- 统一查询条件构建方式，便于后续维护" />
     <MESSAGE value="style(logging): 更新日志配置以改进格式和颜色支持&#10;&#10;- 为控制台输出添加颜色高亮显示&#10;- 统一所有日志输出格式，使用标准的时间戳格式&#10;- 调整日志模式以提高可读性&#10;- 将日志记录器名称长度从36增加到60个字符&#10;- 标准化文件日志输出格式与控制台一致" />
     <MESSAGE value="docs(tickets): 记录工单分配问题并完善文档&#10;&#10;- 添加工单分配功能问题记录文档，分析当前实现状态和冲突&#10;- 添加TicketDetail使用Capacitor Camera的修复计划文档&#10;- 添加应用图标配置到web manifest文件&#10;- 在capacitor配置中添加局域网访问允许列表&#10;- 更新应用标题为iGreen工程师工单系统&#10;- 添加存储功能测试脚本，验证Capacitor Preferences集成&#10;- 在国际化文件中添加工程师和经理角色翻译" />
@@ -463,7 +469,8 @@
     <MESSAGE value="```&#10;config(api): 更新API服务器地址配置&#10;&#10;- 将API_BASE_URL从环境变量改为硬编码配置&#10;- 设置生产环境服务器地址为 http://43.255.212.68:8088&#10;- 添加多个备用服务器地址供不同环境使用&#10;- 移除环境变量配置方式并更新相关说明文档&#10;- 配置Capacitor允许访问多个IP地址和域名&#10;```" />
     <MESSAGE value="feat: add TemplateFieldValue and TemplateStepValue entities; update TicketRequest and TicketResponse to include new fields" />
     <MESSAGE value="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities" />
+    <MESSAGE value="update" />
+    <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

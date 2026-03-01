@@ -88,7 +88,6 @@ export function CreateTicket(props: CreateTicketProps) {
                 setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
                 setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData || []));
             } catch (err) {
-                debugger;
                 console.error("Failed to fetch data:", err);
                 setError("Failed to load data");
                 toast.error("Failed to load data");

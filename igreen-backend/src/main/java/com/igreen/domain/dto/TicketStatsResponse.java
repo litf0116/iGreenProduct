@@ -7,7 +7,7 @@ package com.igreen.domain.dto;
 public record TicketStatsResponse(
     int total,
     int open,
-    int inProcess,
+    int inProgress,
     int submitted,
     int onHold,
     int closed

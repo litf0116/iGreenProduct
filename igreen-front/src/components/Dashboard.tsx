@@ -296,7 +296,6 @@ export function Dashboard() {
     const getStatusTranslationKey = (status: string): TranslationKey => {
         const statusMap: Record<string, TranslationKey> = {
             "open": "open",
-            "assigned": "assigned",
             "accepted": "accepted",
             "in_progress": "inProgress",
             "submitted": "submitted",
@@ -498,7 +497,7 @@ export function Dashboard() {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-muted-foreground">{t("inProgress")}</p>
-                                            <p className="text-primary">{stats.inProgress}</p>
+                                            <p className="text-primary">{stats.inProgress || 0}</p>
                                         </div>
                                         <Clock className="h-8 w-8 text-orange-500"/>
                                     </div>

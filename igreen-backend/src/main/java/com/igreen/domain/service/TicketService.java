@@ -585,7 +585,7 @@ public class TicketService {
         long total = 0;
         long open = 0;
         long accepted = 0;
-        long inProcess = 0;
+        long inProgress = 0;
         long submitted = 0;
         long onHold = 0;
         long closed = 0;
@@ -594,13 +594,13 @@ public class TicketService {
             switch (count.getStatus()) {
                 case "OPEN" -> open += count.getCount();
                 case "ASSIGNED" -> accepted += count.getCount();
-                case "ACCEPTED", "DEPARTED", "ARRIVED" -> inProcess += count.getCount();
+                case "ACCEPTED", "DEPARTED", "ARRIVED" -> inProgress += count.getCount();
                 case "REVIEW" -> submitted += count.getCount();
                 case "ON_HOLD" -> onHold += count.getCount();
                 case "COMPLETED", "CANCELLED" -> closed += count.getCount();
             }
         }
-        return new TicketStatsResponse((int) total, (int) open, (int) inProcess, (int) submitted, (int) onHold, (int) closed);
+        return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) closed);
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {

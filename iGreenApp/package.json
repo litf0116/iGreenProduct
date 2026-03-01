@@ -66,7 +66,8 @@
         "build:android": "npm run build && npx cap sync android",
         "build:apk": "cd android && ./gradlew assembleDebug",
         "build:release": "cd android && ./gradlew assembleRelease",
-        "package": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
-        "package:release": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease"
+        "build:prod": "VITE_API_URL=http://43.255.212.68:8088 vite build",
+        "package": "npm run build:prod && npx cap sync android && cd android && ./gradlew assembleDebug",
+        "package:release": "npm run build:prod && npx cap sync android && cd android && ./gradlew assembleRelease"
     }
 }
