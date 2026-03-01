@@ -94,6 +94,7 @@ public class TicketService {
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageHelper.startPage(page, size);
+        final String keywordLower = keyword != null ? keyword.toLowerCase() : null;
         try {
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
             if (type != null) {
@@ -114,7 +115,6 @@ public class TicketService {
 
             List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
-            final String keywordLower = keyword != null ? keyword.toLowerCase() : null;
             List<TicketResponse> ticketResponses = tickets.stream().filter(ticket -> keywordLower == null || (ticket.getTitle() != null && ticket.getTitle().toLowerCase().contains(keywordLower)) || (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower))).map(ticket -> {
                 User creator = userMapper.selectById(ticket.getCreatedBy());
                 Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
@@ -515,7 +515,7 @@ public class TicketService {
     public PageResult<TicketResponse> getMyTickets(int page, int size, String status, String userId) {
         PageHelper.startPage(page, size);
         try {
-            List<Ticket> tickets = ticketMapper.selectByAssignedTo(userId);
+            List<Ticket> tickets = ticketMapper.selectByAcceptedUserId(userId);
             if (status != null && !status.isEmpty()) {
                 tickets = tickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).collect(Collectors.toList());
             }

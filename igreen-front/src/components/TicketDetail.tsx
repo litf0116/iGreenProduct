@@ -1,6 +1,6 @@
 import {useState} from "react";
-import {Ticket, Template, TicketStatus, TicketComment, Group} from "../lib/types";
-import {translations, TranslationKey, Language} from "../lib/i18n";
+import {Group, Template, Ticket, TicketStatus} from "../lib/types";
+import {Language, TranslationKey, translations} from "../lib/i18n";
 import {Card} from "./ui/card";
 import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
@@ -8,39 +8,32 @@ import {Separator} from "./ui/separator";
 import {Progress} from "./ui/progress";
 import {Textarea} from "./ui/textarea";
 import {Label} from "./ui/label";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "./ui/select";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "./ui/select";
-import {
-    Calendar,
-    User,
-    FileText,
-    CheckCircle2,
-    Circle,
-    Clock,
-    AlertCircle,
-    UserX,
-    PlayCircle,
-    MessageSquare,
-    ThumbsUp,
-    ThumbsDown,
-    XCircle,
-    Users,
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Clock,
+  FileText,
+  MessageSquare,
+  PlayCircle,
+  ThumbsDown,
+  ThumbsUp,
+  User,
+  Users,
+  XCircle,
 } from "lucide-react";
 import {Avatar, AvatarFallback} from "./ui/avatar";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "./ui/alert-dialog";
 
 // Helper functions for date formatting to handle both string and Date inputs
@@ -668,7 +661,7 @@ export function TicketDetail({
                                 <h4 className="text-foreground">{t("workProgress")}</h4>
                             </div>
                             <span className={`${getStatusTextColor(ticket.status)} flex-shrink-0`}>
-                {ticket.completedSteps.length} / {template.steps.length} {t("steps")}
+                {ticket.completedSteps?.length || 0} / {template.steps.length} {t("steps")}
               </span>
                         </div>
 
@@ -684,7 +677,7 @@ export function TicketDetail({
                         {/* Steps List */}
                         <div className="space-y-3">
                             {template.steps.map((step, index) => {
-                                const isCompleted = ticket.completedSteps.includes(step.id);
+                              const isCompleted = ticket.completedSteps?.includes(step.id);
                                 return (
                                     <div
                                         key={step.id}

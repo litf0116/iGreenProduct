@@ -119,6 +119,7 @@ export interface Ticket {
     siteAddress?: string;
     templateId?: string;
     templateName?: string;
+  template: Template;
     assignedTo: string;
     assignedToName: string;
     createdBy: string;
@@ -126,8 +127,8 @@ export interface Ticket {
     createdAt: string;
     updatedAt: string;
     dueDate: string;
-    completedSteps?: string[];
-    stepData?: Record<string, any>;
+  completedSteps?: string[];
+  stepValues?: TemplateStep[];
     accepted?: boolean;
     acceptedAt?: string;
     departureAt?: string;

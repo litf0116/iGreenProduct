@@ -4,18 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="feat: add TemplateFieldValue and TemplateStepValue entities; update TicketRequest and TicketResponse to include new fields">
-      <change afterPath="$PROJECT_DIR$/../.sisyphus/plans/dynamic-form-backend.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.sisyphus/plans/dynamic-form-frontend.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/config/fieldConfigs.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.sisyphus/boulder.json" beforeDir="false" afterPath="$PROJECT_DIR$/../.sisyphus/boulder.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" afterDir="false" />
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities">
+      <change afterPath="$PROJECT_DIR$/../.sisyphus/plans/ticket-detail-refactor.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/.env.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/LanguageContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/LanguageContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateFieldValue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateFieldValue.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStepValue.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStepValue.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/enums/FieldType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/enums/FieldType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateField.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/TemplateStep.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/mapper/TicketMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/mapper/TicketMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/Dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -407,7 +412,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772299243594</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities">
+      <option name="closed" value="true" />
+      <created>1772311260997</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1772311260997</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -425,7 +438,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="docs(sisyphus): 添加开发进度分析报告和执行计划文档&#10;&#10;- 创建 development-progress-analysis.md 包含项目整体架构和技术栈概览&#10;- 添加后端服务igreen-backend的API端点实现状态和数据库表结构说明&#10;- 记录管理端igreen-front的页面组件和API对接情况&#10;- 描述工程师APP的工单工作流支持和待完善功能&#10;- 生成 EXECUTION_PLAN.md 文档包含问题清单和优先级分类&#10;- 添加 TypeScript 类型错误修复和 sonner 依赖修复方案&#10;- 设计站点数据导入导出功能的详细实现步骤&#10;- 制定 APK 打包和 Google Maps 集成的实施计划&#10;- 创建 SITE_IMPORT_EXPORT_API_DESIGN.md 详细的API设计文档&#10;- 定义站点导入导出的数据模型和实体类结构&#10;- 规划导入导出API端点和请求响应格式规范" />
     <MESSAGE value="refactor(group): 优化群组搜索功能实现&#10;&#10;- 移除不必要的通配符拼接操作&#10;- 简化Lambda查询表达式结构&#10;- 保持搜索关键词的日志输出&#10;- 统一关键词处理逻辑" />
     <MESSAGE value="refactor(group): 优化群组搜索功能并移除重复代码&#10;&#10;- 重构 searchGroups 方法中的查询逻辑，提高代码可读性&#10;- 移除重复的 LambdaQueryWrapper 创建操作&#10;- 添加更详细的调试日志信息&#10;- 清理 UserService 中的冗余邮箱验证代码&#10;- 统一查询条件构建方式，便于后续维护" />
     <MESSAGE value="style(logging): 更新日志配置以改进格式和颜色支持&#10;&#10;- 为控制台输出添加颜色高亮显示&#10;- 统一所有日志输出格式，使用标准的时间戳格式&#10;- 调整日志模式以提高可读性&#10;- 将日志记录器名称长度从36增加到60个字符&#10;- 标准化文件日志输出格式与控制台一致" />
@@ -450,7 +462,24 @@
     <MESSAGE value="refactor(config): 统一系统配置和API优先级处理&#10;&#10;- 修改CustomUserDetailsService使用原始输入作为username保持登录一致性&#10;- 调整SecurityConfig允许/auth/**和/health端点公开访问&#10;- 重构SiteLevelConfig相关DTO和实体类将maxConcurrentTickets和escalationTimeHours替换为slaMultiplier&#10;- 更新ConfigService适配新的站点级别配置结构&#10;- 修改SystemSettings组件适配新的SLA倍数配置界面&#10;- 调整前后端优先级映射统一使用P1-P4标准&#10;- 添加代理配置脚本和文档支持本地远程开发环境切换&#10;- 移除多余的结果映射和SQL片段优化数据库查询&#10;- 更新mock数据和类型定义适配新配置字段结构" />
     <MESSAGE value="```&#10;config(api): 更新API服务器地址配置&#10;&#10;- 将API_BASE_URL从环境变量改为硬编码配置&#10;- 设置生产环境服务器地址为 http://43.255.212.68:8088&#10;- 添加多个备用服务器地址供不同环境使用&#10;- 移除环境变量配置方式并更新相关说明文档&#10;- 配置Capacitor允许访问多个IP地址和域名&#10;```" />
     <MESSAGE value="feat: add TemplateFieldValue and TemplateStepValue entities; update TicketRequest and TicketResponse to include new fields" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: add TemplateFieldValue and TemplateStepValue entities; update TicketRequest and TicketResponse to include new fields" />
+    <MESSAGE value="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Template.java</url>
+          <line>80</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="SpringBootApplicationConfigurationType">
+        <watch expression="objectMapper.readValue(template.getStepConfig(), new TypeReference&lt;ArrayList&lt;TemplateStep&gt;&gt;() {                 })" language="JAVA" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

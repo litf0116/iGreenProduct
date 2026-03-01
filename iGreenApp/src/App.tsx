@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Sidebar, Header, MobileNav } from './components/Layout';
-import { Dashboard } from './components/Dashboard';
-import { TicketList } from './components/TicketList';
-import { TicketDetail } from './components/TicketDetail';
-import { Profile } from './components/Profile';
-import { Login } from './components/Login';
-import { Ticket, TicketStatus } from './lib/data';
-import { Toaster } from "./components/ui/sonner";
-import { toast } from "sonner";
-import { api } from './lib/api';
-import { getAuthToken, clearAuthToken } from './lib/storage';
-import { Button } from "./components/ui/button";
-import { RefreshCw } from 'lucide-react';
-import { LanguageProvider, useLanguage } from './components/LanguageContext';
+import React, {useEffect, useState} from 'react';
+import {Header, MobileNav, Sidebar} from './components/Layout';
+import {Dashboard} from './components/Dashboard';
+import {TicketList} from './components/TicketList';
+import {TicketDetail} from './components/TicketDetail';
+import {Profile} from './components/Profile';
+import {Login} from './components/Login';
+import {Ticket, TicketStatus} from './lib/data';
+import {Toaster} from "./components/ui/sonner";
+import {toast} from "sonner";
+import {api} from './lib/api';
+import {clearAuthToken, getAuthToken} from './lib/storage';
+import {Button} from "./components/ui/button";
+import {RefreshCw} from 'lucide-react';
+import {LanguageProvider, useLanguage} from './components/LanguageContext';
 
 export interface UserProfile {
   name: string;
@@ -148,7 +148,7 @@ function AppContent() {
     setSelectedTicket(null);
   };
 
-  const handleUpdateTicket = async (id: number, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => {
+  const handleUpdateTicket = async (id: string, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => {
     const previousTickets = [...tickets];
     const targetTicket = tickets.find(t => t.id === id);
     
@@ -179,8 +179,8 @@ function AppContent() {
       toast.error("Failed to update ticket");
     }
   };
-
-  const handleStatusChange = (id: number, newStatus: string) => {
+  
+  const handleStatusChange = (id: string, newStatus: string) => {
      handleUpdateTicket(id, { status: newStatus as TicketStatus });
   };
 

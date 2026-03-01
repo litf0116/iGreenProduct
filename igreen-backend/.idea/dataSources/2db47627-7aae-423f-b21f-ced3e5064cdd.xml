@@ -1534,7 +1534,7 @@
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="419" parent="302" name="id">
-      <AutoIncrement>2017121534270771203</AutoIncrement>
+      <AutoIncrement>2027709659250442243</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint|0s</StoredType>
@@ -1567,244 +1567,252 @@
       <Position>7</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="426" parent="302" name="template_id">
+    <column id="426" parent="302" name="site_id">
       <Position>8</Position>
       <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="427" parent="302" name="assigned_to">
+    <column id="427" parent="302" name="template_id">
       <Position>9</Position>
       <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="428" parent="302" name="created_by">
-      <NotNull>1</NotNull>
+    <column id="428" parent="302" name="assigned_to">
       <Position>10</Position>
       <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="429" parent="302" name="due_date">
+    <column id="429" parent="302" name="created_by">
+      <NotNull>1</NotNull>
       <Position>11</Position>
+      <StoredType>varchar(36)|0s</StoredType>
+    </column>
+    <column id="430" parent="302" name="due_date">
+      <Position>12</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="430" parent="302" name="accepted">
+    <column id="431" parent="302" name="accepted">
       <DefaultExpression>0</DefaultExpression>
-      <Position>12</Position>
+      <Position>13</Position>
       <StoredType>tinyint(1)|0s</StoredType>
     </column>
-    <column id="431" parent="302" name="accepted_at">
-      <Position>13</Position>
-      <StoredType>timestamp|0s</StoredType>
-    </column>
-    <column id="432" parent="302" name="departure_at">
+    <column id="432" parent="302" name="accepted_at">
       <Position>14</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="433" parent="302" name="departure_photo">
+    <column id="433" parent="302" name="accepted_user_id">
       <Position>15</Position>
-      <StoredType>varchar(500)|0s</StoredType>
+      <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="434" parent="302" name="arrival_at">
+    <column id="434" parent="302" name="departure_at">
       <Position>16</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="435" parent="302" name="arrival_photo">
+    <column id="435" parent="302" name="departure_photo">
       <Position>17</Position>
       <StoredType>varchar(500)|0s</StoredType>
     </column>
-    <column id="436" parent="302" name="completion_photo">
+    <column id="436" parent="302" name="arrival_at">
       <Position>18</Position>
+      <StoredType>timestamp|0s</StoredType>
+    </column>
+    <column id="437" parent="302" name="arrival_photo">
+      <Position>19</Position>
       <StoredType>varchar(500)|0s</StoredType>
     </column>
-    <column id="437" parent="302" name="cause">
-      <Position>19</Position>
-      <StoredType>text|0s</StoredType>
-    </column>
-    <column id="438" parent="302" name="solution">
+    <column id="438" parent="302" name="completion_photo">
       <Position>20</Position>
+      <StoredType>varchar(500)|0s</StoredType>
+    </column>
+    <column id="439" parent="302" name="cause">
+      <Position>21</Position>
       <StoredType>text|0s</StoredType>
     </column>
-    <column id="439" parent="302" name="completed_steps">
-      <Position>21</Position>
-      <StoredType>json|0s</StoredType>
-    </column>
-    <column id="440" parent="302" name="step_data">
+    <column id="440" parent="302" name="solution">
       <Position>22</Position>
-      <StoredType>json|0s</StoredType>
+      <StoredType>text|0s</StoredType>
     </column>
-    <column id="441" parent="302" name="related_ticket_ids">
+    <column id="441" parent="302" name="completed_steps">
       <Position>23</Position>
       <StoredType>json|0s</StoredType>
     </column>
-    <column id="442" parent="302" name="created_at">
-      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    <column id="442" parent="302" name="step_data">
       <Position>24</Position>
+      <StoredType>json|0s</StoredType>
+    </column>
+    <column id="443" parent="302" name="related_ticket_ids">
+      <Position>25</Position>
+      <StoredType>json|0s</StoredType>
+    </column>
+    <column id="444" parent="302" name="created_at">
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+      <Position>26</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="443" parent="302" name="updated_at">
+    <column id="445" parent="302" name="updated_at">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
       <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
-      <Position>25</Position>
+      <Position>27</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="444" parent="302" name="problem_type">
-      <Position>26</Position>
+    <column id="446" parent="302" name="problem_type">
+      <Position>28</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <index id="445" parent="302" name="PRIMARY">
+    <index id="447" parent="302" name="PRIMARY">
       <ColNames>id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="446" parent="302" name="idx_type">
+    <index id="448" parent="302" name="idx_type">
       <ColNames>type</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="447" parent="302" name="idx_status">
+    <index id="449" parent="302" name="idx_status">
       <ColNames>status</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="448" parent="302" name="idx_priority">
+    <index id="450" parent="302" name="idx_priority">
       <ColNames>priority</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="449" parent="302" name="idx_assigned_to">
+    <index id="451" parent="302" name="idx_assigned_to">
       <ColNames>assigned_to</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="450" parent="302" name="idx_created_by">
+    <index id="452" parent="302" name="idx_created_by">
       <ColNames>created_by</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="451" parent="302" name="idx_due_date">
+    <index id="453" parent="302" name="idx_due_date">
       <ColNames>due_date</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="452" parent="302" name="idx_created_at">
+    <index id="454" parent="302" name="idx_created_at">
       <ColNames>created_at</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="453" parent="302" name="PRIMARY">
+    <key id="455" parent="302" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="454" parent="303" name="id">
+    <column id="456" parent="303" name="id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="455" parent="303" name="name">
+    <column id="457" parent="303" name="name">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="456" parent="303" name="username">
+    <column id="458" parent="303" name="username">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <column id="457" parent="303" name="email">
+    <column id="459" parent="303" name="email">
       <Position>4</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="458" parent="303" name="phone">
+    <column id="460" parent="303" name="phone">
       <Position>5</Position>
       <StoredType>varchar(20)|0s</StoredType>
     </column>
-    <column id="459" parent="303" name="hashed_password">
+    <column id="461" parent="303" name="hashed_password">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <column id="460" parent="303" name="role">
+    <column id="462" parent="303" name="role">
       <DefaultExpression>&apos;ENGINEER&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StoredType>enum(&apos;ADMIN&apos;, &apos;MANAGER&apos;, &apos;ENGINEER&apos;)|0e</StoredType>
     </column>
-    <column id="461" parent="303" name="group_id">
+    <column id="463" parent="303" name="group_id">
       <Position>8</Position>
       <StoredType>varchar(36)|0s</StoredType>
     </column>
-    <column id="462" parent="303" name="status">
+    <column id="464" parent="303" name="status">
       <DefaultExpression>&apos;ACTIVE&apos;</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>9</Position>
       <StoredType>enum(&apos;ACTIVE&apos;, &apos;INACTIVE&apos;, &apos;SUSPENDED&apos;)|0e</StoredType>
     </column>
-    <column id="463" parent="303" name="created_at">
+    <column id="465" parent="303" name="created_at">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
       <Position>10</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="464" parent="303" name="updated_at">
+    <column id="466" parent="303" name="updated_at">
       <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
       <OnUpdate>CURRENT_TIMESTAMP</OnUpdate>
       <Position>11</Position>
       <StoredType>timestamp|0s</StoredType>
     </column>
-    <column id="465" parent="303" name="country">
+    <column id="467" parent="303" name="country">
       <Position>12</Position>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
-    <index id="466" parent="303" name="PRIMARY">
+    <index id="468" parent="303" name="PRIMARY">
       <ColNames>id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="467" parent="303" name="username">
+    <index id="469" parent="303" name="username">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="468" parent="303" name="email">
+    <index id="470" parent="303" name="email">
       <ColNames>email</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="469" parent="303" name="idx_user_username">
+    <index id="471" parent="303" name="idx_user_username">
       <ColNames>username</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="470" parent="303" name="idx_users_username">
+    <index id="472" parent="303" name="idx_users_username">
       <ColNames>username</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="471" parent="303" name="idx_user_email">
+    <index id="473" parent="303" name="idx_user_email">
       <ColNames>email</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="472" parent="303" name="idx_users_email">
+    <index id="474" parent="303" name="idx_users_email">
       <ColNames>email</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="473" parent="303" name="idx_user_role">
+    <index id="475" parent="303" name="idx_user_role">
       <ColNames>role</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="474" parent="303" name="idx_users_role">
+    <index id="476" parent="303" name="idx_users_role">
       <ColNames>role</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="475" parent="303" name="idx_user_group_id">
+    <index id="477" parent="303" name="idx_user_group_id">
       <ColNames>group_id</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="476" parent="303" name="idx_users_group_id">
+    <index id="478" parent="303" name="idx_users_group_id">
       <ColNames>group_id</ColNames>
       <Type>btree</Type>
     </index>
-    <index id="477" parent="303" name="idx_user_status">
+    <index id="479" parent="303" name="idx_user_status">
       <ColNames>status</ColNames>
       <Type>btree</Type>
     </index>
-    <key id="478" parent="303" name="PRIMARY">
+    <key id="480" parent="303" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <key id="479" parent="303" name="username">
+    <key id="481" parent="303" name="username">
       <UnderlyingIndexName>username</UnderlyingIndexName>
     </key>
-    <key id="480" parent="303" name="email">
+    <key id="482" parent="303" name="email">
       <UnderlyingIndexName>email</UnderlyingIndexName>
     </key>
   </database-model>

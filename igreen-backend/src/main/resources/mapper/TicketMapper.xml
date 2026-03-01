@@ -85,14 +85,14 @@
         WHERE t.status = #{status}
     </select>
 
-    <select id="selectByAssignedTo" resultMap="TicketWithDetailsResultMap">
+    <select id="selectByAcceptedUserId" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
                assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
-        LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
-        WHERE t.assigned_to = #{assignedTo}
+        LEFT JOIN `users` assignee ON t.accepted_user_id = assignee.id
+        WHERE t.accepted_user_id = #{acceptedUserId}
     </select>
 
     <select id="selectByCreatedBy" resultMap="TicketWithDetailsResultMap">
@@ -111,14 +111,14 @@
         WHERE template_id = #{templateId}
     </select>
 
-    <select id="selectByStatusAndAssignedTo" resultMap="TicketWithDetailsResultMap">
+    <select id="selectByStatusAndAcceptedUserId" resultMap="TicketWithDetailsResultMap">
         SELECT t.*,
                creator.id as creator_id, creator.name as creator_name, creator.username as creator_username,
                assignee.id as assignee_id, assignee.name as assignee_name
         FROM tickets t
         LEFT JOIN users creator ON t.created_by = creator.id
         LEFT JOIN `groups` assignee ON t.assigned_to = assignee.id
-        WHERE t.status = #{status} AND t.assigned_to = #{assignedTo}
+        WHERE t.status = #{status} AND t.accepted_user_id = #{acceptedUserId}
     </select>
 
     <select id="selectByTypeAndPriority" resultMap="TicketWithDetailsResultMap">

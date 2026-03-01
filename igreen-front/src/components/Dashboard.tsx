@@ -620,13 +620,13 @@ export function Dashboard() {
                           </span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {ticket?.completedSteps.length >= 0 && (
+                                                  {(ticket?.stepValues?.length || 0) > 0 && (
                                                         <div className="flex items-center gap-2 min-w-[100px]">
                                                             <div className="flex-1 bg-muted rounded-full h-2">
                                                                 <div
                                                                     className="bg-[#0ea5e9] h-2 rounded-full transition-all"
                                                                     style={{
-                                                                        width: `${(ticket?.stepData?.data.steps.filter(a => a.completed == true).length / (ticket?.stepData?.data.steps.length + 1)) * 100}%`,
+                                                                      width: `${((ticket?.completedSteps?.length || 0) / (ticket?.stepValues?.length || 1)) * 100}%`,
                                                                     }}
                                                                 />
                                                             </div>

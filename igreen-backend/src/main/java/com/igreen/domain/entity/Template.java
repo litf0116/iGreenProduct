@@ -2,10 +2,13 @@ package com.igreen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class Template {
 
     private String id;
@@ -31,53 +35,58 @@ public class Template {
     @TableField(exist = false)
     private List<TemplateStep> steps = new ArrayList<>();
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    @JsonIgnore
+    private transient boolean stepsCached = false;
 
-    // 在实体加载后，自动将 stepConfig JSON 字符串反序列化为 steps 对象
-    @PostConstruct
-    public void initSteps() {
-        if (stepConfig != null && !stepConfig.trim().isEmpty()) {
-            try {
-                this.steps = objectMapper.readValue(stepConfig, new TypeReference<List<TemplateStep>>() {
-                });
-            } catch (Exception e) {
-                // 如果反序列化失败，保持空的 steps 列表
-                this.steps = new ArrayList<>();
-            }
+    private static final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    private List<TemplateStep> deserializeSteps() {
+        if (stepConfig == null || stepConfig.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        try {
+            List<TemplateStep> parsed = objectMapper.readValue(stepConfig, new TypeReference<List<TemplateStep>>() {
+            });
+            return parsed != null ? parsed : new ArrayList<>();
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to deserialize stepConfig for template {}: {}", id, e.getMessage());
+            return new ArrayList<>();
         }
     }
 
-    // 在设置 steps 时，自动序列化为 JSON 字符串并保存到 stepConfig
+    private String serializeSteps() {
+        if (steps == null || steps.isEmpty()) {
+            return "[]";
+        }
+
+        try {
+            return objectMapper.writeValueAsString(steps);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize steps for template {}: {}", id, e.getMessage());
+            return "[]";
+        }
+    }
+
     public void setSteps(List<TemplateStep> steps) {
         this.steps = steps != null ? steps : new ArrayList<>();
-        try {
-            this.stepConfig = objectMapper.writeValueAsString(this.steps);
-        } catch (Exception e) {
-            this.stepConfig = "[]";
-        }
+        this.stepConfig = serializeSteps();
+        this.stepsCached = true;
     }
 
     public List<TemplateStep> getSteps() {
-        // 每次都从 stepConfig 反序列化，确保数据是最新的
-        if (stepConfig != null && !stepConfig.trim().isEmpty()) {
-            try {
-                this.steps = objectMapper.readValue(stepConfig, new TypeReference<List<TemplateStep>>() {});
-            } catch (Exception e) {
-                // 如果反序列化失败，保持空的 steps 列表
-                this.steps = new ArrayList<>();
-            }
-        } else {
-            this.steps = new ArrayList<>();
+        if (!stepsCached) {
+            this.steps = deserializeSteps();
+            this.stepsCached = true;
         }
         return steps;
     }
 
-    // 提供手动同步方法，用于在 stepConfig 被直接修改后同步到 steps
     public void syncStepsFromConfig() {
-        initSteps();
+        this.stepsCached = false;
+        getSteps();
     }
 
-    // 提供手动同步方法，用于在 steps 被修改后同步到 stepConfig
     public void syncConfigFromSteps() {
         setSteps(this.steps);
     }
