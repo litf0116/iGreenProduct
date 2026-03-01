@@ -543,11 +543,6 @@ public class TicketService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        Group group = groupMapper.selectById(user.getGroupId());
-        if (group != null) {
-            throw new BusinessException("用户租不存在");
-        }
-
         // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
         List<String> statuses = Arrays.asList("OPEN");
         List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses, user.getGroupId());
