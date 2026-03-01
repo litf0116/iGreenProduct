@@ -55,15 +55,67 @@ export const PROBLEM_TEMPLATE: TicketTypeTemplate = {
 };
 
 // =====================
+// 4. Preventive Maintenance Template
+// =====================
+export const PREVENTIVE_TEMPLATE: TicketTypeTemplate = {
+  id: 'template-preventive',
+  name: 'Preventive Maintenance',
+  type: 'preventive',
+  steps: [{
+    id: 'step-inspection',
+    name: 'Equipment Inspection',
+    fields: [
+      {
+        id: 'field-inspection-result',
+        name: 'Inspection Result',
+        type: 'TOGGLE_GROUP',
+        required: true,
+        config: {
+          defaultValue: 'pass',
+          options: [
+            {
+              value: 'pass',
+              label: 'Pass',
+              icon: 'ThumbsUp',
+              color: 'green',
+              conditionalFields: [
+                { id: 'field-evidence-photos', name: 'Evidence Photos', type: 'PHOTOS', required: true }
+              ]
+            },
+            {
+              value: 'fail',
+              label: 'Not Pass',
+              icon: 'ThumbsDown',
+              color: 'red',
+              conditionalFields: [
+                { id: 'field-cause', name: 'Failure Cause', type: 'TEXT', required: true, config: { multiline: true } },
+                { id: 'field-before-photos', name: 'Before Photos', type: 'PHOTOS', required: true },
+                { id: 'field-after-photos', name: 'After Photos', type: 'PHOTOS', required: true }
+              ]
+            },
+            {
+              value: 'na',
+              label: 'N/A',
+              icon: 'MinusCircle',
+              color: 'gray',
+              conditionalFields: []
+            }
+          ]
+        }
+      }
+    ]
+  }]
+};
+
+// =====================
 // Template Registry
 // =====================
 export const TICKET_TEMPLATES: Record<string, TicketTypeTemplate> = {
   corrective: CORRECTIVE_TEMPLATE,
   planned: PLANNED_TEMPLATE,
+  preventive: PREVENTIVE_TEMPLATE,
   problem: PROBLEM_TEMPLATE
 };
-
-// =====================
 // Helper Functions
 // =====================
 export function getTemplateByType(type: string): TicketTypeTemplate | undefined {

@@ -29,7 +29,7 @@ import {Input} from "./ui/input";
 import {Checkbox} from "./ui/checkbox";
 import {ToggleGroup, ToggleGroupItem} from "./ui/toggle-group";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,} from "./ui/sheet";
-import type {TemplateField} from '../lib/data';
+import type {TemplateField, ToggleGroupConfig} from '../lib/data';
 import {getPriorityColor, getTicketTypeColor, getTicketTypeIcon, getTicketTypeLabel, Ticket, TicketStep} from '../lib/data';
 import {toast} from "sonner@2.0.3";
 import {useLanguage} from './LanguageContext';
@@ -122,6 +122,52 @@ function PhotoUploader({ stepId, fieldPrefix, isCorrectiveOrPlanned, existingPho
 }
 
 // =====================
+// ToggleGroup Field Component
+// =====================
+const TOGGLE_ICONS: Record<string, React.ComponentType<any>> = {
+  ThumbsUp,
+  ThumbsDown,
+  MinusCircle
+};
+
+interface ToggleGroupFieldProps {
+  field: TemplateField;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function ToggleGroupField({ field, value, onChange }: ToggleGroupFieldProps) {
+  const config = field.config as ToggleGroupConfig;
+  const options = config?.options || [];
+
+  return (
+    <ToggleGroup 
+      type="single" 
+      value={value || ''} 
+      onValueChange={(val) => val && onChange(val)}
+      className="justify-start"
+    >
+      {options.map(opt => {
+        const IconComponent = opt.icon ? TOGGLE_ICONS[opt.icon] : null;
+        const colorClass = opt.color === 'green' ? 'data-[state=on]:bg-green-100 data-[state=on]:text-green-700' :
+                          opt.color === 'red' ? 'data-[state=on]:bg-red-100 data-[state=on]:text-red-700' :
+                          'data-[state=on]:bg-slate-100 data-[state=on]:text-slate-700';
+        return (
+          <ToggleGroupItem 
+            key={opt.value} 
+            value={opt.value}
+            className={`${colorClass} gap-2`}
+          >
+            {IconComponent && <IconComponent className="w-4 h-4" />}
+            {opt.label}
+          </ToggleGroupItem>
+        );
+      })}
+    </ToggleGroup>
+  );
+}
+
+// =====================
 // Dynamic Field Renderer
 // =====================
 interface DynamicFieldRendererProps {
@@ -181,6 +227,18 @@ function DynamicFieldRenderer({field, value, onChange, ticketId, loadingImage, o
                 />
             );
 
+        case 'TOGGLE_GROUP':
+            return (
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-900">{field.name}</label>
+                    <ToggleGroupField
+                        field={field}
+                        value={value || ''}
+                        onChange={(val) => onChange(field.id, val)}
+                    />
+                </div>
+            );
+
         default:
             return null;
     }
@@ -189,7 +247,7 @@ function DynamicFieldRenderer({field, value, onChange, ticketId, loadingImage, o
 interface TicketDetailProps {
   ticket: Ticket | null;
   onClose: () => void;
-  onUpdateTicket: (id: number, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => void;
+  onUpdateTicket: (id: string, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => void;
   onViewRelatedTicket?: (ticketId: number) => void;
 }
 

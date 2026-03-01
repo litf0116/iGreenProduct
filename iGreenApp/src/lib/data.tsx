@@ -10,6 +10,21 @@ export type TicketType = 'corrective' | 'planned' | 'preventive' | 'problem';
 // =====================
 export type FieldType = 'TEXT' | 'NUMBER' | 'DATE' | 'PHOTOS' | 'TOGGLE_GROUP' | 'SIGNATURE';
 
+// ToggleGroup 选项配置
+export interface ToggleOption {
+  value: string;
+  label: string;
+  icon?: string;        // Lucide 图标名称: ThumbsUp, ThumbsDown, MinusCircle
+  color?: string;       // tailwind 颜色名: green, red, gray
+  conditionalFields?: TemplateField[];  // 该选项下的条件字段
+}
+
+// ToggleGroup 特殊配置
+export interface ToggleGroupConfig {
+  defaultValue?: string;
+  options: ToggleOption[];
+}
+
 export interface TemplateField {
     id: string;
     name: string;
