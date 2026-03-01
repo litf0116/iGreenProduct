@@ -157,16 +157,6 @@ export function Dashboard() {
         }
     }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, t]);
 
-    // 每次查询条件变化时触发数据重新加载，添加防抖机制
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            loadTickets();
-            loadStats();
-        }, 200); // 200ms 防抖，避免频繁请求
-
-        return () => clearTimeout(timeoutId);
-    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, loadTickets, loadStats]);
-
     // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
     useEffect(() => {
         if (location.pathname === "/dashboard") {
