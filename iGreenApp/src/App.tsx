@@ -41,7 +41,7 @@ function AppContent() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [initializing, setInitializing] = useState(true);
-  const { t } = useLanguage();
+  const {t} = useLanguage();
 
   // 检查登录状态并恢复会话
   useEffect(() => {
@@ -80,7 +80,7 @@ function AppContent() {
 
   const loadTickets = async (reset = false) => {
     if (loadingMore && !reset) return;
-    
+
     try {
       if (reset) {
         setRefreshing(true);
@@ -88,10 +88,10 @@ function AppContent() {
       } else {
         setLoadingMore(true);
       }
-      
+
       const size = 20;
       const page = reset ? 1 : Math.floor(tickets.length / size) + 1;
-      
+
       // 根据当前视图加载不同的工单列表
       let data;
       switch (currentView) {
@@ -109,7 +109,7 @@ function AppContent() {
         default:
           data = [];
       }
-      
+
       if (reset) {
         setTickets(data);
       } else {
@@ -151,16 +151,16 @@ function AppContent() {
   const handleUpdateTicket = async (id: string, updates: Partial<Ticket>, options?: { skipApi?: boolean }) => {
     const previousTickets = [...tickets];
     const targetTicket = tickets.find(t => t.id === id);
-    
+
     if (!targetTicket) return;
 
     // 本地乐观更新
-    setTickets(prev => prev.map(t => 
-      t.id === id ? { ...t, ...updates } : t
+    setTickets(prev => prev.map(t =>
+      t.id === id ? {...t, ...updates} : t
     ));
 
     if (selectedTicket && selectedTicket.id === id) {
-      setSelectedTicket(prev => prev ? { ...prev, ...updates } : null);
+      setSelectedTicket(prev => prev ? {...prev, ...updates} : null);
     }
 
     // skipApi 默认为 false，调用者可以传 true 跳过 API 调用
@@ -179,9 +179,9 @@ function AppContent() {
       toast.error("Failed to update ticket");
     }
   };
-  
+
   const handleStatusChange = (id: string, newStatus: string) => {
-     handleUpdateTicket(id, { status: newStatus as TicketStatus });
+    handleUpdateTicket(id, {status: newStatus as TicketStatus});
   };
 
   const handleLogin = async () => {
@@ -212,11 +212,11 @@ function AppContent() {
   };
 
   const handleUpdateProfile = (updates: Partial<UserProfile>) => {
-    setUser(prev => ({ ...prev, ...updates }));
+    setUser(prev => ({...prev, ...updates}));
     toast.success("Profile updated successfully");
   };
 
-  const handleViewRelatedTicket = (ticketId: number) => {
+  const handleViewRelatedTicket = (ticketId: string) => {
     const targetTicket = tickets.find(t => t.id === ticketId);
     if (targetTicket) {
       setSelectedTicket(targetTicket);
@@ -247,8 +247,8 @@ function AppContent() {
   if (!isAuthenticated) {
     return (
       <>
-        <Login onLogin={handleLogin} />
-        <Toaster />
+        <Login onLogin={handleLogin}/>
+        <Toaster/>
       </>
     );
   }
@@ -256,53 +256,53 @@ function AppContent() {
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
       <div className="hidden md:block">
-        <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+        <Sidebar currentView={currentView} setCurrentView={setCurrentView}/>
       </div>
-      
+
       <div className="flex-1 flex flex-col overflow-hidden pb-16 md:pb-0">
-        <Header />
-        
+        <Header/>
+
         {currentView !== 'profile' && (
           <div className="bg-white border-b px-4 md:px-6 py-2 flex items-center justify-between">
-             <div className="text-xs text-slate-500 flex items-center gap-2">
-                {loading ? "Syncing..." : `Last synced: ${new Date().toLocaleTimeString()}`}
-             </div>
-             <div className="flex items-center gap-2">
-               <Button 
-                 variant="ghost" 
-                 size="sm" 
-                 onClick={() => loadTickets(true)} 
-                 disabled={refreshing}
-                 className="h-8 w-8 p-0"
-               >
-                 <RefreshCw className={`w-4 h-4 text-slate-500 ${refreshing ? 'animate-spin' : ''}`} />
-               </Button>
-             </div>
+            <div className="text-xs text-slate-500 flex items-center gap-2">
+              {loading ? "Syncing..." : `Last synced: ${new Date().toLocaleTimeString()}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => loadTickets(true)}
+                disabled={refreshing}
+                className="h-8 w-8 p-0"
+              >
+                <RefreshCw className={`w-4 h-4 text-slate-500 ${refreshing ? 'animate-spin' : ''}`}/>
+              </Button>
+            </div>
           </div>
         )}
-        
+
         <main className="flex-1 overflow-y-auto relative" id="main-scroll-container">
           {loading && tickets.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
               <div className="flex flex-col items-center gap-2 text-slate-500">
-                <RefreshCw className="w-8 h-8 animate-spin text-indigo-500" />
+                <RefreshCw className="w-8 h-8 animate-spin text-indigo-500"/>
                 <p>Loading workspace...</p>
               </div>
             </div>
           ) : null}
 
           {currentView === 'dashboard' && (
-            <Dashboard 
-              tickets={tickets} 
+            <Dashboard
+              tickets={tickets}
               onTicketClick={handleTicketClick}
               onViewAllClick={() => setCurrentView('queue')}
             />
           )}
-          
+
           {currentView === 'queue' && (
-            <TicketList 
+            <TicketList
               title={t.queue}
-              tickets={getFilteredTickets()} 
+              tickets={getFilteredTickets()}
               onTicketClick={handleTicketClick}
               showAssignee={false}
               onRefresh={() => loadTickets(true)}
@@ -312,11 +312,11 @@ function AppContent() {
               loadingMore={loadingMore}
             />
           )}
-          
+
           {currentView === 'my-work' && (
-            <TicketList 
+            <TicketList
               title={t.myWork}
-              tickets={getFilteredTickets()} 
+              tickets={getFilteredTickets()}
               onTicketClick={handleTicketClick}
               onLoadMore={() => loadTickets(false)}
               hasMore={hasMore}
@@ -325,11 +325,11 @@ function AppContent() {
               refreshing={refreshing}
             />
           )}
-          
+
           {currentView === 'history' && (
-            <TicketList 
+            <TicketList
               title={t.history}
-              tickets={getFilteredTickets()} 
+              tickets={getFilteredTickets()}
               onTicketClick={handleTicketClick}
               onLoadMore={() => loadTickets(false)}
               hasMore={hasMore}
@@ -340,8 +340,8 @@ function AppContent() {
           )}
 
           {currentView === 'profile' && (
-            <Profile 
-              onLogout={handleLogout} 
+            <Profile
+              onLogout={handleLogout}
               user={user}
               onUpdateProfile={handleUpdateProfile}
             />
@@ -350,17 +350,17 @@ function AppContent() {
       </div>
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
-        <MobileNav currentView={currentView} setCurrentView={setCurrentView} />
+        <MobileNav currentView={currentView} setCurrentView={setCurrentView}/>
       </div>
 
-      <TicketDetail 
-        ticket={selectedTicket} 
-        onClose={handleCloseDetail} 
+      <TicketDetail
+        ticket={selectedTicket}
+        onClose={handleCloseDetail}
         onUpdateTicket={handleUpdateTicket}
         onViewRelatedTicket={handleViewRelatedTicket}
       />
-      
-      <Toaster />
+
+      <Toaster/>
     </div>
   );
 }
@@ -368,7 +368,7 @@ function AppContent() {
 export default function App() {
   return (
     <LanguageProvider>
-      <AppContent />
+      <AppContent/>
     </LanguageProvider>
   );
 }

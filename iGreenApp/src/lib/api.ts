@@ -349,7 +349,7 @@ export const api = {
       formData.append('fieldType', fieldType);
     }
 
-    const token = getAuthToken();
+    const token = await getAuthToken();
     const headers: HeadersInit = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;

@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="update" />
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="update">
+      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/PhotoUploader.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/ToggleGroupField.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/avatar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/avatar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/sheet.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +40,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1737" />
+    <option name="cachedIndexableFilesCount" value="1738" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
