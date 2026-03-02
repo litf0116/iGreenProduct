@@ -58,6 +58,7 @@ function transformTicket(backendTicket: any): Ticket {
     problemPhotoUrls: [],
     relatedTicketId: backendTicket.relatedTicketIds?.[0],
     problemType: backendTicket.problemType,
+    templateData: backendTicket.templateData || undefined,
   };
 }
 
@@ -243,7 +244,8 @@ export const api = {
     const allowedFields = [
       'siteId', 'relatedTicketIds', 'dueDate', 'priority', 'site', 'assignedTo', 'arrivalAt',
       'status', 'stepData', 'title', 'arrivalPhoto', 'type', 'description',
-      'departurePhoto', 'departureAt', 'cause', 'completionPhoto', 'solution', 'completedSteps'
+      'departurePhoto', 'departureAt', 'cause', 'completionPhoto', 'solution', 'completedSteps',
+      'templateData'
     ];
     
     const filteredUpdates: Record<string, any> = {};

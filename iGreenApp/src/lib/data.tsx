@@ -44,6 +44,18 @@ export interface TemplateStepConfig {
     name: string;
     fields: TemplateField[];
 }
+// New: Template step with data fields (extends existing step config)
+export interface TemplateStepWithData extends TemplateStepConfig {
+  fields: TemplateFieldValue[];
+}
+
+// New: Ticket type template with data (template steps include data)
+export interface TicketTypeTemplateWithData {
+  id: string;
+  name: string;
+  type: TicketType;
+  steps: TemplateStepWithData[];
+}
 
 export interface TicketTypeTemplate {
     id: string;
@@ -85,6 +97,7 @@ export interface Ticket {
     siteName?: string;
     siteAddress?: string;
     steps?: TicketStep[];
+    templateData?: TicketTypeTemplateWithData;
     history?: {
         departedAt?: string;
         arrivedAt?: string;

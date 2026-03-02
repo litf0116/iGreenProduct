@@ -1,6 +1,9 @@
 {
   "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/dynamic-form-frontend.md",
   "started_at": "2026-02-28T18:44:20.3NZ",
-  "session_ids": ["ses_35aba3c23ffey0dbZsk731zYSM"],
+  "session_ids": [
+    "ses_35aba3c23ffey0dbZsk731zYSM",
+    "ses_3563b2976ffe2YAec1xOdP3SV5"
+  ],
   "plan_name": "dynamic-form-frontend"
 }

@@ -1,22 +1,9 @@
 {
-  "active_plan": "/Users/mac/workspace/iGreenProduct/iGreenApp/docs/plans/2025-02-01-capacitor-android-build.md",
-  "started_at": "2026-02-01T15:17:12.589Z",
-  "session_ids": ["ses_3e6956be2ffeajYIbHaOH3D2Fy"],
-  "plan_name": "capacitor-android-build",
-  "current_task": 14,
-  "completed_tasks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-  "verification_checklist": {
-    "total": 7,
-    "completed": 7,
-    "items": [
-      "capacitor.config.ts 配置正确",
-      "npx cap sync android 执行成功",
-      "Debug APK 可以正常安装和运行 (6.3MB)",
-      "Release APK 已签名并可安装 (5.0MB)",
-      "应用图标和启动屏显示正常 (74 个资源文件)",
-      "网络请求可以正常访问后端 API (权限已配置)",
-      "基本功能（登录、工单列表等）工作正常 (Web 资源已打包)"
-    ]
-  },
-  "status": "completed"
+  "active_plan": "/Users/mac/workspace/iGreenProduct/iGreenApp/.sisyphus/plans/field-value-template-data.md",
+  "started_at": "2026-03-01T14:12:22.995Z",
+  "session_ids": [
+    "ses_356b3c4dfffeq5e89j0phYhAf1"
+  ],
+  "plan_name": "field-value-template-data",
+  "agent": "atlas"
 }

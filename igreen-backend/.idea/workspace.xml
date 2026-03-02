@@ -5,16 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="update">
-      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/PhotoUploader.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/ToggleGroupField.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iGreenApp/.sisyphus/drafts/field-value-architecture.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../iGreenApp/.sisyphus/plans/field-value-template-data.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/init-scripts/02-add-template-data.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/.sisyphus/boulder.json" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/.sisyphus/boulder.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketList.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/avatar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/avatar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/dialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/ui/sheet.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/ui/sheet.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init-scripts/01-schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/init-scripts/01-schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketUpdateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/dto/TicketUpdateRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Ticket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/entity/Ticket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/TicketMapper.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

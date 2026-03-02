@@ -263,14 +263,52 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   // =====================
 
   // Get field value from ticket using legacy field name
+  // Get field value from ticket using templateData or legacy field
   const getFieldValue = (fieldId: string): any => {
+    // 优先从 templateData 中查找
+    if (ticket.templateData?.steps) {
+      for (const step of ticket.templateData.steps) {
+        const field = step.fields.find(f => f.id === fieldId);
+        if (field) {
+          return field.value || field.values;
+        }
+      }
+    }
+    // Fallback 到旧字段（向后兼容）
     const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
-    if (!legacyField) return undefined;
-    return (ticket as any)[legacyField];
+    if (legacyField) {
+      return (ticket as any)[legacyField];
+    }
+    return undefined;
   };
 
   // Handle dynamic field value change
   const handleFieldChange = (fieldId: string, value: any) => {
+    // 更新 templateData 中的字段值
+    if (ticket.templateData?.steps) {
+      const updatedSteps = ticket.templateData.steps.map(step => ({
+        ...step,
+        fields: step.fields.map(field =>
+          field.id === fieldId
+            ? { 
+                ...field, 
+                ...(Array.isArray(value) ? { values: value } : { value: value }),
+                timestamp: new Date().toISOString()
+              }
+            : field
+        )
+      }));
+      
+      onUpdateTicket(ticket.id, {
+        templateData: {
+          ...ticket.templateData,
+          steps: updatedSteps
+        }
+      });
+      return;
+    }
+    
+    // Fallback 到旧字段（向后兼容）
     const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
     if (legacyField) {
       onUpdateTicket(ticket.id, {[legacyField]: value});

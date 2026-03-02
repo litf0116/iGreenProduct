@@ -12,6 +12,7 @@
 
         <result property="siteId" column="site_id"/>
         <result property="templateId" column="template_id"/>
+        <result property="templateData" column="template_data"/>
         <result property="assignedTo" column="assigned_to"/>
         <result property="createdBy" column="created_by"/>
         <result property="completedSteps" column="completed_steps"/>
@@ -55,7 +56,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, title, description, type, status, priority, site_id, template_id, assigned_to, created_by,
+        id, title, description, type, status, priority, site_id, template_id, template_data, assigned_to, created_by,
         completed_steps, step_data, accepted, accepted_at, accepted_user_id, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
         problem_type, created_at, updated_at, due_date

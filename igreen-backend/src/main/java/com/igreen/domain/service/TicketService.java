@@ -192,9 +192,10 @@ public class TicketService {
         if (request.solution() != null) {
             ticket.setSolution(request.solution());
         }
-        if (request.relatedTicketIds() != null) {
+        // Handle templateData
+        if (request.templateData() != null) {
             try {
-                ticket.setRelatedTicketIds(objectMapper.writeValueAsString(request.relatedTicketIds()));
+                ticket.setTemplateData(objectMapper.writeValueAsString(request.templateData()));
             } catch (JsonProcessingException e) {
                 throw new BusinessException(ErrorCode.INVALID_REQUEST);
             }
@@ -634,13 +635,21 @@ public class TicketService {
             relatedTicketIds = List.of(ticket.getRelatedTicketIds().split(","));
         }
 
-
+        // Parse templateData
+        Map<String, Object> templateData = new HashMap<>();
+        if (ticket.getTemplateData() != null && !ticket.getTemplateData().isEmpty()) {
+            try {
+                templateData = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<Map<String, Object>>() {});
+            } catch (JsonProcessingException e) {
+                log.error("Error parsing template data", e);
+            }
+        }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
         return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,   // siteId
                                   site != null ? site.getName() : null,       // siteName
                                   site != null ? site.getAddress() : null,    // siteAddress
-                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepValues, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
+                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepValues, templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
     }
 
     @Transactional
