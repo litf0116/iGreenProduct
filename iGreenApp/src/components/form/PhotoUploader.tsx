@@ -5,12 +5,12 @@ import {Camera, Image as ImageIcon} from "lucide-react";
 // Photo Uploader Component - Independent component to avoid Hooks rules violation
 interface PhotoUploaderProps {
   stepId: string;
-  fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto';
+  fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto';
   isCorrectiveOrPlanned: boolean;
   existingPhotos: string[];
   label: string;
   loadingImage: string | null;
-  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto', isCorrectiveOrPlanned?: boolean) => void;
+  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
 }
 
 export function PhotoUploader({

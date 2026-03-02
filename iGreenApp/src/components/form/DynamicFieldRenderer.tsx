@@ -3,17 +3,18 @@ import {Input} from "../ui/input";
 import React from "react";
 import {TemplateFieldValue} from "../../lib/data";
 import {PhotoUploader} from "./PhotoUploader";
-import ToggleGroupField from "./ToggleGroupField";
+import InspectionField from "./InspectionField";
 
 // =====================
 // Dynamic Field Renderer
 // =====================
+
 interface DynamicFieldRendererProps {
   field: TemplateFieldValue;
   onChange: (fieldId: string, value: any) => void;
   ticketId: string;
   loadingImage: string | null;
-  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto', isCorrectiveOrPlanned?: boolean) => void;
+  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
 }
 
 export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, onAddPhoto}: DynamicFieldRendererProps) {
@@ -50,7 +51,7 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
         </div>
       );
 
-    case 'PHOTOS':
+    case 'PHOTOS': {
       const fieldPrefix = fieldPrefixMap[field.id] || 'problemPhoto';
       return (
         <PhotoUploader
@@ -63,13 +64,26 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
           onAddPhoto={onAddPhoto}
         />
       );
+    }
 
-    case 'TOGGLE_GROUP':
+    case 'INSPECTION':
       return (
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-900">{field.name}</label>
-          <ToggleGroupField
-            field={field}
+          <InspectionField
+            value={field.value as any}
+            onChange={(val) => onChange(field.id, val)}
+            ticketId={String(ticketId)}
+            stepId={String(ticketId)}
+            loadingImage={loadingImage}
+            onAddPhoto={onAddPhoto}
+          />
+        </div>
+      );
+      return (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-900">{field.name}</label>
+          <InspectionField
             value={field.value || ''}
             onChange={(val) => onChange(field.id, val)}
           />

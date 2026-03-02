@@ -55,56 +55,62 @@ export const PROBLEM_TEMPLATE: TicketTypeTemplate = {
 };
 
 // =====================
-// 4. Preventive Maintenance Template
+// 4. Preventive Maintenance Template (16 检查步骤)
 // =====================
 export const PREVENTIVE_TEMPLATE: TicketTypeTemplate = {
   id: 'template-preventive',
   name: 'Preventive Maintenance',
   type: 'preventive',
-  steps: [{
-    id: 'step-inspection',
-    name: 'Equipment Inspection',
-    fields: [
-      {
-        id: 'field-inspection-result',
-        name: 'Inspection Result',
-        type: 'TOGGLE_GROUP',
-        required: true,
-        config: {
-          defaultValue: 'pass',
-          options: [
-            {
-              value: 'pass',
-              label: 'Pass',
-              icon: 'ThumbsUp',
-              color: 'green',
-              conditionalFields: [
-                { id: 'field-evidence-photos', name: 'Evidence Photos', type: 'PHOTOS', required: true }
-              ]
-            },
-            {
-              value: 'fail',
-              label: 'Not Pass',
-              icon: 'ThumbsDown',
-              color: 'red',
-              conditionalFields: [
-                { id: 'field-cause', name: 'Failure Cause', type: 'TEXT', required: true, config: { multiline: true } },
-                { id: 'field-before-photos', name: 'Before Photos', type: 'PHOTOS', required: true },
-                { id: 'field-after-photos', name: 'After Photos', type: 'PHOTOS', required: true }
-              ]
-            },
-            {
-              value: 'na',
-              label: 'N/A',
-              icon: 'MinusCircle',
-              color: 'gray',
-              conditionalFields: []
-            }
-          ]
-        }
-      }
-    ]
-  }]
+  steps: [
+    { id: 'step-1', name: 'MDB Cabinet Check', fields: [
+      { id: 'field-inspection-1', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-2', name: 'Fire Extinguisher Check', fields: [
+      { id: 'field-inspection-2', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-3', name: 'Ground Condition Check', fields: [
+      { id: 'field-inspection-3', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-4', name: 'Charging Gun & Cable Check', fields: [
+      { id: 'field-inspection-4', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-5', name: 'Charging Input Line Check', fields: [
+      { id: 'field-inspection-5', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-6', name: 'Mainboard Terminals Check', fields: [
+      { id: 'field-inspection-6', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-7', name: 'Display Screen Check', fields: [
+      { id: 'field-inspection-7', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-8', name: 'Indicator Lights Check', fields: [
+      { id: 'field-inspection-8', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-9', name: 'Communication Functions Check', fields: [
+      { id: 'field-inspection-9', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-10', name: 'Emergency Stop Button Check', fields: [
+      { id: 'field-inspection-10', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-11', name: 'Charging Module Check', fields: [
+      { id: 'field-inspection-11', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-12', name: 'Surge Protector Check', fields: [
+      { id: 'field-inspection-12', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-13', name: 'Dust Screen Check', fields: [
+      { id: 'field-inspection-13', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-14', name: 'Historical Records Check', fields: [
+      { id: 'field-inspection-14', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-15', name: 'Backend Communication Check', fields: [
+      { id: 'field-inspection-15', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]},
+    { id: 'step-16', name: 'Contactor & Charging Action Test', fields: [
+      { id: 'field-inspection-16', name: 'Inspection Result', type: 'INSPECTION', required: true }
+    ]}
+  ]
 };
 
 // =====================
@@ -116,6 +122,7 @@ export const TICKET_TEMPLATES: Record<string, TicketTypeTemplate> = {
   preventive: PREVENTIVE_TEMPLATE,
   problem: PROBLEM_TEMPLATE
 };
+
 // Helper Functions
 // =====================
 export function getTemplateByType(type: string): TicketTypeTemplate | undefined {

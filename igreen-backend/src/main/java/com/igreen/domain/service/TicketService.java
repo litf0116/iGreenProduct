@@ -363,8 +363,13 @@ public class TicketService {
             if (templateSteps != null && !templateSteps.isEmpty()) {
                 // Convert template steps to the format expected by frontend
                 List<TemplateStepValue> steps = new ArrayList<>();
+                // 构建 templateData 结构
+                List<Map<String, Object>> templateDataSteps = new ArrayList<>();
+                
                 for (int i = 0; i < templateSteps.size(); i++) {
                     TemplateStep step = templateSteps.get(i);
+                    
+                    // 1. 构建 stepData (用于 Preventive 工单)
                     TemplateStepValue templateStepValue = new TemplateStepValue();
                     BeanUtils.copyProperties(step, templateStepValue);
                     templateStepValue.setId(ticket.getId() + "_" + step.getId());
@@ -372,22 +377,60 @@ public class TicketService {
                     templateStepValue.setCompleted(false);
 
                     // 添加动态字段支持：将模板字段转换为步骤字段
+                    List<TemplateFieldValue> fieldValues = new ArrayList<>();
+                    // 构建 templateData 的 fields 结构
+                    List<Map<String, Object>> templateDataFields = new ArrayList<>();
+                    
                     if (step.getFields() != null && !step.getFields().isEmpty()) {
-                        List<TemplateFieldValue> fieldValues = new ArrayList<>();
                         for (TemplateField field : step.getFields()) {
+                            // stepData 字段
                             TemplateFieldValue fieldValue = new TemplateFieldValue();
                             BeanUtils.copyProperties(field, fieldValue);
                             fieldValue.setValue("");
                             fieldValues.add(fieldValue);
+                            
+                            // templateData 字段
+                            Map<String, Object> fieldMap = new HashMap<>();
+                            fieldMap.put("id", field.getId());
+                            fieldMap.put("name", field.getName());
+                            fieldMap.put("type", field.getType());
+                            fieldMap.put("required", field.getRequired());
+                            if (field.getDescription() != null) {
+                                fieldMap.put("description", field.getDescription());
+                            }
+                            if (field.getConfig() != null) {
+                                fieldMap.put("config", field.getConfig());
+                            }
+                            // 初始值为空
+                            fieldMap.put("value", "");
+                            templateDataFields.add(fieldMap);
                         }
                         templateStepValue.setFieldValues(fieldValues);
                     }
 
                     steps.add(templateStepValue);
+                    
+                    // 构建 templateData step
+                    Map<String, Object> stepMap = new HashMap<>();
+                    stepMap.put("id", step.getId());
+                    stepMap.put("name", step.getName());
+                    stepMap.put("fields", templateDataFields);
+                    templateDataSteps.add(stepMap);
                 }
 
+                // 设置 stepData
                 ticket.setStepData(objectMapper.writeValueAsString(steps));
-                log.info("Initialized stepData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
+                
+                // 设置 templateData
+                Map<String, Object> templateData = new HashMap<>();
+                templateData.put("id", template.getId());
+                templateData.put("name", template.getName());
+                templateData.put("type", ticket.getType());
+                templateData.put("steps", templateDataSteps);
+                ticket.setTemplateData(objectMapper.writeValueAsString(templateData));
+                
+                log.info("Initialized stepData and templateData for ticket {} from template {}", 
+                    ticket.getId(), ticket.getTemplateId());
             }
         } catch (JsonProcessingException e) {
             log.error("Error initializing stepData from template for ticket {}", ticket.getId(), e);

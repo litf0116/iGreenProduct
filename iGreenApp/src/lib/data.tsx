@@ -8,22 +8,7 @@ export type TicketType = 'corrective' | 'planned' | 'preventive' | 'problem';
 // =====================
 // Dynamic Form Types
 // =====================
-export type FieldType = 'TEXT' | 'NUMBER' | 'DATE' | 'PHOTOS' | 'TOGGLE_GROUP' | 'SIGNATURE';
-
-// ToggleGroup 选项配置
-export interface ToggleOption {
-  value: string;
-  label: string;
-  icon?: string;        // Lucide 图标名称: ThumbsUp, ThumbsDown, MinusCircle
-  color?: string;       // tailwind 颜色名: green, red, gray
-  conditionalFields?: TemplateField[];  // 该选项下的条件字段
-}
-
-// ToggleGroup 特殊配置
-export interface ToggleGroupConfig {
-  defaultValue?: string;
-  options: ToggleOption[];
-}
+export type FieldType = 'TEXT' | 'NUMBER' | 'DATE' | 'PHOTOS' | 'INSPECTION' | 'SIGNATURE';
 
 export interface TemplateField {
     id: string;
@@ -34,22 +19,34 @@ export interface TemplateField {
     config?: Record<string, any>;
 }
 
+// INSPECTION 类型的值结构
+// 不同状态对应不同的表单数据
+export interface InspectionValue {
+  status: 'pass' | 'fail' | 'na' | undefined;
+  // 当 status === 'pass'
+  evidencePhotos?: string[];
+  // 当 status === 'fail'
+  cause?: string;
+  beforePhotos?: string[];
+  afterPhotos?: string[];
+}
+
 export interface TemplateFieldValue extends TemplateField {
-    value?: string;
+    value?: string | InspectionValue;  // 支持字符串或对象结构
     values?: string[];
 }
+
 
 export interface TemplateStepConfig {
     id: string;
     name: string;
     fields: TemplateField[];
 }
-// New: Template step with data fields (extends existing step config)
+
 export interface TemplateStepWithData extends TemplateStepConfig {
   fields: TemplateFieldValue[];
 }
 
-// New: Ticket type template with data (template steps include data)
 export interface TicketTypeTemplateWithData {
   id: string;
   name: string;
@@ -68,17 +65,17 @@ export interface TicketStep {
     id: string;
     label: string;
     description?: string;
-    photoUrl?: string; // Deprecated, kept for compatibility
-    photoUrls?: string[]; // New field for multiple photos
+    photoUrl?: string;
+    photoUrls?: string[];
     timestamp?: string;
     location?: string;
     completed: boolean;
     status?: 'pass' | 'fail' | 'na' | 'pending';
     cause?: string;
-    beforePhotoUrl?: string; // Deprecated
-    beforePhotoUrls?: string[]; // New
-    afterPhotoUrl?: string; // Deprecated
-    afterPhotoUrls?: string[]; // New
+    beforePhotoUrl?: string;
+    beforePhotoUrls?: string[];
+    afterPhotoUrl?: string;
+    afterPhotoUrls?: string[];
 }
 
 export interface Ticket {
@@ -105,10 +102,10 @@ export interface Ticket {
     };
     rootCause?: string;
     solution?: string;
-    beforePhotoUrl?: string; // Deprecated
-    beforePhotoUrls?: string[]; // New
-    afterPhotoUrl?: string; // Deprecated
-    afterPhotoUrls?: string[]; // New
+    beforePhotoUrl?: string;
+    beforePhotoUrls?: string[];
+    afterPhotoUrl?: string;
+    afterPhotoUrls?: string[];
     feedback?: string;
     feedbackPhotoUrls?: string[];
     estimatedResolutionTime?: string;
@@ -168,50 +165,22 @@ export const MOCK_TICKETS: Ticket[] = [
         tags: ["maintenance", "routine"],
         location: "Mall of City, P2 Green Zone",
         steps: [
-            {
-                id: '1',
-                label: 'Check the MDB cabinet and charging station cabinet for rust,leaks, and the condition of the door handles.',
-                completed: false
-            },
-            {
-                id: '2',
-                label: 'Check the fire extinguishers and monitor the equipment to ensure they are functioning properly.',
-                completed: false
-            },
+            {id: '1', label: 'Check the MDB cabinet and charging station cabinet for rust,leaks, and the condition of the door handles.', completed: false},
+            {id: '2', label: 'Check the fire extinguishers and monitor the equipment to ensure they are functioning properly.', completed: false},
             {id: '3', label: 'Check the ground condition, drainage, and cleaning.', completed: false},
-            {
-                id: '4',
-                label: 'Check the charging gun head and charging cable for any damage or scratches. Ensure the cable ends are securely installed.',
-                completed: false
-            },
+            {id: '4', label: 'Check the charging gun head and charging cable for any damage or scratches. Ensure the cable ends are securely installed.', completed: false},
             {id: '5', label: 'Check if the charging input line is normal.', completed: false},
-            {
-                id: '6',
-                label: 'Check that all terminals on the charging station\'s mainboard are securely plugged in and that all cables are loose.',
-                completed: false
-            },
+            {id: '6', label: 'Check that all terminals on the charging station\'s mainboard are securely plugged in and that all cables are loose.', completed: false},
             {id: '7', label: 'Check if the display screen is intact and verify that all parameter settings are correct.', completed: false},
             {id: '8', label: 'Check if the indicator lights on the charging station are functioning properly.', completed: false},
             {id: '9', label: 'Check if all communication functions of the charging station are normal.', completed: false},
             {id: '10', label: 'Check that the emergency stop button is intact and that it functions properly.', completed: false},
-            {
-                id: '11',
-                label: 'Check if the charging module is operating normally and if the power indicator light is flashing. There should be no red alarm light illuminated.',
-                completed: false
-            },
+            {id: '11', label: 'Check if the charging module is operating normally and if the power indicator light is flashing. There should be no red alarm light illuminated.', completed: false},
             {id: '12', label: 'Check that the surge protector is in good working order and has not been damaged.', completed: false},
             {id: '13', label: 'Check if the dust screen needs cleaning.', completed: false},
             {id: '14', label: 'Check all historical records of the charging station for any abnormal fault data.', completed: false},
-            {
-                id: '15',
-                label: 'Check if the communication between the charging station and the backend is normal and if the data is being sent normally.',
-                completed: false
-            },
-            {
-                id: '16',
-                label: 'Check if the charger contactor is functioning properly and On-site test of charging action.',
-                completed: false
-            },
+            {id: '15', label: 'Check if the communication between the charging station and the backend is normal and if the data is being sent normally.', completed: false},
+            {id: '16', label: 'Check if the charger contactor is functioning properly and On-site test of charging action.', completed: false},
         ]
     },
     {
@@ -267,17 +236,18 @@ export const MOCK_TICKETS: Ticket[] = [
 export const getPriorityColor = (priority: TicketPriority) => {
     switch (priority) {
         case 'P1':
-            return 'destructive'; // Red
+            return 'destructive';
         case 'P2':
-            return 'default'; // Black/Dark
+            return 'default';
         case 'P3':
-            return 'secondary'; // Gray
+            return 'secondary';
         case 'P4':
-            return 'outline'; // White/Outline
+            return 'outline';
         default:
             return 'secondary';
     }
 };
+
 export const getTicketTypeLabel = (type: TicketType) => {
     switch (type) {
         case 'corrective':
