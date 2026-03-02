@@ -18,5 +18,3 @@ public class TemplateField {
     private Boolean required;
     private Map<String, Object> config;
 }
-    }
-}

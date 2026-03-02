@@ -9,8 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.igreen.domain.entity.Site;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,17 +32,7 @@ public class Ticket {
     private String assignedTo;
     private String acceptedUserId;
     private String createdBy;
-    private String completedSteps;
-    private String stepData;
     private String templateData;
-
-    public String getTemplateData() {
-        return templateData;
-    }
-
-    public void setTemplateData(String templateData) {
-        this.templateData = templateData;
-    }
     private Boolean accepted;
     private LocalDateTime acceptedAt;
     private LocalDateTime departureAt;

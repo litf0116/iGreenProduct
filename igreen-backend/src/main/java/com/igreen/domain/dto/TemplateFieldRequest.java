@@ -15,5 +15,3 @@ public record TemplateFieldRequest(
 
     Boolean required
 ) {}
-) {}
-) {}

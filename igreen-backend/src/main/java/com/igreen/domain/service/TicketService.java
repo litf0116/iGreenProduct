@@ -70,10 +70,10 @@ public class TicketService {
 
         ticketMapper.insert(ticket);
 
-        // Initialize stepData from template if ticket has templateId
+        // Initialize templateData from template if ticket has templateId
         if (ticket.getTemplateId() != null) {
-            initializeStepDataFromTemplate(ticket);
-            // 更新工单以包含 stepData
+            initializeTemplateDataFromTemplate(ticket);
+            // 更新工单以包含 templateData
             ticketMapper.updateById(ticket);
         }
 
@@ -156,49 +156,6 @@ public class TicketService {
         }
         if (request.dueDate() != null) {
             ticket.setDueDate(request.dueDate());
-        }
-        if (request.completedSteps() != null) {
-            try {
-                ticket.setCompletedSteps(objectMapper.writeValueAsString(request.completedSteps()));
-            } catch (JsonProcessingException e) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST);
-            }
-        }
-        if (request.stepValues() != null) {
-            try {
-                ticket.setStepData(objectMapper.writeValueAsString(request.stepValues()));
-            } catch (JsonProcessingException e) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST);
-            }
-        }
-        if (request.departureAt() != null) {
-            ticket.setDepartureAt(request.departureAt());
-        }
-        if (request.departurePhoto() != null) {
-            ticket.setDeparturePhoto(request.departurePhoto());
-        }
-        if (request.arrivalAt() != null) {
-            ticket.setArrivalAt(request.arrivalAt());
-        }
-        if (request.arrivalPhoto() != null) {
-            ticket.setArrivalPhoto(request.arrivalPhoto());
-        }
-        if (request.completionPhoto() != null) {
-            ticket.setCompletionPhoto(request.completionPhoto());
-        }
-        if (request.cause() != null) {
-            ticket.setCause(request.cause());
-        }
-        if (request.solution() != null) {
-            ticket.setSolution(request.solution());
-        }
-        // Handle templateData
-        if (request.templateData() != null) {
-            try {
-                ticket.setTemplateData(objectMapper.writeValueAsString(request.templateData()));
-            } catch (JsonProcessingException e) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST);
-            }
         }
 
         ticketMapper.updateById(ticket);
@@ -342,8 +299,8 @@ public class TicketService {
         }
 
         // Initialize stepData from template if ticket has templateId and stepData is null/empty
-        if (ticket.getTemplateId() != null && (ticket.getStepData() == null || ticket.getStepData().isEmpty())) {
-            initializeStepDataFromTemplate(ticket);
+        if (ticket.getTemplateId() != null && (ticket.getTemplateData() == null || ticket.getTemplateData().isEmpty())) {
+            initializeTemplateDataFromTemplate(ticket);
         }
 
         ticketMapper.updateById(ticket);
@@ -354,7 +311,15 @@ public class TicketService {
         return toResponse(ticket, creator, assignGroup, site);
     }
 
-    private void initializeStepDataFromTemplate(Ticket ticket) {
+    /**
+     * 从ticket 生成 template data 数据
+     *
+     * @param ticket
+     * @see TemplateData
+     * @see TemplateStepData
+     * @see TemplateFieldData
+     */
+    private void initializeTemplateDataFromTemplate(Ticket ticket) {
         try {
             // 从 templateService 获取模板数据
             Template template = templateService.getTemplateById(ticket.getTemplateId());
@@ -364,73 +329,39 @@ public class TicketService {
                 // Convert template steps to the format expected by frontend
                 List<TemplateStepValue> steps = new ArrayList<>();
                 // 构建 templateData 结构
-                List<Map<String, Object>> templateDataSteps = new ArrayList<>();
-                
-                for (int i = 0; i < templateSteps.size(); i++) {
-                    TemplateStep step = templateSteps.get(i);
-                    
-                    // 1. 构建 stepData (用于 Preventive 工单)
-                    TemplateStepValue templateStepValue = new TemplateStepValue();
-                    BeanUtils.copyProperties(step, templateStepValue);
-                    templateStepValue.setId(ticket.getId() + "_" + step.getId());
-                    templateStepValue.setStatus("pending");
-                    templateStepValue.setCompleted(false);
+                List<TemplateStepData> templateDataSteps = new ArrayList<>();
 
+                for (TemplateStep step : templateSteps) {
                     // 添加动态字段支持：将模板字段转换为步骤字段
-                    List<TemplateFieldValue> fieldValues = new ArrayList<>();
-                    // 构建 templateData 的 fields 结构
-                    List<Map<String, Object>> templateDataFields = new ArrayList<>();
-                    
+                    List<TemplateFieldData> fieldDatas = new ArrayList<>();
+
                     if (step.getFields() != null && !step.getFields().isEmpty()) {
                         for (TemplateField field : step.getFields()) {
                             // stepData 字段
-                            TemplateFieldValue fieldValue = new TemplateFieldValue();
-                            BeanUtils.copyProperties(field, fieldValue);
-                            fieldValue.setValue("");
-                            fieldValues.add(fieldValue);
-                            
-                            // templateData 字段
-                            Map<String, Object> fieldMap = new HashMap<>();
-                            fieldMap.put("id", field.getId());
-                            fieldMap.put("name", field.getName());
-                            fieldMap.put("type", field.getType());
-                            fieldMap.put("required", field.getRequired());
-                            if (field.getDescription() != null) {
-                                fieldMap.put("description", field.getDescription());
-                            }
-                            if (field.getConfig() != null) {
-                                fieldMap.put("config", field.getConfig());
-                            }
-                            // 初始值为空
-                            fieldMap.put("value", "");
-                            templateDataFields.add(fieldMap);
+                            TemplateFieldData fieldData = new TemplateFieldData();
+                            BeanUtils.copyProperties(field, fieldData);
+                            fieldData.setValue("");
+
+                            fieldDatas.add(fieldData);
                         }
-                        templateStepValue.setFieldValues(fieldValues);
                     }
 
-                    steps.add(templateStepValue);
-                    
                     // 构建 templateData step
-                    Map<String, Object> stepMap = new HashMap<>();
-                    stepMap.put("id", step.getId());
-                    stepMap.put("name", step.getName());
-                    stepMap.put("fields", templateDataFields);
-                    templateDataSteps.add(stepMap);
+                    TemplateStepData stepData = new TemplateStepData();
+                    BeanUtils.copyProperties(step, stepData);
+                    stepData.setFields(fieldDatas);
+                    templateDataSteps.add(stepData);
                 }
 
-                // 设置 stepData
-                ticket.setStepData(objectMapper.writeValueAsString(steps));
-                
+
                 // 设置 templateData
-                Map<String, Object> templateData = new HashMap<>();
-                templateData.put("id", template.getId());
-                templateData.put("name", template.getName());
-                templateData.put("type", ticket.getType());
-                templateData.put("steps", templateDataSteps);
+                TemplateData templateData = new TemplateData();
+                BeanUtils.copyProperties(template, templateData);
+                templateData.setSteps(templateDataSteps);
+
                 ticket.setTemplateData(objectMapper.writeValueAsString(templateData));
-                
-                log.info("Initialized stepData and templateData for ticket {} from template {}", 
-                    ticket.getId(), ticket.getTemplateId());
+
+                log.info("Initialized stepData and templateData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
             }
         } catch (JsonProcessingException e) {
             log.error("Error initializing stepData from template for ticket {}", ticket.getId(), e);
@@ -448,16 +379,23 @@ public class TicketService {
 
         try {
             if (stepData != null && stepData.getData() != null) {
-                String existingData = ticket.getStepData();
-                Map<String, Object> dataMap;
+                String existingData = ticket.getTemplateData();
+                TemplateData dataMap;
                 if (existingData != null && !existingData.isEmpty()) {
-                    dataMap = objectMapper.readValue(existingData, Map.class);
+                    dataMap = objectMapper.readValue(existingData, new TypeReference<TemplateData>() {
+                    });
                 } else {
-                    dataMap = new HashMap<>();
+                    dataMap = new TemplateData();
                 }
-                dataMap.putAll(stepData.getData());
-                ticket.setStepData(objectMapper.writeValueAsString(dataMap));
+
+                dataMap.getSteps().forEach(templateStepData -> {
+                    if (templateStepData.getId().equals(stepData.getData().getId())) {
+                        BeanUtils.copyProperties(stepData.getData(), templateStepData);
+                    }
+                });
+                ticket.setTemplateData(objectMapper.writeValueAsString(dataMap));
             }
+
         } catch (JsonProcessingException e) {
             throw new BusinessException(ErrorCode.INVALID_REQUEST);
         }
@@ -654,25 +592,6 @@ public class TicketService {
             acceptedUser = userMapper.selectById(ticket.getAcceptedUserId());
         }
 
-        List<String> completedSteps = new ArrayList<>();
-        if (ticket.getCompletedSteps() != null && !ticket.getCompletedSteps().isEmpty()) {
-            try {
-                completedSteps = Arrays.asList(objectMapper.readValue(ticket.getCompletedSteps(), String[].class));
-            } catch (JsonProcessingException e) {
-                log.error("Error parsing completed steps", e);
-            }
-        }
-
-        List<TemplateStepValue> stepValues = new ArrayList<>();
-        if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
-            try {
-                stepValues = objectMapper.readValue(ticket.getStepData(), new TypeReference<ArrayList<TemplateStepValue>>() {
-                });
-            } catch (JsonProcessingException e) {
-                log.error("Error parsing step data", e);
-            }
-        }
-
         List<String> relatedTicketIds = new ArrayList<>();
         if (StringUtils.isNotBlank(ticket.getRelatedTicketIds())) {
             relatedTicketIds = List.of(ticket.getRelatedTicketIds().split(","));
@@ -682,17 +601,18 @@ public class TicketService {
         Map<String, Object> templateData = new HashMap<>();
         if (ticket.getTemplateData() != null && !ticket.getTemplateData().isEmpty()) {
             try {
-                templateData = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<Map<String, Object>>() {});
+                templateData = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<Map<String, Object>>() {
+                });
             } catch (JsonProcessingException e) {
                 log.error("Error parsing template data", e);
             }
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,   // siteId
-                                  site != null ? site.getName() : null,       // siteName
-                                  site != null ? site.getAddress() : null,    // siteAddress
-                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, stepValues, templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,
+                                  site != null ? site.getName() : null,
+                                  site != null ? site.getAddress() : null,
+                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
     }
 
     @Transactional
@@ -702,28 +622,30 @@ public class TicketService {
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
 
-        // 解析现有的 stepData
-        List<TemplateStepValue> stepValues = new ArrayList<>();
-        if (ticket.getStepData() != null && !ticket.getStepData().isEmpty()) {
+        TemplateStepData newStepData = request.getTemplateStepData();
+        // 解析现有的 templateData
+        TemplateData templateData = new TemplateData();
+
+        if (ticket.getTemplateData() != null && !ticket.getTemplateData().isEmpty()) {
             try {
-                stepValues = objectMapper.readValue(ticket.getStepData(), new TypeReference<List<TemplateStepValue>>() {
+                templateData = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<TemplateData>() {
                 });
             } catch (JsonProcessingException e) {
                 log.error("Error parsing step data", e);
             }
         }
 
-        stepValues.stream().filter(stepValue -> stepValue.getId().equals(stepId)).forEach(stepValue -> {
-            stepValue.setFieldValues(request.getFieldValues());
-            stepValue.setCompleted(request.getCompleted());
-            stepValue.setStatus(request.getStatus());
-            stepValue.setTimestamp(request.getTimestamp());
+        templateData.getSteps().stream().filter(stepData -> stepData.getId().equals(stepId)).forEach(stepValue -> {
+            stepValue.setFields(newStepData.getFields());
+            stepValue.setCompleted(newStepData.getCompleted());
+            stepValue.setStatus(newStepData.getStatus());
+            stepValue.setTimestamp(newStepData.getTimestamp());
         });
 
-        // 保存更新后的 stepData
+        // 保存更新后的 templateData
         try {
-            String stepDataJson = objectMapper.writeValueAsString(stepValues);
-            ticket.setStepData(stepDataJson);
+            String templateDataJson = objectMapper.writeValueAsString(templateData);
+            ticket.setTemplateData(templateDataJson);
             ticketMapper.updateById(ticket);
         } catch (JsonProcessingException e) {
             log.error("Error saving step data", e);
