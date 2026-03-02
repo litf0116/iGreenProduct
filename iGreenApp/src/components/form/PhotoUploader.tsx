@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "../ui/sheet";
 import {Camera, Image as ImageIcon} from "lucide-react";
+import {getFullImageUrl} from "../../lib/api";
 
 // Photo Uploader Component - Independent component to avoid Hooks rules violation
 interface PhotoUploaderProps {
@@ -33,7 +34,7 @@ export function PhotoUploader({
       <div className="flex flex-wrap gap-2">
         {existingPhotos.map((url, idx) => (
           <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-200 group">
-            <img src={url} className="w-full h-full object-cover" alt="Evidence"/>
+          <img src={getFullImageUrl(url)} className="w-full h-full object-cover" alt="Evidence"/>
           </div>
         ))}
         <Sheet open={photoSheetOpen} onOpenChange={setPhotoSheetOpen}>

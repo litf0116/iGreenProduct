@@ -38,7 +38,7 @@ import {
 } from '../lib/data';
 import {toast} from "sonner@2.0.3";
 import {useLanguage} from './LanguageContext';
-import {api} from '../lib/api';
+import {api, getFullImageUrl} from '../lib/api';
 import {pickPhoto, takePhoto} from '../lib/camera';
 import {FIELD_ID_TO_LEGACY_FIELD, getTemplateByType} from '../config/fieldConfigs';
 import {DynamicFieldRenderer} from "./form/DynamicFieldRenderer";
@@ -282,11 +282,24 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       const file = new File([blob], `photo-${Date.now()}.jpg`, {type: 'image/jpeg'});
 
       const uploaded = await api.uploadFile(file, fieldPrefix);
+      const fullUrl = uploaded.url;
+      console.log('[DEBUG] handleAddPhoto - uploaded:', fullUrl);
+      console.log('[DEBUG] handleAddPhoto - fieldPrefix:', fieldPrefix);
+      console.log('[DEBUG] handleAddPhoto - isCorrectiveOrPlanned:', isCorrectiveOrPlanned);
 
       if (isCorrectiveOrPlanned) {
-        const existingPhotos = (ticket as any)[`${fieldPrefix}Urls`] || [];
-        onUpdateTicket(ticket.id, {
-          [`${fieldPrefix}Urls`]: [...existingPhotos, uploaded.url]
+        // 更新本地状态 - 使用 fieldPrefix + 'Urls' 作为 key
+        const fieldKey = `${fieldPrefix}Urls`;
+        console.log('[DEBUG] handleAddPhoto - fieldKey:', fieldKey);
+        const existingPhotos = localFieldValues[fieldKey] || (ticket as any)[fieldKey] || [];
+        console.log('[DEBUG] handleAddPhoto - existingPhotos before:', existingPhotos);
+        setLocalFieldValues(prev => {
+          const newValues = [...(prev[fieldKey] || existingPhotos), fullUrl];
+          console.log('[DEBUG] handleAddPhoto - new localFieldValues:', newValues);
+          return {
+            ...prev,
+            [fieldKey]: newValues
+          };
         });
       } else {
         const step = ticket.steps?.find(s => s.id === stepId);
@@ -317,20 +330,38 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   // Get field value from ticket using templateData or legacy field
   const getFieldValue = (fieldId: string): any => {
     // 优先从本地状态读取
+    console.log('[DEBUG] getFieldValue - fieldId:', fieldId);
+    console.log('[DEBUG] getFieldValue - localFieldValues:', localFieldValues);
+    // 优先从本地状态读取
     if (localFieldValues[fieldId] !== undefined) {
+      console.log('[DEBUG] getFieldValue - found in localFieldValues:', localFieldValues[fieldId]);
       return localFieldValues[fieldId];
+    }
+    // 检查 fieldPrefix + 'Urls' 格式的 key
+    const reverseFieldPrefixMap: Record<string, string> = {
+      'field-before-photos': 'beforePhotoUrls',
+      'field-after-photos': 'afterPhotoUrls',
+      'field-feedback-photos': 'feedbackPhotoUrls',
+      'field-problem-photos': 'problemPhotoUrls'
+    };
+    const fieldKey = reverseFieldPrefixMap[fieldId];
+    if (fieldKey && localFieldValues[fieldKey] !== undefined) {
+      console.log('[DEBUG] getFieldValue - found in localFieldValues with fieldKey:', fieldKey, localFieldValues[fieldKey]);
+      return localFieldValues[fieldKey];
     }
     // 其次从 templateData 中查找
     if (ticket.templateData?.steps) {
       for (const step of ticket.templateData.steps) {
         const field = step.fields.find(f => f.id === fieldId);
         if (field) {
+          console.log('[DEBUG] getFieldValue - found in templateData field.value:', field.value);
           return field.value;
         }
       }
     }
     // Fallback 到旧字段（向后兼容）
     const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
+    console.log('[DEBUG] getFieldValue - legacyField:', legacyField);
     if (legacyField) {
       return (ticket as any)[legacyField];
     }
@@ -372,26 +403,15 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   };
 
   const handleFinish = async () => {
-    if (ticket.type === 'corrective') {
-      // Check for multiple photos support
-      const hasBefore = ticket.beforePhotoUrl || (ticket.beforePhotoUrls && ticket.beforePhotoUrls.length > 0);
-      const hasAfter = ticket.afterPhotoUrl || (ticket.afterPhotoUrls && ticket.afterPhotoUrls.length > 0);
-
-      if (!ticket.rootCause || !ticket.solution || !hasBefore || !hasAfter) {
-        toast.error("Please complete all fields and photos.");
-        return;
-      }
-    } else if (ticket.type === 'planned') {
-      if (!ticket.feedback || (!ticket.feedbackPhotoUrls || ticket.feedbackPhotoUrls.length === 0)) {
-        toast.error("Please provide feedback and at least one photo.");
-        return;
-      }
-    } else if (ticket.type === 'problem') {
-      if (!ticket.solution || !ticket.estimatedResolutionTime || (!ticket.problemPhotoUrls || ticket.problemPhotoUrls.length === 0)) {
-        toast.error("Please provide solution, estimated resolution date, and photos.");
+    // 对于 dynamic form 类型 (corrective, planned, problem)，使用 isFormComplete 验证
+    const template = getTemplateByType(ticket.type);
+    if (template && (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem')) {
+      if (!isFormComplete()) {
+        toast.error("Please complete all required fields and photos.");
         return;
       }
     } else {
+      // 对于 preventive 等类型，使用 areAllStepsCompleted 验证
       if (!areAllStepsCompleted()) {
         toast.error("Please complete all steps before finishing.");
         return;

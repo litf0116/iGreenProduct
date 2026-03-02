@@ -10,6 +10,15 @@ import { getAuthToken, saveAuthToken, clearAuthToken } from './storage';
 // dev:local 脚本会自动设置 VITE_API_URL=http://127.0.0.1:8089
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://43.255.212.68:8088';
 
+// 获取完整的图片 URL（处理相对路径）
+export function getFullImageUrl(path: string): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  return `${API_BASE_URL}${path}`;
+}
+
 
 // Get auth token from storage (async wrapper for compatibility)
 async function getAuthTokenAsync(): Promise<string | null> {

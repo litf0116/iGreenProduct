@@ -11,13 +11,14 @@ import InspectionField from "./InspectionField";
 
 interface DynamicFieldRendererProps {
   field: TemplateFieldValue;
+  value?: any;
   onChange: (fieldId: string, value: any) => void;
   ticketId: string;
   loadingImage: string | null;
   onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
 }
 
-export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, onAddPhoto}: DynamicFieldRendererProps) {
+export function DynamicFieldRenderer({field, value, onChange, ticketId, loadingImage, onAddPhoto}: DynamicFieldRendererProps) {
   const fieldPrefixMap: Record<string, 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto'> = {
     'field-before-photos': 'beforePhoto',
     'field-after-photos': 'afterPhoto',
@@ -32,7 +33,7 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
           <label className="text-sm font-medium text-slate-900">{field.name}</label>
           <Textarea
             placeholder={field.description || `Enter ${field.name.toLowerCase()}...`}
-            value={field.value || ''}
+            value={value !== undefined ? value : (field.value || '')}
             onChange={(e) => onChange(field.id, e.target.value)}
             className={field.config?.multiline ? "min-h-[100px]" : ""}
           />
@@ -45,7 +46,7 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
           <label className="text-sm font-medium text-slate-900">{field.name}</label>
           <Input
             type="date"
-            value={field.value || ''}
+            value={value !== undefined ? value : (field.value || '')}
             onChange={(e) => onChange(field.id, e.target.value)}
           />
         </div>
@@ -53,12 +54,14 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
 
     case 'PHOTOS': {
       const fieldPrefix = fieldPrefixMap[field.id] || 'problemPhoto';
+      console.log('[DEBUG] DynamicFieldRenderer PHOTOS - field.id:', field.id, 'fieldPrefix:', fieldPrefix);
+      console.log('[DEBUG] DynamicFieldRenderer PHOTOS - value:', value);
       return (
         <PhotoUploader
           stepId={String(ticketId)}
           fieldPrefix={fieldPrefix}
           isCorrectiveOrPlanned={true}
-          existingPhotos={field.values || []}
+          existingPhotos={value !== undefined ? (value || []) : (field.values || [])}
           label={field.name}
           loadingImage={loadingImage}
           onAddPhoto={onAddPhoto}
@@ -71,21 +74,12 @@ export function DynamicFieldRenderer({field, onChange, ticketId, loadingImage, o
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-900">{field.name}</label>
           <InspectionField
-            value={field.value as any}
+            value={value !== undefined ? value : field.value}
             onChange={(val) => onChange(field.id, val)}
             ticketId={String(ticketId)}
             stepId={String(ticketId)}
             loadingImage={loadingImage}
             onAddPhoto={onAddPhoto}
-          />
-        </div>
-      );
-      return (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-900">{field.name}</label>
-          <InspectionField
-            value={field.value || ''}
-            onChange={(val) => onChange(field.id, val)}
           />
         </div>
       );
