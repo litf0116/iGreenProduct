@@ -26,7 +26,16 @@ import {Separator} from "./ui/separator";
 import {Textarea} from "./ui/textarea";
 import {Checkbox} from "./ui/checkbox";
 import {ToggleGroup, ToggleGroupItem} from "./ui/toggle-group";
-import {getPriorityColor, getTicketTypeColor, getTicketTypeIcon, getTicketTypeLabel, Ticket, TicketStep} from '../lib/data';
+import {
+  getPriorityColor,
+  getTicketTypeColor,
+  getTicketTypeIcon,
+  getTicketTypeLabel,
+  InspectionValue,
+  TemplateFieldValue,
+  Ticket,
+  TicketStep
+} from '../lib/data';
 import {toast} from "sonner@2.0.3";
 import {useLanguage} from './LanguageContext';
 import {api} from '../lib/api';
@@ -96,6 +105,41 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       ];
       onUpdateTicket(ticket.id, {steps: newSteps});
     }
+  };
+
+  // Get steps from templateData for preventive tickets
+  const getTemplateSteps = () => {
+    if (ticket.type === 'preventive' && ticket.templateData?.steps) {
+      return ticket.templateData.steps;
+    }
+    return [];
+  };
+  // Check if a step is completed based on its INSPECTION field value
+  const isStepCompleted = (stepId: string): boolean => {
+    const steps = getTemplateSteps();
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return false;
+
+    const inspectionField = step.fields.find(f => f.type === 'INSPECTION');
+    if (!inspectionField) return false;
+
+    const value = inspectionField.value as InspectionValue | undefined;
+    if (!value?.status) return false;
+
+    if (value.status === 'na') return true;
+    if (value.status === 'pass') {
+      return !!(value.evidencePhotos && value.evidencePhotos.length > 0);
+    }
+    if (value.status === 'fail') {
+      return !!(value.cause && value.beforePhotos?.length && value.afterPhotos?.length);
+    }
+    return false;
+  };
+  // Check if all steps are completed
+  const areAllStepsCompleted = (): boolean => {
+    const steps = getTemplateSteps();
+    if (steps.length === 0) return true;
+    return steps.every(step => isStepCompleted(step.id));
   };
 
   const handleGrabOrder = async () => {
@@ -290,15 +334,15 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         ...step,
         fields: step.fields.map(field =>
           field.id === fieldId
-            ? { 
-                ...field, 
-                ...(Array.isArray(value) ? { values: value } : { value: value }),
-                timestamp: new Date().toISOString()
-              }
+            ? {
+              ...field,
+              ...(Array.isArray(value) ? {values: value} : {value: value}),
+              timestamp: new Date().toISOString()
+            }
             : field
         )
       }));
-      
+
       onUpdateTicket(ticket.id, {
         templateData: {
           ...ticket.templateData,
@@ -307,7 +351,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       });
       return;
     }
-    
+
     // Fallback 到旧字段（向后兼容）
     const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
     if (legacyField) {
@@ -360,9 +404,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         return;
       }
     } else {
-      // Validate all steps completed for other types
-      const allCompleted = ticket.steps?.every(s => s.completed);
-      if (!allCompleted) {
+      if (!areAllStepsCompleted()) {
         toast.error("Please complete all steps before finishing.");
         return;
       }
@@ -412,7 +454,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       <div className="space-y-2">
         <div className="flex justify-between border-b pb-2">
           <span className="text-slate-500">Steps Completed:</span>
-          <span className="font-medium">{ticket.steps?.length || 0}/{ticket.steps?.length || 0}</span>
+          <span className="font-medium">{getTemplateSteps().filter(s => isStepCompleted(s.id)).length}/{getTemplateSteps().length}</span>
         </div>
         {ticket.type !== 'problem' && (
           <>
@@ -431,40 +473,48 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       </div>
 
       {/* Preventive Maintenance Summary */}
-      {ticket.type === 'preventive' && ticket.steps && (
+      {ticket.type === 'preventive' && getTemplateSteps().length > 0 && (
         <div className="space-y-3 pt-2 border-t">
           <h4 className="font-medium text-slate-900 text-xs uppercase tracking-wider">Findings</h4>
-          {ticket.steps.map(step => (
-            <div key={step.id} className="text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-600">{step.label}</span>
-                {step.status === 'pass' &&
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 h-5">Pass</Badge>}
-                {step.status === 'fail' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 h-5">Not Pass</Badge>}
-                {step.status === 'na' && <Badge variant="outline" className="bg-slate-50 text-slate-500 h-5">N/A</Badge>}
-              </div>
-              {step.status === 'fail' && (
-                <div className="bg-red-50/50 p-2 rounded border border-red-100 mt-1">
-                  <div className="font-medium text-red-800 mb-1">Cause: {step.cause}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {(step.beforePhotoUrls || (step.beforePhotoUrl ? [step.beforePhotoUrl] : [])).map((url, i) => (
-                      <img key={`before-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="Before"/>
-                    ))}
-                    {(step.afterPhotoUrls || (step.afterPhotoUrl ? [step.afterPhotoUrl] : [])).map((url, i) => (
-                      <img key={`after-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="After"/>
+          {getTemplateSteps().map(step => {
+            const inspectionField = step.fields.find(f => f.type === 'INSPECTION') as TemplateFieldValue | undefined;
+            const inspectionValue = inspectionField?.value as InspectionValue | undefined;
+            const status = inspectionValue?.status;
+
+            return (
+              <div key={step.id} className="text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">{step.name}</span>
+                  {status === 'pass' &&
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 h-5">Pass</Badge>}
+                  {status === 'fail' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 h-5">Not Pass</Badge>}
+                  {status === 'na' && <Badge variant="outline" className="bg-slate-50 text-slate-500 h-5">N/A</Badge>}
+                </div>
+                {status === 'fail' && inspectionValue && (
+                  <div className="bg-red-50/50 p-2 rounded border border-red-100 mt-1">
+                    {inspectionValue.cause && (
+                      <div className="font-medium text-red-800 mb-1">Cause: {inspectionValue.cause}</div>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {(inspectionValue.beforePhotos || []).map((url, i) => (
+                        <img key={`before-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="Before"/>
+                      ))}
+                      {(inspectionValue.afterPhotos || []).map((url, i) => (
+                        <img key={`after-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="After"/>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {status === 'pass' && (inspectionValue?.evidencePhotos || []).length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {(inspectionValue.evidencePhotos || []).map((url, i) => (
+                      <img key={i} src={url} className="w-10 h-10 rounded object-cover border" title="Evidence"/>
                     ))}
                   </div>
-                </div>
-              )}
-              {step.status === 'pass' && (step.photoUrls || step.photoUrl) && (
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {(step.photoUrls || (step.photoUrl ? [step.photoUrl] : [])).map((url, i) => (
-                    <img key={i} src={url} className="w-10 h-10 rounded object-cover border" title="Evidence"/>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -790,9 +840,9 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
               <Button
                 size="lg"
-                className={`w-full ${ticket.steps?.every(s => s.completed) ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
+                className={`w-full ${areAllStepsCompleted() ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
                 onClick={handleFinish}
-                disabled={!ticket.steps?.every(s => s.completed)}
+                disabled={!areAllStepsCompleted()}
               >
                 Finish Maintenance
               </Button>
@@ -896,9 +946,9 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
             <Button
               size="lg"
-              className={`w-full ${ticket.steps?.every(s => s.completed) ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
+              className={`w-full ${areAllStepsCompleted() ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
               onClick={handleFinish}
-              disabled={!ticket.steps?.every(s => s.completed)}
+              disabled={!areAllStepsCompleted()}
             >
               Finish Work
             </Button>
