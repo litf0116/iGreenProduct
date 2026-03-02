@@ -94,6 +94,7 @@ function AppContent() {
 
       // 根据当前视图加载不同的工单列表
       let data;
+      let hasNext = false;
       switch (currentView) {
         case 'queue':
         case 'dashboard': // Dashboard 也需要加载待接单工单
@@ -101,19 +102,29 @@ function AppContent() {
           setHasMore(false);
           break;
         case 'my-work':
-          data = await api.getMyTickets(page, size);
+          const myTicketsResult = await api.getMyTickets(page, size);
+          data = myTicketsResult.records;
+          hasNext = myTicketsResult.hasNext;
           break;
         case 'history':
-          data = await api.getCompletedTickets(page, size);
+          const historyResult = await api.getCompletedTickets(page, size);
+          data = historyResult.records;
+          hasNext = historyResult.hasNext;
           break;
         default:
           data = [];
+          hasNext = false;
       }
 
       if (reset) {
         setTickets(data);
       } else {
         setTickets(prev => [...prev, ...data]);
+      }
+
+      // Update hasMore for paginated views
+      if (currentView === 'my-work' || currentView === 'history') {
+        setHasMore(hasNext);
       }
     } catch (error) {
       console.error("Failed to fetch tickets", error);

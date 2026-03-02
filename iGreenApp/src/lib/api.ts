@@ -2,7 +2,7 @@
  * API Client for iGreen+ Backend
  * 连接到统一后端API
  */
-import { Ticket, TicketStatus, TicketPriority, TicketType, TicketStep } from './data';
+import { Ticket, TicketStatus, TicketPriority, TicketType, TicketStep, TicketTypeTemplateWithData } from './data';
 import { getAuthToken, saveAuthToken, clearAuthToken } from './storage';
 
 // Backend API Base URL
@@ -135,6 +135,15 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
+
+export interface PaginatedResult<T> {
+  records: T[];
+  total: number;
+  current: number;
+  size: number;
+  hasNext: boolean;
+}
+
 export const api = {
   // Authentication
   login: async (username: string, password: string) => {
@@ -205,27 +214,38 @@ export const api = {
     }
     return { total: 0, open: 0, inProgress: 0, completed: 0 };
   },
-
   // 获取我的工单
-  getMyTickets: async (page = 1, size = 20, status?: string): Promise<Ticket[]> => {
+  getMyTickets: async (page = 1, size = 20, status?: string): Promise<PaginatedResult<Ticket>> => {
     let url = `/api/tickets/my?page=${page}&size=${size}`;
     if (status) {
       url += `&status=${status}`;
     }
     const data = await fetchWithAuth(url);
     if (data.success && data.data && data.data.records) {
-      return data.data.records.map(transformTicket);
+      return {
+        records: data.data.records.map(transformTicket),
+        total: data.data.total || 0,
+        current: data.data.current || page,
+        size: data.data.size || size,
+        hasNext: data.data.hasNext || false
+      };
     }
-    return [];
+    return { records: [], total: 0, current: page, size, hasNext: false };
   },
 
   // 获取已完成工单
-  getCompletedTickets: async (page = 1, size = 20): Promise<Ticket[]> => {
+  getCompletedTickets: async (page = 1, size = 20): Promise<PaginatedResult<Ticket>> => {
     const data = await fetchWithAuth(`/api/tickets/completed?page=${page}&size=${size}`);
     if (data.success && data.data && data.data.records) {
-      return data.data.records.map(transformTicket);
+      return {
+        records: data.data.records.map(transformTicket),
+        total: data.data.total || 0,
+        current: data.data.current || page,
+        size: data.data.size || size,
+        hasNext: data.data.hasNext || false
+      };
     }
-    return [];
+    return { records: [], total: 0, current: page, size, hasNext: false };
   },
 
   getTicket: async (id: string): Promise<Ticket> => {
@@ -313,9 +333,11 @@ export const api = {
 
   // 提交工单审核（工程师完成工作后使用）
   // 状态: ARRIVED → REVIEW
-  submitTicketForReview: async (id: string) => {
+  submitTicketForReview: async (id: string, templateData?: TicketTypeTemplateWithData) => {
+    const body = templateData ? { templateData } : {};
     return fetchWithAuth(`/api/tickets/${id}/submit-for-review`, {
       method: 'POST',
+      body: JSON.stringify(body)
     });
   },
 

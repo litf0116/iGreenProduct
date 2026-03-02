@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -54,6 +54,13 @@ interface TicketDetailProps {
 export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTicket}: TicketDetailProps) {
   const {t} = useLanguage();
   const [loadingImage, setLoadingImage] = useState<string | null>(null);
+  // 本地状态跟踪动态表单字段值，只在提交审核时发送
+  const [localFieldValues, setLocalFieldValues] = useState<Record<string, any>>({});
+
+  // 当票据变化时，重置本地字段值
+  useEffect(() => {
+    setLocalFieldValues({});
+  }, [ticket?.id]);
 
   if (!ticket) return null;
 
@@ -309,12 +316,16 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   // Get field value from ticket using legacy field name
   // Get field value from ticket using templateData or legacy field
   const getFieldValue = (fieldId: string): any => {
-    // 优先从 templateData 中查找
+    // 优先从本地状态读取
+    if (localFieldValues[fieldId] !== undefined) {
+      return localFieldValues[fieldId];
+    }
+    // 其次从 templateData 中查找
     if (ticket.templateData?.steps) {
       for (const step of ticket.templateData.steps) {
         const field = step.fields.find(f => f.id === fieldId);
         if (field) {
-          return field.value || field.values;
+          return field.value;
         }
       }
     }
@@ -328,35 +339,12 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
   // Handle dynamic field value change
   const handleFieldChange = (fieldId: string, value: any) => {
-    // 更新 templateData 中的字段值
-    if (ticket.templateData?.steps) {
-      const updatedSteps = ticket.templateData.steps.map(step => ({
-        ...step,
-        fields: step.fields.map(field =>
-          field.id === fieldId
-            ? {
-              ...field,
-              ...(Array.isArray(value) ? {values: value} : {value: value}),
-              timestamp: new Date().toISOString()
-            }
-            : field
-        )
-      }));
-
-      onUpdateTicket(ticket.id, {
-        templateData: {
-          ...ticket.templateData,
-          steps: updatedSteps
-        }
-      });
-      return;
-    }
-
-    // Fallback 到旧字段（向后兼容）
-    const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
-    if (legacyField) {
-      onUpdateTicket(ticket.id, {[legacyField]: value});
-    }
+    // 只更新本地状态，不触发 API 调用
+    // 提交审核时一次性发送数据
+    setLocalFieldValues(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
   };
 
   // Check if form is complete based on template
@@ -410,8 +398,30 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       }
     }
 
+    // 合并本地字段值到 templateData
+    let templateDataToSubmit = ticket.templateData;
+    if (ticket.templateData?.steps && Object.keys(localFieldValues).length > 0) {
+      templateDataToSubmit = {
+        ...ticket.templateData,
+        steps: ticket.templateData.steps.map(step => ({
+          ...step,
+          fields: step.fields.map(field => {
+            if (localFieldValues[field.id] !== undefined) {
+              const value = localFieldValues[field.id];
+              return {
+                ...field,
+                ...(Array.isArray(value) ? {values: value} : {value: value}),
+                timestamp: new Date().toISOString()
+              };
+            }
+            return field;
+          })
+        }))
+      };
+    }
+
     try {
-      await api.submitTicketForReview(ticket.id);
+      await api.submitTicketForReview(ticket.id, templateDataToSubmit);
       // 重新获取工单详情以获取最新状态
       const updatedTicket = await api.getTicket(ticket.id);
       onUpdateTicket(ticket.id, updatedTicket, {skipApi: true});
@@ -419,32 +429,6 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
     } catch (error) {
       console.error("Failed to submit:", error);
       toast.error("Failed to submit work for review");
-    }
-  };
-
-  const handleConfirm = async () => {
-    try {
-      await api.completeTicket(ticket.id);
-      // 重新获取工单详情以获取最新状态
-      const updatedTicket = await api.getTicket(ticket.id);
-      onUpdateTicket(ticket.id, updatedTicket, {skipApi: true});
-      toast.success("Ticket confirmed and closed.");
-    } catch (error) {
-      console.error("Failed to confirm:", error);
-      toast.error("Failed to confirm ticket");
-    }
-  };
-
-  const handleReject = async () => {
-    try {
-      await api.declineTicket(ticket.id, "审核不通过，请修改后重新提交");
-      // 重新获取工单详情以获取最新状态
-      const updatedTicket = await api.getTicket(ticket.id);
-      onUpdateTicket(ticket.id, updatedTicket, {skipApi: true});
-      toast.error("Work rejected. Please check steps and resubmit.");
-    } catch (error) {
-      console.error("Failed to reject ticket:", error);
-      toast.error("Failed to reject ticket");
     }
   };
 
@@ -761,17 +745,17 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                 </h3>
 
                 <div className="space-y-4">
-                  {ticket.steps?.map((step) => (
+                  {ticket.templateData.steps?.map((step) => (
                     <div key={step.id}
                          className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-slate-900">{step.label}</label>
+                          <label className="text-sm font-medium text-slate-900">{step.name}</label>
                           {step.completed &&
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Completed</Badge>}
                         </div>
 
-                        <ToggleGroup type="single" value={step.status || ''}
+                        <ToggleGroup type="single" value={(step.fields[0].value as InspectionValue).status || ''}
                                      onValueChange={(val) => handlePreventiveStepUpdate(step.id, {status: val as any})}
                                      className="justify-start">
                           <ToggleGroupItem value="pass" aria-label="Pass"
@@ -794,7 +778,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                               stepId={step.id}
                               fieldPrefix="photo"
                               isCorrectiveOrPlanned={false}
-                              existingPhotos={step.photoUrls || (step.photoUrl ? [step.photoUrl] : [])}
+                              existingPhotos={(step.fields[0].value as InspectionValue).evidencePhotos || []}
                               label="Evidence Photos"
                               loadingImage={loadingImage}
                               onAddPhoto={handleAddPhoto}
@@ -806,7 +790,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                           <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
                             <Textarea
                               placeholder="Describe the cause of failure..."
-                              value={step.cause || ''}
+                              value={(step.fields[0].value as InspectionValue).cause || ''}
                               onChange={(e) => handlePreventiveStepUpdate(step.id, {cause: e.target.value})}
                               className="text-sm min-h-[80px]"
                             />
@@ -815,7 +799,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                                 stepId={step.id}
                                 fieldPrefix="beforePhoto"
                                 isCorrectiveOrPlanned={false}
-                                existingPhotos={step.beforePhotoUrls || (step.beforePhotoUrl ? [step.beforePhotoUrl] : [])}
+                                existingPhotos={(step.fields[0].value as InspectionValue).beforePhotos || []}
                                 label="Before"
                                 loadingImage={loadingImage}
                                 onAddPhoto={handleAddPhoto}
@@ -824,7 +808,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                                 stepId={step.id}
                                 fieldPrefix="afterPhoto"
                                 isCorrectiveOrPlanned={false}
-                                existingPhotos={step.afterPhotoUrls || (step.afterPhotoUrl ? [step.afterPhotoUrl] : [])}
+                                existingPhotos={(step.fields[0].value as InspectionValue).afterPhotos || []}
                                 label="After"
                                 loadingImage={loadingImage}
                                 onAddPhoto={handleAddPhoto}
@@ -872,7 +856,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
               </h3>
 
               <div className="space-y-4">
-                {ticket.steps?.map((step, index) => (
+                {ticket.templateData.steps?.map((step, index) => (
                   <div key={step.id}
                        className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
                     <div className="flex items-start gap-3">
@@ -887,7 +871,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                           htmlFor={`step-${step.id}`}
                           className={`text-sm font-medium leading-none block transition-colors ${step.completed ? 'text-green-700' : 'text-slate-900'}`}
                         >
-                          {step.label}
+                          {step.name}
                         </label>
 
                         {!step.completed && (
@@ -907,7 +891,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                                 disabled={loadingImage === step.id}
                               >
                                 <Camera className="w-3 h-3"/>
-                                {step.photoUrl ? 'Retake Photo' : 'Add Photo'}
+                                {step.fields[0].value ? 'Retake Photo' : 'Add Photo'}
                               </Button>
 
                               <Button
@@ -919,22 +903,19 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                                 Complete
                               </Button>
                             </div>
-
-                            {step.location && (
-                              <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 justify-end">
-                                <MapPin className="w-3 h-3"/>
-                                Loc: {step.location}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {step.photoUrl && (
-                          <div className="mt-2 relative rounded-lg overflow-hidden border aspect-video w-full max-w-[200px]">
-                            <img src={step.photoUrl} alt="Step evidence" className="w-full h-full object-cover"/>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] p-1 truncate">
-                              {step.timestamp && new Date(step.timestamp).toLocaleTimeString()}
-                            </div>
+                            {/* 这里根据配置的表单项来进行数据展示 这里改成如果检查到 location 类型的 field 数据*/}
+                            {
+                              step.fields.map(field => {
+                                if (field.type == "LOCATION") {
+                                  return (
+                                    <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 justify-end">
+                                      <MapPin className="w-3 h-3"/>
+                                      Loc: {field.value}
+                                    </div>
+                                  )
+                                }
+                              })
+                            }
                           </div>
                         )}
                       </div>
@@ -968,18 +949,6 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
             {renderSummary()}
 
-            <div className="flex gap-2 w-full md:w-auto">
-              <Button variant="outline" size="lg" className="flex-1 gap-2 border-red-200 text-red-700 hover:bg-red-50"
-                      onClick={handleReject}>
-                <X className="w-4 h-4"/>
-                Reject
-              </Button>
-              <Button variant="outline" size="lg" className="flex-1 gap-2 border-purple-200 text-purple-700 hover:bg-purple-100"
-                      onClick={handleConfirm}>
-                <ShieldCheck className="w-4 h-4"/>
-                Confirm
-              </Button>
-            </div>
           </div>
         );
 
