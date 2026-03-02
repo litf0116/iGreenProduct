@@ -16,6 +16,7 @@ public class TemplateField {
     private FieldType type;
     private String description;
     private Boolean required;
-    private String options;
     private Map<String, Object> config;
+}
+    }
 }

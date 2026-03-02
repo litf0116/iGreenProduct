@@ -98,7 +98,11 @@ public class TemplateService {
         List<TemplateField> fields = new ArrayList<>();
 
         for (TemplateFieldRequest fieldRequest : fieldsRequests) {
-            TemplateField field = TemplateField.builder().name(fieldRequest.name()).type(fieldRequest.type()).required(fieldRequest.required()).options(fieldRequest.options()).build();
+            TemplateField field = TemplateField.builder()
+                .name(fieldRequest.name())
+                .type(fieldRequest.type())
+                .required(fieldRequest.required())
+                .build();
 
             fields.add(field);
         }

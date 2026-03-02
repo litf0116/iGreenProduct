@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.igreen.domain.enums.FieldType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TemplateFieldRequest(
@@ -15,8 +13,7 @@ public record TemplateFieldRequest(
     @NotNull(message = "字段类型不能为空")
     FieldType type,
 
-    Boolean required,
-
-    @Size(max = 1000, message = "字段选项不能超过1000个字符")
-    String options
+    Boolean required
+) {}
+) {}
 ) {}
