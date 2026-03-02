@@ -1,7 +1,7 @@
 package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.igreen.domain.entity.TemplateFieldValue;
+import com.igreen.domain.entity.TemplateFieldData;
 import com.igreen.domain.entity.TemplateStepData;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -46,5 +46,5 @@ public class TicketStepUpdateRequest {
 
     private String timestamp;
 
-    private List<TemplateFieldValue> fieldValues;
+    private List<TemplateFieldData> fieldValues;
 }

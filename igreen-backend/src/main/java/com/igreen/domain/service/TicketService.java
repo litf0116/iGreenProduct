@@ -157,6 +157,40 @@ public class TicketService {
         if (request.dueDate() != null) {
             ticket.setDueDate(request.dueDate());
         }
+        if (request.templateData() != null) {
+            try {
+                ticket.setTemplateData(objectMapper.writeValueAsString(request.templateData()));
+            } catch (JsonProcessingException e) {
+                log.error("Error serializing template data", e);
+            }
+        }
+        if (request.departureAt() != null) {
+            ticket.setDepartureAt(request.departureAt());
+        }
+        if (request.departurePhoto() != null) {
+            ticket.setDeparturePhoto(request.departurePhoto());
+        }
+        if (request.arrivalAt() != null) {
+            ticket.setArrivalAt(request.arrivalAt());
+        }
+        if (request.arrivalPhoto() != null) {
+            ticket.setArrivalPhoto(request.arrivalPhoto());
+        }
+        if (request.completionPhoto() != null) {
+            ticket.setCompletionPhoto(request.completionPhoto());
+        }
+        if (request.cause() != null) {
+            ticket.setCause(request.cause());
+        }
+        if (request.solution() != null) {
+            ticket.setSolution(request.solution());
+        }
+        if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
+            ticket.setRelatedTicketIds(String.join(",", request.relatedTicketIds()));
+        }
+        if (request.problemType() != null) {
+            ticket.setProblemType(request.problemType());
+        }
 
         ticketMapper.updateById(ticket);
 
@@ -298,7 +332,7 @@ public class TicketService {
             ticket.setArrivalPhoto(arrivalPhoto);
         }
 
-        // Initialize stepData from template if ticket has templateId and stepData is null/empty
+        // Initialize templateData from template if ticket has templateId and templateData is null/empty
         if (ticket.getTemplateId() != null && (ticket.getTemplateData() == null || ticket.getTemplateData().isEmpty())) {
             initializeTemplateDataFromTemplate(ticket);
         }
@@ -312,59 +346,59 @@ public class TicketService {
     }
 
     /**
-     * 从ticket 生成 template data 数据
-     *
-     * @param ticket
-     * @see TemplateData
-     * @see TemplateStepData
-     * @see TemplateFieldData
+     * 从模板初始化 templateData
+     * 
+     * templateData 结构 = 模板快照 + 用户填写值
+     * 
+     * @param ticket 工单实体
      */
     private void initializeTemplateDataFromTemplate(Ticket ticket) {
         try {
-            // 从 templateService 获取模板数据
             Template template = templateService.getTemplateById(ticket.getTemplateId());
             List<TemplateStep> templateSteps = template.getSteps();
 
             if (templateSteps != null && !templateSteps.isEmpty()) {
-                // Convert template steps to the format expected by frontend
-                List<TemplateStepValue> steps = new ArrayList<>();
                 // 构建 templateData 结构
                 List<TemplateStepData> templateDataSteps = new ArrayList<>();
 
                 for (TemplateStep step : templateSteps) {
-                    // 添加动态字段支持：将模板字段转换为步骤字段
+                    // 构建字段列表
                     List<TemplateFieldData> fieldDatas = new ArrayList<>();
 
                     if (step.getFields() != null && !step.getFields().isEmpty()) {
                         for (TemplateField field : step.getFields()) {
-                            // stepData 字段
                             TemplateFieldData fieldData = new TemplateFieldData();
                             BeanUtils.copyProperties(field, fieldData);
-                            fieldData.setValue("");
-
+                            fieldData.setValue(""); // 初始值为空
                             fieldDatas.add(fieldData);
                         }
                     }
 
-                    // 构建 templateData step
+                    // 构建 step
                     TemplateStepData stepData = new TemplateStepData();
-                    BeanUtils.copyProperties(step, stepData);
+                    stepData.setId(step.getId());
+                    stepData.setName(step.getName());
+                    stepData.setStatus("pending");
+                    stepData.setCompleted(false);
+                    stepData.setTimestamp(null);
                     stepData.setFields(fieldDatas);
+
                     templateDataSteps.add(stepData);
                 }
 
-
                 // 设置 templateData
                 TemplateData templateData = new TemplateData();
-                BeanUtils.copyProperties(template, templateData);
+                templateData.setId(template.getId());
+                templateData.setName(template.getName());
+                templateData.setType(ticket.getType());
                 templateData.setSteps(templateDataSteps);
 
                 ticket.setTemplateData(objectMapper.writeValueAsString(templateData));
 
-                log.info("Initialized stepData and templateData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
+                log.info("Initialized templateData for ticket {} from template {}", ticket.getId(), ticket.getTemplateId());
             }
         } catch (JsonProcessingException e) {
-            log.error("Error initializing stepData from template for ticket {}", ticket.getId(), e);
+            log.error("Error initializing templateData from template for ticket {}", ticket.getId(), e);
         }
     }
 

@@ -10,6 +10,6 @@ import java.util.List;
 public record TicketUpdateRequest(String title, String description, String type, String siteId, String status, String priority,
                                   String assignedTo, LocalDateTime dueDate, List<String> completedSteps, Map<String, Object> templateData,
                                    LocalDateTime departureAt, String departurePhoto, LocalDateTime arrivalAt, String arrivalPhoto,
-                                   String completionPhoto, String cause, String solution, List<String> relatedTicketIds) {
+                                   String completionPhoto, String cause, String solution, List<String> relatedTicketIds, String problemType) {
 
 }
