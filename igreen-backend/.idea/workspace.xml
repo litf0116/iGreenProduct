@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="update">
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/TicketDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" afterDir="false" />
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="u">
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application-prod.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +33,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1738" />
+    <option name="cachedIndexableFilesCount" value="1765" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
@@ -426,7 +423,31 @@
       <option name="project" value="LOCAL" />
       <updated>1772354956420</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="update">
+      <option name="closed" value="true" />
+      <created>1772505712438</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1772505712438</updated>
+    </task>
+    <task id="LOCAL-00034" summary="update">
+      <option name="closed" value="true" />
+      <created>1772539452948</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1772539452948</updated>
+    </task>
+    <task id="LOCAL-00035" summary="u">
+      <option name="closed" value="true" />
+      <created>1772547879502</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1772547879502</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -444,7 +465,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="refactor(group): 优化群组搜索功能并移除重复代码&#10;&#10;- 重构 searchGroups 方法中的查询逻辑，提高代码可读性&#10;- 移除重复的 LambdaQueryWrapper 创建操作&#10;- 添加更详细的调试日志信息&#10;- 清理 UserService 中的冗余邮箱验证代码&#10;- 统一查询条件构建方式，便于后续维护" />
     <MESSAGE value="style(logging): 更新日志配置以改进格式和颜色支持&#10;&#10;- 为控制台输出添加颜色高亮显示&#10;- 统一所有日志输出格式，使用标准的时间戳格式&#10;- 调整日志模式以提高可读性&#10;- 将日志记录器名称长度从36增加到60个字符&#10;- 标准化文件日志输出格式与控制台一致" />
     <MESSAGE value="docs(tickets): 记录工单分配问题并完善文档&#10;&#10;- 添加工单分配功能问题记录文档，分析当前实现状态和冲突&#10;- 添加TicketDetail使用Capacitor Camera的修复计划文档&#10;- 添加应用图标配置到web manifest文件&#10;- 在capacitor配置中添加局域网访问允许列表&#10;- 更新应用标题为iGreen工程师工单系统&#10;- 添加存储功能测试脚本，验证Capacitor Preferences集成&#10;- 在国际化文件中添加工程师和经理角色翻译" />
     <MESSAGE value="refactor(domain): 将UserCreateRequest从record改为普通类并更新相关测试&#10;&#10;- 将UserCreateRequest从record语法转换为使用lombok的普通final类&#10;- 添加了完整的构造函数、getter方法和equals/hashCode/toString实现&#10;- 移除了UserCreateRequest中的email字段，更新了所有相关的测试用例&#10;- 更新了Capacitor插件路径配置以适配pnpm包管理器&#10;- 修复了前端组件导入格式和图标引用格式&#10;- 将应用图标文件名从icon.png更新为favicon.png" />
@@ -469,7 +489,8 @@
     <MESSAGE value="feat: add TemplateFieldValue and TemplateStepValue entities; update TicketRequest and TicketResponse to include new fields" />
     <MESSAGE value="feat: add support for dynamic form fields including TOGGLE_GROUP and PHOTOS; update TemplateFieldValue and TemplateStepValue entities" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="u" />
+    <option name="LAST_COMMIT_MESSAGE" value="u" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
