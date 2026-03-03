@@ -465,6 +465,33 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponse submitTicketForReview(Long id, String userId, TemplateData templateData) {
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+
+        // 检查工单状态是否为 ARRIVED（工程师已到达现场）
+        if (!"ARRIVED".equals(ticket.getStatus())) {
+            throw new BusinessException("工单状态不正确，无法提交审核");
+        }
+
+        // 保存 templateData 到工单
+        if (templateData != null) {
+            try {
+                String templateDataJson = objectMapper.writeValueAsString(templateData);
+                ticket.setTemplateData(templateDataJson);
+            } catch (JsonProcessingException e) {
+                throw new BusinessException("保存模板数据失败: " + e.getMessage());
+            }
+        }
+
+        // 将工单状态设置为 REVIEW（待审核）
+        ticket.setStatus("REVIEW");
+        ticketMapper.updateById(ticket);
+
+        User creator = ticket.getCreator();
+        Group assignGroup = ticket.getAssignGroup();
+        Site site = siteMapper.selectById(ticket.getSiteId());
+        return toResponse(ticket, creator, assignGroup, site);
+    }
     public TicketResponse submitTicketForReview(Long id, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 

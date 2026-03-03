@@ -6,6 +6,7 @@ import com.igreen.common.result.PageResult;
 import com.igreen.common.result.Result;
 import com.igreen.common.utils.JwtUtils;
 import com.igreen.domain.dto.*;
+import com.igreen.domain.entity.TemplateData;
 import com.igreen.domain.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -119,9 +120,9 @@ public class TicketController {
     @Operation(summary = "提交工单审核（工程师使用）")
     @PostMapping("/{id}/submit-for-review")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ENGINEER')")
-    public ResponseEntity<Result<TicketResponse>> submitTicketForReview(HttpServletRequest httpRequest, @PathVariable Long id) {
+    public ResponseEntity<Result<TicketResponse>> submitTicketForReview(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody(required = false) TemplateData templateData) {
         String userId = getCurrentUserId(httpRequest);
-        return ResponseEntity.ok(Result.success(ticketService.submitTicketForReview(id, userId)));
+        return ResponseEntity.ok(Result.success(ticketService.submitTicketForReview(id, userId, templateData)));
     }
 
     @Operation(summary = "审核工单（管理员使用）")

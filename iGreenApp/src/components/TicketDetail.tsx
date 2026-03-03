@@ -38,7 +38,7 @@ import {
 } from '../lib/data';
 import {toast} from "sonner@2.0.3";
 import {useLanguage} from './LanguageContext';
-import {api, getFullImageUrl} from '../lib/api';
+import {api} from '../lib/api';
 import {pickPhoto, takePhoto} from '../lib/camera';
 import {FIELD_ID_TO_LEGACY_FIELD, getTemplateByType} from '../config/fieldConfigs';
 import {DynamicFieldRenderer} from "./form/DynamicFieldRenderer";
@@ -425,6 +425,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         ...ticket.templateData,
         steps: ticket.templateData.steps.map(step => ({
           ...step,
+          completed: true,
           fields: step.fields.map(field => {
             if (localFieldValues[field.id] !== undefined) {
               const value = localFieldValues[field.id];
