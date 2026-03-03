@@ -343,10 +343,10 @@ export const api = {
   // 提交工单审核（工程师完成工作后使用）
   // 状态: ARRIVED → REVIEW
   submitTicketForReview: async (id: string, templateData?: TicketTypeTemplateWithData) => {
-    const body = templateData ? { templateData } : {};
+    // 直接发送 templateData 对象，不包装
     return fetchWithAuth(`/api/tickets/${id}/submit-for-review`, {
       method: 'POST',
-      body: JSON.stringify(body)
+      body: templateData ? JSON.stringify(templateData) : JSON.stringify({})
     });
   },
 
