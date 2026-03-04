@@ -89,7 +89,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/openapi/**").permitAll()
                         .requestMatchers("/api/v3/api-docs/**", "/api/openapi/**").permitAll()
                         // 上传文件访问 - 公开访问
-                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/uploads/**", "/api/uploads/**").permitAll()
                         // 站点导入导出API (测试用，临时公开)
                         .requestMatchers("/api/sites/export", "/api/sites/export/template").permitAll()
                         // 管理端点

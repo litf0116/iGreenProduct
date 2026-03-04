@@ -32,6 +32,9 @@ public class FileService {
     @Value("${app.upload.max-size:10485760}")
     private long maxFileSize;
 
+    @Value("${app.upload.base-url:http://127.0.0.1:8089}")
+    private String baseUrl;
+
     @Transactional
     public FileUploadResponse uploadFile(MultipartFile file, String fieldType) throws IOException {
         if (file.isEmpty()) {
@@ -57,7 +60,7 @@ public class FileService {
         Path filePath = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), filePath);
 
-        String fileUrl = "/uploads/" + uniqueFilename;
+        String fileUrl = baseUrl + "/api/uploads/" + uniqueFilename;
 
         File fileEntity = File.builder()
                 .id(fileId)

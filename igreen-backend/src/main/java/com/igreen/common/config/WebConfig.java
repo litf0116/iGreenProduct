@@ -22,7 +22,8 @@ public class WebConfig implements WebMvcConfigurer {
         if (!path.endsWith("/")) {
             path = path + "/";
         }
-        registry.addResourceHandler("/uploads/**")
+        // 同时支持 /uploads/** 和 /api/uploads/** 两种访问方式（向后兼容）
+        registry.addResourceHandler("/uploads/**", "/api/uploads/**")
                 .addResourceLocations("file:" + path)
                 .setCachePeriod(3600);
     }
