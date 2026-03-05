@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Calendar,
   CalendarDays,
-  Camera,
   CheckCircle2,
   CheckSquare,
   FileText,
@@ -24,7 +23,6 @@ import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
 import {Separator} from "./ui/separator";
 import {Textarea} from "./ui/textarea";
-import {Checkbox} from "./ui/checkbox";
 import {ToggleGroup, ToggleGroupItem} from "./ui/toggle-group";
 import {
   getPriorityColor,
@@ -33,14 +31,16 @@ import {
   getTicketTypeLabel,
   InspectionValue,
   TemplateFieldValue,
-  Ticket
+  Ticket,
+  isFieldType
 } from '../lib/data';
 import {toast} from "sonner";
 import {useLanguage} from './LanguageContext';
 import {api} from '../lib/api';
 import {pickPhoto, takePhoto} from '../lib/camera';
-import {FIELD_ID_TO_LEGACY_FIELD, getTemplateByType} from '../config/fieldConfigs';
+import {getTemplateByType} from '../config/fieldConfigs';
 import {DynamicFieldRenderer} from "./form/DynamicFieldRenderer";
+import {DynamicFieldSummary} from "./form/DynamicFieldSummary";
 import {PhotoUploader} from "./form/PhotoUploader";
 
 interface TicketDetailProps {
@@ -69,33 +69,32 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
   // Initialize templateData from template configuration
   const ensureTemplateData = () => {
-    // For corrective, planned, problem types, templateData will be created at creation time
-    if (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem') return;
-
     // For preventive type, ensure templateData exists
-    if (!ticket.templateData || !ticket.templateData.steps || ticket.templateData.steps.length === 0) {
-      const template = getTemplateByType('preventive');
-      if (!template) return;
+    if (ticket.type === 'preventive') {
+      if (!ticket.templateData || !ticket.templateData.steps || ticket.templateData.steps.length === 0) {
+        const template = getTemplateByType('preventive');
+        if (!template) return;
 
-      // Initialize templateData with empty values
-      const initialSteps = template.steps.map(step => ({
-        ...step,
-        description: '',
-        completed: false,
-        fields: step.fields.map(field => ({
-          ...field,
-          value: field.type === 'INSPECTION' ? undefined : (field.type === 'PHOTOS' ? [] : '')
-        })) as TemplateFieldValue[]
-      }));
+        // Initialize templateData with empty values
+        const initialSteps = template.steps.map(step => ({
+          ...step,
+          description: '',
+          completed: false,
+          fields: step.fields.map(field => ({
+            ...field,
+            value: isFieldType(field.type, 'INSPECTION') ? undefined : (isFieldType(field.type, 'PHOTOS') ? [] : '')
+          })) as TemplateFieldValue[]
+        }));
 
-      onUpdateTicket(ticket.id, {
-        templateData: {
-          id: template.id,
-          name: template.name,
-          type: template.type,
-          steps: initialSteps
-        }
-      });
+        onUpdateTicket(ticket.id, {
+          templateData: {
+            id: template.id,
+            name: template.name,
+            type: template.type,
+            steps: initialSteps
+          }
+        });
+      }
     }
   };
 
@@ -109,7 +108,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
     const step = steps.find(s => s.id === stepId);
     if (!step) return false;
 
-    const inspectionField = step.fields.find(f => f.type === 'INSPECTION');
+    const inspectionField = step.fields.find(f => isFieldType(f.type, 'INSPECTION'));
     if (!inspectionField) return false;
 
     const value = inspectionField.value as InspectionValue | undefined;
@@ -258,7 +257,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         const step = steps.find(s => s.id === stepId);
         if (!step) return;
 
-        const inspectionField = step.fields.find(f => f.type === 'INSPECTION');
+        const inspectionField = step.fields.find(f => isFieldType(f.type, 'INSPECTION'));
         if (!inspectionField) return;
 
         const currentValue = inspectionField.value as InspectionValue | undefined;
@@ -331,7 +330,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       for (const field of step.fields) {
         const value = getFieldValue(field.id);
         if (field.required) {
-          if (field.type === 'PHOTOS') {
+          if (isFieldType(field.type, 'PHOTOS')) {
             const photoArray = Array.isArray(value) ? value : [];
             if (photoArray.length === 0) {
               return false;
@@ -423,121 +422,56 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       </div>
 
       {/* Preventive Maintenance Summary */}
-      {ticket.type === 'preventive' && getSteps().length > 0 && (
+      {ticket.type === 'preventive' && ticket.templateData?.steps && (
         <div className="space-y-3 pt-2 border-t">
           <h4 className="font-medium text-slate-900 text-xs uppercase tracking-wider">Findings</h4>
-          {getSteps().map(step => {
-            const inspectionField = step.fields.find(f => f.type === 'INSPECTION') as TemplateFieldValue | undefined;
-            const inspectionValue = inspectionField?.value as InspectionValue | undefined;
-            const status = inspectionValue?.status;
-
-            return (
-              <div key={step.id} className="text-xs space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">{step.name}</span>
-                  {status === 'pass' &&
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 h-5">Pass</Badge>}
-                  {status === 'fail' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 h-5">Not Pass</Badge>}
-                  {status === 'na' && <Badge variant="outline" className="bg-slate-50 text-slate-500 h-5">N/A</Badge>}
+          {ticket.templateData.steps.map((step, stepIndex) => (
+            <React.Fragment key={step.id}>
+              {step.fields.map((field, fieldIndex) => (
+                <div key={`${step.id}-${field.id}`}>
+                  <DynamicFieldSummary field={field} stepName={step.name} />
                 </div>
-                {status === 'fail' && inspectionValue && (
-                  <div className="bg-red-50/50 p-2 rounded border border-red-100 mt-1">
-                    {inspectionValue.cause && (
-                      <div className="font-medium text-red-800 mb-1">Cause: {inspectionValue.cause}</div>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {(inspectionValue.beforePhotos || []).map((url, i) => (
-                        <img key={`before-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="Before"/>
-                      ))}
-                      {(inspectionValue.afterPhotos || []).map((url, i) => (
-                        <img key={`after-${i}`} src={url} className="w-10 h-10 rounded object-cover border" title="After"/>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {status === 'pass' && (inspectionValue?.evidencePhotos || []).length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-2">
-                    {(inspectionValue?.evidencePhotos || []).map((url, i) => (
-                      <img key={i} src={url} className="w-10 h-10 rounded object-cover border" title="Evidence"/>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+              ))}
+            </React.Fragment>
+          ))}
         </div>
       )}
 
-      // Corrective Maintenance Summary
-      {ticket.type === 'corrective' && (
+      {/* Corrective Maintenance Summary */}
+      {ticket.type === 'corrective' && ticket.templateData?.steps && (
         <div className="space-y-3 pt-2 border-t text-xs">
-          <div className="space-y-1">
-            <span className="font-medium text-slate-900 block">Root Cause:</span>
-            <p className="text-slate-600 bg-slate-50 p-2 rounded">{ticket.rootCause}</p>
-          </div>
-          <div className="space-y-1">
-            <span className="font-medium text-slate-900 block">Solution:</span>
-            <p className="text-slate-600 bg-slate-50 p-2 rounded">{ticket.solution}</p>
-          </div>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {(ticket.beforePhotoUrls || (ticket.beforePhotoUrl ? [ticket.beforePhotoUrl] : [])).map((url, i) => (
-              <div key={`before-${i}`} className="space-y-1">
-                <span className="text-[10px] text-slate-500 block">Before {i + 1}</span>
-                <img src={url} className="w-20 h-20 rounded object-cover border"/>
+          {ticket.templateData.steps.map((step, stepIndex) =>
+            step.fields.map((field, fieldIndex) => (
+              <div key={`corrective-${stepIndex}-${fieldIndex}`}>
+                <DynamicFieldSummary field={field} stepName={step.name} />
               </div>
-            ))}
-            {(ticket.afterPhotoUrls || (ticket.afterPhotoUrl ? [ticket.afterPhotoUrl] : [])).map((url, i) => (
-              <div key={`after-${i}`} className="space-y-1">
-                <span className="text-[10px] text-slate-500 block">After {i + 1}</span>
-                <img src={url} className="w-20 h-20 rounded object-cover border"/>
-              </div>
-            ))}
-          </div>
+            ))
+          )}
         </div>
       )}
 
       {/* Planned Maintenance Summary */}
-      {ticket.type === 'planned' && (
+      {ticket.type === 'planned' && ticket.templateData?.steps && (
         <div className="space-y-3 pt-2 border-t text-xs">
-          <div className="space-y-1">
-            <span className="font-medium text-slate-900 block">Feedback:</span>
-            <p className="text-slate-600 bg-slate-50 p-2 rounded">{ticket.feedback}</p>
-          </div>
-          {ticket.feedbackPhotoUrls && ticket.feedbackPhotoUrls.length > 0 && (
-            <div className="space-y-1">
-              <span className="font-medium text-slate-900 block">Photos:</span>
-              <div className="flex flex-wrap gap-2">
-                {ticket.feedbackPhotoUrls.map((url, i) => (
-                  <img key={i} src={url} className="w-20 h-20 rounded object-cover border"/>
-                ))}
+          {ticket.templateData.steps.map((step, stepIndex) =>
+            step.fields.map((field, fieldIndex) => (
+              <div key={`planned-${stepIndex}-${fieldIndex}`}>
+                <DynamicFieldSummary field={field} stepName={step.name} />
               </div>
-            </div>
+            ))
           )}
         </div>
       )}
 
       {/* Problem Management Summary */}
-      {ticket.type === 'problem' && (
+      {ticket.type === 'problem' && ticket.templateData?.steps && (
         <div className="space-y-3 pt-2 border-t text-xs">
-          <div className="space-y-1">
-            <span className="font-medium text-slate-900 block">Solution:</span>
-            <p className="text-slate-600 bg-slate-50 p-2 rounded">{ticket.solution}</p>
-          </div>
-          <div className="space-y-1">
-            <span className="font-medium text-slate-900 block">Est. Resolution:</span>
-            <p className="text-slate-600 bg-slate-50 p-2 rounded">
-              {ticket.estimatedResolutionTime ? new Date(ticket.estimatedResolutionTime).toLocaleString() : '-'}
-            </p>
-          </div>
-          {ticket.problemPhotoUrls && ticket.problemPhotoUrls.length > 0 && (
-            <div className="space-y-1">
-              <span className="font-medium text-slate-900 block">Photos:</span>
-              <div className="flex flex-wrap gap-2">
-                {ticket.problemPhotoUrls.map((url, i) => (
-                  <img key={i} src={url} className="w-20 h-20 rounded object-cover border"/>
-                ))}
+          {ticket.templateData.steps.map((step, stepIndex) =>
+            step.fields.map((field, fieldIndex) => (
+              <div key={`problem-${stepIndex}-${fieldIndex}`}>
+                <DynamicFieldSummary field={field} stepName={step.name} />
               </div>
-            </div>
+            ))
           )}
         </div>
       )}
@@ -720,7 +654,7 @@ case 'arrived':
                   {steps.map((step) => {
                     const inspectionField = step.fields[0];
                     const inspectionValue = inspectionField?.value as InspectionValue;
-                    if (!inspectionField || inspectionField.type !== 'INSPECTION') return null;
+                    if (!inspectionField || !isFieldType(inspectionField.type, 'INSPECTION')) return null;
 
                     return (
                       <div key={step.id}
@@ -820,6 +754,8 @@ case 'arrived':
         }
 
         return null;
+
+      case 'review':
         return (
           <div className="p-6 bg-purple-50 border border-purple-100 rounded-xl flex flex-col items-center text-center space-y-4">
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-2">
