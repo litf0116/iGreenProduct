@@ -13,6 +13,7 @@ import {Edit, GripVertical, Loader2, Plus, Trash2} from "lucide-react";
 import {Badge} from "./ui/badge";
 import {Checkbox} from "./ui/checkbox";
 import {toast} from "sonner";
+import {getAuthToken} from "../lib/authToken";
 
 interface TemplateManagerProps {
     language: Language;
@@ -32,7 +33,7 @@ export function TemplateManager({
 
     // Local state - use external if provided, otherwise use local
     const [templates, setTemplates] = useState<Template[]>(externalTemplates || []);
-    const [loading, setLoading] = useState(!externalTemplates);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,6 +42,7 @@ export function TemplateManager({
     const [templateName, setTemplateName] = useState("");
     const [templateDescription, setTemplateDescription] = useState("");
     const [steps, setSteps] = useState<TemplateStep[]>([]);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const fieldTypes: FieldType[] = [
         "text",
@@ -72,6 +74,10 @@ export function TemplateManager({
             return;
         }
 
+        if (!getAuthToken()) {
+            return;
+        }
+
         const fetchTemplates = async () => {
             setLoading(true);
             setError(null);
@@ -99,6 +105,7 @@ export function TemplateManager({
     }, [externalTemplates]);
 
     const handleOpenDialog = (template?: Template) => {
+        setValidationErrors({});
         if (template) {
             setEditingTemplate(template);
             setTemplateName(template.name);
@@ -172,7 +179,35 @@ export function TemplateManager({
     };
 
     const handleSave = async () => {
-        if (!templateName.trim() || steps.length === 0) return;
+        const errors: Record<string, string> = {};
+
+        if (!templateName.trim()) {
+            errors.templateName = "Template name is required";
+        }
+
+        if (steps.length === 0) {
+            errors.steps = "At least one step is required";
+        }
+
+        steps.forEach((step, stepIndex) => {
+            if (!step.name.trim()) {
+                errors[`step_${stepIndex}_name`] = "Step name is required";
+            }
+
+            if (step.fields && step.fields.length > 0) {
+                step.fields.forEach((field, fieldIndex) => {
+                    if (!field.name.trim()) {
+                        errors[`step_${stepIndex}_field_${fieldIndex}_name`] = "Field name is required";
+                    }
+                });
+            }
+        });
+
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            toast.error("Please fill in all required fields");
+            return;
+        }
 
         const templateData = {
             name: templateName,
@@ -319,7 +354,7 @@ export function TemplateManager({
                     {t("createTemplate")}
                 </Button>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-h-[90vh] overflow-y-auto" style={{ maxWidth: '1280px', width: '95%' }}>
                         <DialogHeader>
                             <DialogTitle>
                                 {editingTemplate ? t("editTemplate") : t("createTemplate")}
@@ -332,7 +367,11 @@ export function TemplateManager({
                                     value={templateName}
                                     onChange={(e) => setTemplateName(e.target.value)}
                                     placeholder={t("templateName")}
+                                    className={validationErrors.templateName ? "border-destructive" : ""}
                                 />
+                                {validationErrors.templateName && (
+                                    <p className="text-sm text-destructive">{validationErrors.templateName}</p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -366,7 +405,11 @@ export function TemplateManager({
                                                                 handleUpdateStep(step.id, {name: e.target.value})
                                                             }
                                                             placeholder={t("stepName")}
+                                                            className={validationErrors[`step_${stepIndex}_name`] ? "border-destructive" : ""}
                                                         />
+                                                        {validationErrors[`step_${stepIndex}_name`] && (
+                                                            <p className="text-sm text-destructive">{validationErrors[`step_${stepIndex}_name`]}</p>
+                                                        )}
                                                         <Textarea
                                                             value={step.description}
                                                             onChange={(e) =>
@@ -396,60 +439,75 @@ export function TemplateManager({
                                                         </Button>
                                                     </div>
 
-                                                    {(step.fields || []).map((field, fieldIndex) => (
-                                                        <div
-                                                            key={field.id}
-                                                            className="flex items-center gap-2 p-2 bg-muted rounded"
-                                                        >
-                                                            <Input
-                                                                value={field.name}
-                                                                onChange={(e) =>
-                                                                    handleUpdateField(step.id, field.id, {
-                                                                        name: e.target.value,
-                                                                    })
-                                                                }
-                                                                placeholder="Field name"
-                                                                className="flex-1"
-                                                            />
-                                                            <Select
-                                                                value={field.type}
-                                                                onValueChange={(value: string) =>
-                                                                    handleUpdateField(step.id, field.id, {
-                                                                        type: value as FieldType,
-                                                                    })
-                                                                }
-                                                            >
-                                                                <SelectTrigger className="w-[180px]">
-                                                                    <SelectValue/>
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {fieldTypes.map((type) => (
-                                                                        <SelectItem key={type} value={type}>
-                                                                            {t(type as TranslationKey)}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <div className="flex items-center gap-2">
-                                                                <Checkbox
-                                                                    checked={field.required}
-                                                                    onCheckedChange={(checked: any) =>
-                                                                        handleUpdateField(step.id, field.id, {
-                                                                            required: !!checked,
-                                                                        })
-                                                                    }
-                                                                />
-                                                                <Label>{t("requiredField")}</Label>
-                                                            </div>
-                                                            <Button
-                                                                onClick={() => handleRemoveField(step.id, field.id)}
-                                                                variant="ghost"
-                                                                size="sm"
-                                                            >
-                                                                <Trash2 className="h-4 w-4"/>
-                                                            </Button>
-                                                        </div>
-                                                    ))}
+                                                    {(step.fields || []).map((field, fieldIndex) => {
+                                                                    const fieldErrorKey = `step_${stepIndex}_field_${fieldIndex}_name`;
+                                                                    return (
+                                                                        <div
+                                                                            key={field.id}
+                                                                            className="flex flex-col gap-2 p-3 bg-muted rounded"
+                                                                        >
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="flex-1">
+                                                                                    <Input
+                                                                                        value={field.name}
+                                                                                        onChange={(e) =>
+                                                                                            handleUpdateField(step.id, field.id, {
+                                                                                                name: e.target.value,
+                                                                                            })
+                                                                                        }
+                                                                                        placeholder="Field name"
+                                                                                        className={`flex-1 min-w-[200px] ${validationErrors[fieldErrorKey] ? "border-destructive" : ""}`}
+                                                                                    />
+                                                                                    {validationErrors[fieldErrorKey] && (
+                                                                                        <p className="text-sm text-destructive mt-1">{validationErrors[fieldErrorKey]}</p>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Label className="text-xs text-muted-foreground whitespace-nowrap">Type</Label>
+                                                                                    <Select
+                                                                                        value={field.type}
+                                                                                        onValueChange={(value: string) =>
+                                                                                            handleUpdateField(step.id, field.id, {
+                                                                                                type: value as FieldType,
+                                                                                            })
+                                                                                        }
+                                                                                    >
+                                                                                        <SelectTrigger className="w-[140px] h-9">
+                                                                                            <SelectValue/>
+                                                                                        </SelectTrigger>
+                                                                                        <SelectContent>
+                                                                                            {fieldTypes.map((type) => (
+                                                                                                <SelectItem key={type} value={type}>
+                                                                                                    {t(type as TranslationKey)}
+                                                                                                </SelectItem>
+                                                                                            ))}
+                                                                                        </SelectContent>
+                                                                                    </Select>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Checkbox
+                                                                                        id={`required-${field.id}`}
+                                                                                        checked={field.required}
+                                                                                        onCheckedChange={(checked: any) =>
+                                                                                            handleUpdateField(step.id, field.id, {
+                                                                                                required: !!checked,
+                                                                                            })
+                                                                                        }
+                                                                                    />
+                                                                                    <Label htmlFor={`required-${field.id}`} className="text-sm cursor-pointer">Required</Label>
+                                                                                </div>
+                                                                                <Button
+                                                                                    onClick={() => handleRemoveField(step.id, field.id)}
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    className="shrink-0"
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4 text-destructive"/>
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                 </div>
                                             </div>
                                         </div>
@@ -499,11 +557,17 @@ export function TemplateManager({
                             <p className="text-muted-foreground">{template?.description}</p>
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Steps</span>
-                                <Badge>{(template.steps || []).length}</Badge>
-                            </div>
+<div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <Label>Steps</Label>
+                                    <Button onClick={handleAddStep} variant="outline" size="sm">
+                                        <Plus className="h-4 w-4 mr-2"/>
+                                        {t("addStep")}
+                                    </Button>
+                                </div>
+                                {validationErrors.steps && (
+                                    <p className="text-sm text-destructive">{validationErrors.steps}</p>
+                                )}
                             <div className="space-y-1">
                                 {(template.steps || []).slice(0, 3).map((step, index) => (
                                     <div key={step.id} className="text-muted-foreground">
