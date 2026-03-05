@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="u">
+      <change beforePath="$PROJECT_DIR$/../.claude/ralph-loop.local.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/form/DynamicFieldRenderer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/data.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2db47627-7aae-423f-b21f-ced3e5064cdd.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application-prod.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application-prod.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/TicketService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/TemplateManager.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/lib/i18n.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/lib/i18n.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/lib/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +40,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="1765" />
+    <option name="cachedIndexableFilesCount" value="1769" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">

@@ -1,0 +1,4 @@
+- 问题：动态表单 PHOTOS 使用不同键名（如 beforePhotoUrls/afterPhotoUrls）来存储图片，导致在提交时未能统一读取、上传和保留图片。
+- 根因：在 handleAddPhoto 中对 fieldPrefix 使用 fieldKey（如 beforePhotoUrls）进行写入，未统一回到 field.id，导致后续 getFieldValue/select 时无法可靠读取图片数组。
+- 影响：PHOTOS 字段可能未正确被提交到后端，导致审核流程缺少图片证据。
+- 解决策略：将所有 PHOTOS 的图片数组存储在 localFieldValues[field.id]，并通过反向映射在上传时写入该键。

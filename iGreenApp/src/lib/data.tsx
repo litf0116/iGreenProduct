@@ -5,9 +5,11 @@ export type TicketStatus = 'open' | 'assigned' | 'departed' | 'arrived' | 'revie
 export type TicketPriority = 'P1' | 'P2' | 'P3' | 'P4';
 export type TicketType = 'corrective' | 'planned' | 'preventive' | 'problem';
 
-// =====================
-// Dynamic Form Types
-// =====================
+// Helper Functions
+// Case-insensitive field type comparison
+export function isFieldType(fieldType: string, expected: FieldType): boolean {
+  return fieldType.toUpperCase() === expected;
+}
 export type FieldType = 'TEXT' | 'NUMBER' | 'DATE' | 'PHOTOS' | 'INSPECTION' | 'SIGNATURE' | 'LOCATION';
 
 export interface TemplateField {

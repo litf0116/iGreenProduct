@@ -22,7 +22,8 @@ export type SiteStatus = 'online' | 'offline' | 'under_construction';
 export type GroupStatus = 'active' | 'inactive';
 
 export type FieldType =
-    | 'text' | 'number' | 'date' | 'location' | 'photo' | 'signature' | 'face_recognition';
+    | 'text' | 'number' | 'date' | 'location' 
+    | 'photo' | 'photos' | 'signature' | 'inspection';
 
 export type SiteLevel = 'A' | 'B' | 'C' | string;
 

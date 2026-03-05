@@ -1,0 +1,7 @@
+- 任务目标：统一动态表单中 PHOTOS 字段的值键，统一使用 field.id 作为键名存储所有字段类型的值，包括图片URL数组。
+- 变更要点：
+- 1) handleAddPhoto 中将 fieldPrefix 映射回 field.id，使用该 field.id 存储图片 URL。
+- 2) getFieldValue 简化为仅从 localFieldValues[fieldId] 读取，若未命中再查询模板数据（PHOTOS 使用 field.value 的数组形式）。
+- 3) keep PHOTOS 数据以字符串数组形式存在 localFieldValues[fieldId]，确保上传多张图片时可以累积。
+- 4) 保留对模板数据的只读访问以保持向后兼容性，但不再通过 fieldKey 字段进行检索。
+- 验证要点：在前端上传图片后，localFieldValues 应保存 fieldId 对应的图片数组，handleFinish 的字段合并应能够正确提交 PHOTOS。

@@ -92,8 +92,9 @@ export const translations = {
         date: "Date",
         location: "Location",
         photo: "Photo",
+        photos: "Photos",
         signature: "Signature",
-        faceRecognition: "Face Recognition",
+        inspection: "Inspection",
 
         // Create Ticket
         createNewTicket: "Create New Ticket",
@@ -455,8 +456,9 @@ export const translations = {
         date: "วันที่",
         location: "ตำแหน่ง",
         photo: "รูปภาพ",
+        photos: "รูปภาพหลายใบ",
         signature: "ลายเซ็น",
-        faceRecognition: "การจดจำใบหน้า",
+        inspection: "ตรวจสอบ",
 
         // Create Ticket
         createNewTicket: "สร้างตั๋วใหม่",

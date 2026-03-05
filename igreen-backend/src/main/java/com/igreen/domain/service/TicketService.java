@@ -12,6 +12,7 @@ import com.igreen.common.result.PageResult;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.*;
 import com.igreen.domain.enums.CommentType;
+import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +57,11 @@ public class TicketService {
 
         // 验证 siteId（如果提供）
         Site site = siteMapper.selectById(request.siteId());
-        if (site == null) {
-            throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
+
+        if (!TicketType.PROBLEM.name().equals(request.type().toUpperCase())) {
+            if (site == null) {
+                throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
+            }
         }
 
 
@@ -347,9 +351,9 @@ public class TicketService {
 
     /**
      * 从模板初始化 templateData
-     * 
+     * <p>
      * templateData 结构 = 模板快照 + 用户填写值
-     * 
+     *
      * @param ticket 工单实体
      */
     private void initializeTemplateDataFromTemplate(Ticket ticket) {
@@ -492,6 +496,7 @@ public class TicketService {
         Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
+
     public TicketResponse submitTicketForReview(Long id, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
@@ -670,10 +675,7 @@ public class TicketService {
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null,
-                                  site != null ? site.getName() : null,
-                                  site != null ? site.getAddress() : null,
-                                  ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
     }
 
     @Transactional

@@ -50,7 +50,9 @@ export function TemplateManager({
         "date",
         "location",
         "photo",
+        "photos",
         "signature",
+        "inspection",
     ];
     // Helper to ensure all steps and fields have unique IDs
     const normalizeTemplateData = (templates: Template[]): Template[] => {
