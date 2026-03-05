@@ -15,16 +15,14 @@ import {PhotoUploader} from "./PhotoUploader";
 interface InspectionFieldProps {
   value?: InspectionValue;
   onChange: (value: InspectionValue) => void;
-  ticketId: string;
   stepId: string;
   loadingImage?: string | null;
-  onAddPhoto?: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: string) => void;
+  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
 }
 
 function InspectionField({
   value,
   onChange,
-  ticketId,
   stepId,
   loadingImage,
   onAddPhoto
@@ -82,8 +80,8 @@ function InspectionField({
             isCorrectiveOrPlanned={false}
             existingPhotos={value?.evidencePhotos || []}
             label="Evidence Photos"
-            loadingImage={loadingImage}
-            onAddPhoto={onAddPhoto}
+            loadingImage={loadingImage || null}
+            onAddPhoto={onAddPhoto || (() => {})}
           />
         </div>
       )}
@@ -93,7 +91,7 @@ function InspectionField({
           <Textarea
             placeholder="Describe the cause of failure..."
             value={value?.cause || ''}
-            onChange={(e) => onChange({ ...value, status: 'fail', cause: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange({ ...value, status: 'fail', cause: e.target.value })}
             className="text-sm min-h-[80px]"
           />
           <div className="grid grid-cols-2 gap-4">
@@ -103,8 +101,8 @@ function InspectionField({
               isCorrectiveOrPlanned={false}
               existingPhotos={value?.beforePhotos || []}
               label="Before"
-              loadingImage={loadingImage}
-              onAddPhoto={onAddPhoto}
+              loadingImage={loadingImage || null}
+              onAddPhoto={onAddPhoto || (() => {})}
             />
             <PhotoUploader
               stepId={stepId}
@@ -112,8 +110,8 @@ function InspectionField({
               isCorrectiveOrPlanned={false}
               existingPhotos={value?.afterPhotos || []}
               label="After"
-              loadingImage={loadingImage}
-              onAddPhoto={onAddPhoto}
+              loadingImage={loadingImage || null}
+              onAddPhoto={onAddPhoto || (() => {})}
             />
           </div>
         </div>

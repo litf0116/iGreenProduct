@@ -24,15 +24,22 @@ export interface TemplateField {
 export interface InspectionValue {
   status: 'pass' | 'fail' | 'na' | undefined;
   // 当 status === 'pass'
-  evidencePhotos?: string[];
+  evidencePhotos?: string[];    // when status === 'pass'
   // 当 status === 'fail'
-  cause?: string;
-  beforePhotos?: string[];
-  afterPhotos?: string[];
+  cause?: string;               // when status === 'fail'
+  beforePhotos?: string[];      // when status === 'fail'
+  afterPhotos?: string[];       // when status === 'fail'
+}
+
+// LOCATION 类型的值结构
+export interface LocationValue {
+  latitude: number;
+  longitude: number;
+  address: string;
 }
 
 export interface TemplateFieldValue extends TemplateField {
-  value?: string | InspectionValue | string[];  // 支持字符串或对象结构
+  value?: string | InspectionValue | LocationValue | string[];
 }
 
 
@@ -96,7 +103,6 @@ export interface Ticket {
   siteId?: string;
   siteName?: string;
   siteAddress?: string;
-  steps?: TicketStep[];
   templateData?: TicketTypeTemplateWithData;
   history?: {
     departedAt?: string;
@@ -129,13 +135,6 @@ export const MOCK_TICKETS: Ticket[] = [
     createdAt: "2023-10-27T14:30:00Z",
     tags: ["offline", "network", "urgent"],
     location: "Downtown Plaza, Bay 4",
-    steps: [
-      {id: '1', label: 'Initial Inspection', completed: false},
-      {id: '2', label: 'Check Power Supply', completed: false},
-      {id: '3', label: 'Network Diagnostic', completed: false},
-      {id: '4', label: 'Module Replacement', completed: false},
-      {id: '5', label: 'Final Verification', completed: false},
-    ]
   },
   {
     id: '202601200002',
@@ -149,12 +148,6 @@ export const MOCK_TICKETS: Ticket[] = [
     assignee: "Mike Technician",
     tags: ["hardware", "connector", "safety"],
     location: "Highway 101, Rest Stop 12",
-    steps: [
-      {id: '1', label: 'Visual Assessment', completed: false},
-      {id: '2', label: 'Lock Mechanism Test', completed: false},
-      {id: '3', label: 'Replace Connector Head', completed: false},
-      {id: '4', label: 'Safety Check', completed: false},
-    ]
   },
   {
     id: '202601200003',
@@ -167,40 +160,6 @@ export const MOCK_TICKETS: Ticket[] = [
     createdAt: "2023-10-26T16:20:00Z",
     tags: ["maintenance", "routine"],
     location: "Mall of City, P2 Green Zone",
-    steps: [
-      {id: '1', label: 'Check the MDB cabinet and charging station cabinet for rust,leaks, and the condition of the door handles.', completed: false},
-      {id: '2', label: 'Check the fire extinguishers and monitor the equipment to ensure they are functioning properly.', completed: false},
-      {id: '3', label: 'Check the ground condition, drainage, and cleaning.', completed: false},
-      {
-        id: '4',
-        label: 'Check the charging gun head and charging cable for any damage or scratches. Ensure the cable ends are securely installed.',
-        completed: false
-      },
-      {id: '5', label: 'Check if the charging input line is normal.', completed: false},
-      {
-        id: '6',
-        label: 'Check that all terminals on the charging station\'s mainboard are securely plugged in and that all cables are loose.',
-        completed: false
-      },
-      {id: '7', label: 'Check if the display screen is intact and verify that all parameter settings are correct.', completed: false},
-      {id: '8', label: 'Check if the indicator lights on the charging station are functioning properly.', completed: false},
-      {id: '9', label: 'Check if all communication functions of the charging station are normal.', completed: false},
-      {id: '10', label: 'Check that the emergency stop button is intact and that it functions properly.', completed: false},
-      {
-        id: '11',
-        label: 'Check if the charging module is operating normally and if the power indicator light is flashing. There should be no red alarm light illuminated.',
-        completed: false
-      },
-      {id: '12', label: 'Check that the surge protector is in good working order and has not been damaged.', completed: false},
-      {id: '13', label: 'Check if the dust screen needs cleaning.', completed: false},
-      {id: '14', label: 'Check all historical records of the charging station for any abnormal fault data.', completed: false},
-      {
-        id: '15',
-        label: 'Check if the communication between the charging station and the backend is normal and if the data is being sent normally.',
-        completed: false
-      },
-      {id: '16', label: 'Check if the charger contactor is functioning properly and On-site test of charging action.', completed: false},
-    ]
   },
   {
     id: '202601200004',
@@ -213,11 +172,6 @@ export const MOCK_TICKETS: Ticket[] = [
     createdAt: "2023-10-25T09:15:00Z",
     tags: ["upgrade", "connectivity", "planned"],
     location: "Westside Park, Stations 1-4",
-    steps: [
-      {id: '1', label: 'Remove Old Modem', completed: false},
-      {id: '2', label: 'Install 4G Unit', completed: false},
-      {id: '3', label: 'Signal Test', completed: false},
-    ]
   },
   {
     id: '202601200005',
@@ -230,11 +184,6 @@ export const MOCK_TICKETS: Ticket[] = [
     createdAt: "2023-10-24T11:00:00Z",
     tags: ["payment", "hardware"],
     location: "Central Station, Main Entrance",
-    steps: [
-      {id: '1', label: 'Inspect Slot', completed: false},
-      {id: '2', label: 'Remove Obstruction', completed: false},
-      {id: '3', label: 'Test Card Read', completed: false},
-    ]
   },
   {
     id: '202601200006',

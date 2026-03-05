@@ -11,7 +11,7 @@ interface PhotoUploaderProps {
   existingPhotos: string[];
   label: string;
   loadingImage: string | null;
-  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix?: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
+  onAddPhoto: (source: 'camera' | 'gallery', stepId: string, fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto', isCorrectiveOrPlanned?: boolean) => void;
 }
 
 export function PhotoUploader({

@@ -33,10 +33,9 @@ import {
   getTicketTypeLabel,
   InspectionValue,
   TemplateFieldValue,
-  Ticket,
-  TicketStep
+  Ticket
 } from '../lib/data';
-import {toast} from "sonner@2.0.3";
+import {toast} from "sonner";
 import {useLanguage} from './LanguageContext';
 import {api} from '../lib/api';
 import {pickPhoto, takePhoto} from '../lib/camera';
@@ -64,66 +63,49 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
   if (!ticket) return null;
 
-  const ensureSteps = () => {
-    if (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem') return; // Corrective, Planned and Problem tickets don't use steps in this new flow
+  // =====================
+  // Template Data Initialization
+  // =====================
 
-    if (!ticket.steps || ticket.steps.length === 0) {
-      const newSteps: TicketStep[] = [
-        {
-          id: '1',
-          label: 'Check the MDB cabinet and charging station cabinet for rust, leaks, and the condition of the door handles.',
-          completed: false
-        },
-        {
-          id: '2',
-          label: 'Check the fire extinguishers and monitor the equipment to ensure they are functioning properly.',
-          completed: false
-        },
-        {id: '3', label: 'Check the ground condition, drainage, and cleaning.', completed: false},
-        {
-          id: '4',
-          label: 'Check the charging gun head and charging cable for any damage or scratches. Ensure the cable ends are securely installed.',
-          completed: false
-        },
-        {id: '5', label: 'Check if the charging input line is normal.', completed: false},
-        {
-          id: '6',
-          label: "Check that all terminals on the charging station's mainboard are securely plugged in and that all cables are loose.",
-          completed: false
-        },
-        {id: '7', label: 'Check if the display screen is intact and verify that all parameter settings are correct.', completed: false},
-        {id: '8', label: 'Check if the indicator lights on the charging station are functioning properly.', completed: false},
-        {id: '9', label: 'Check if all communication functions of the charging station are normal.', completed: false},
-        {id: '10', label: 'Check that the emergency stop button is intact and that it functions properly.', completed: false},
-        {
-          id: '11',
-          label: 'Check if the charging module is operating normally and if the power indicator light is flashing. There should be no red alarm light illuminated.',
-          completed: false
-        },
-        {id: '12', label: 'Check that the surge protector is in good working order and has not been damaged.', completed: false},
-        {id: '13', label: 'Check if the dust screen needs cleaning.', completed: false},
-        {id: '14', label: 'Check all historical records of the charging station for any abnormal fault data.', completed: false},
-        {
-          id: '15',
-          label: 'Check if the communication between the charging station and the backend is normal and if the data is being sent normally.',
-          completed: false
-        },
-        {id: '16', label: 'Check if the charger contactor is functioning properly and On-site test of charging action', completed: false},
-      ];
-      onUpdateTicket(ticket.id, {steps: newSteps});
+  // Initialize templateData from template configuration
+  const ensureTemplateData = () => {
+    // For corrective, planned, problem types, templateData will be created at creation time
+    if (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem') return;
+
+    // For preventive type, ensure templateData exists
+    if (!ticket.templateData || !ticket.templateData.steps || ticket.templateData.steps.length === 0) {
+      const template = getTemplateByType('preventive');
+      if (!template) return;
+
+      // Initialize templateData with empty values
+      const initialSteps = template.steps.map(step => ({
+        ...step,
+        description: '',
+        completed: false,
+        fields: step.fields.map(field => ({
+          ...field,
+          value: field.type === 'INSPECTION' ? undefined : (field.type === 'PHOTOS' ? [] : '')
+        })) as TemplateFieldValue[]
+      }));
+
+      onUpdateTicket(ticket.id, {
+        templateData: {
+          id: template.id,
+          name: template.name,
+          type: template.type,
+          steps: initialSteps
+        }
+      });
     }
   };
 
-  // Get steps from templateData for preventive tickets
-  const getTemplateSteps = () => {
-    if (ticket.type === 'preventive' && ticket.templateData?.steps) {
-      return ticket.templateData.steps;
-    }
-    return [];
+  // Get steps from templateData
+  const getSteps = () => {
+    return ticket.templateData?.steps || [];
   };
   // Check if a step is completed based on its INSPECTION field value
   const isStepCompleted = (stepId: string): boolean => {
-    const steps = getTemplateSteps();
+    const steps = getSteps();
     const step = steps.find(s => s.id === stepId);
     if (!step) return false;
 
@@ -142,9 +124,10 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
     }
     return false;
   };
+
   // Check if all steps are completed
   const areAllStepsCompleted = (): boolean => {
-    const steps = getTemplateSteps();
+    const steps = getSteps();
     if (steps.length === 0) return true;
     return steps.every(step => isStepCompleted(step.id));
   };
@@ -178,8 +161,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   const handleArrive = async () => {
     try {
       await api.arriveTicket(ticket.id);
-      ensureSteps();
-      // 重新获取工单详情以获取最新状态
+      ensureTemplateData();
       const updatedTicket = await api.getTicket(ticket.id);
       onUpdateTicket(ticket.id, updatedTicket, {skipApi: true});
       toast.success("Arrival recorded - Start working on steps");
@@ -189,86 +171,56 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
     }
   };
 
-  const handleStepToggle = async (stepId: string, checked: boolean) => {
-    const step = ticket.steps?.find(s => s.id === stepId);
-    if (!step) return;
+  // Handle inspection field value change (for preventive tickets)
+  const handleInspectionChange = (stepId: string, fieldId: string, value: InspectionValue) => {
+    const steps = getSteps();
+    const updatedSteps = steps.map(step => {
+      if (step.id === stepId) {
+        return {
+          ...step,
+          completed: isStepCompleted(stepId),
+          fields: step.fields.map(field => {
+            if (field.id === fieldId) {
+              return { ...field, value };
+            }
+            return field;
+          })
+        };
+      }
+      return step;
+    });
 
-    try {
-      await api.updateTicketStep(ticket.id, stepId, {completed: checked});
-      const updatedSteps = ticket.steps?.map(s =>
-        s.id === stepId ? {...s, completed: checked} : s
-      );
-      onUpdateTicket(ticket.id, {steps: updatedSteps});
-    } catch (error) {
-      console.error("Failed to update step:", error);
-    }
-  };
-
-  const handleStepDescription = async (stepId: string, desc: string) => {
-    const step = ticket.steps?.find(s => s.id === stepId);
-    if (!step) return;
-
-    try {
-      await api.updateTicketStep(ticket.id, stepId, {description: desc});
-      const updatedSteps = ticket.steps?.map(s =>
-        s.id === stepId ? {...s, description: desc} : s
-      );
-      onUpdateTicket(ticket.id, {steps: updatedSteps});
-    } catch (error) {
-      console.error("Failed to update step description:", error);
-    }
-  };
-
-  const handlePreventiveStepUpdate = async (stepId: string, updates: Partial<TicketStep>) => {
-    const step = ticket.steps?.find(s => s.id === stepId);
-    if (!step) return;
-
-    // 计算完成状态
-    const newStep = {...step, ...updates};
-    let isCompleted = false;
-    if (newStep.status === 'na') {
-      isCompleted = true;
-    } else if (newStep.status === 'pass') {
-      if (newStep.photoUrl || (newStep.photoUrls && newStep.photoUrls.length > 0)) isCompleted = true;
-    } else if (newStep.status === 'fail') {
-      const hasBefore = newStep.beforePhotoUrl || (newStep.beforePhotoUrls && newStep.beforePhotoUrls.length > 0);
-      const hasAfter = newStep.afterPhotoUrl || (newStep.afterPhotoUrls && newStep.afterPhotoUrls.length > 0);
-      if (newStep.cause && hasBefore && hasAfter) isCompleted = true;
-    }
-    newStep.completed = isCompleted;
-
-    try {
-      await api.updateTicketStep(ticket.id, stepId, {
-        status: newStep.status,
-        cause: newStep.cause,
-        photoUrl: newStep.photoUrl,
-        photoUrls: newStep.photoUrls,
-        beforePhotoUrl: newStep.beforePhotoUrl,
-        beforePhotoUrls: newStep.beforePhotoUrls,
-        afterPhotoUrl: newStep.afterPhotoUrl,
-        afterPhotoUrls: newStep.afterPhotoUrls,
-        completed: newStep.completed,
-        timestamp: newStep.timestamp,
+    if (!ticket.templateData) {
+      const template = getTemplateByType(ticket.type);
+      if (template) {
+        onUpdateTicket(ticket.id, {
+          templateData: {
+            id: template.id,
+            name: template.name,
+            type: template.type,
+            steps: updatedSteps
+          }
+        });
+      }
+    } else {
+      onUpdateTicket(ticket.id, {
+        templateData: {
+          ...ticket.templateData,
+          steps: updatedSteps
+        }
       });
-
-      const updatedSteps = ticket.steps?.map(s =>
-        s.id === stepId ? newStep : s
-      );
-      onUpdateTicket(ticket.id, {steps: updatedSteps});
-    } catch (error) {
-      console.error("Failed to update step:", error);
     }
   };
 
+  // Handle photo upload for templateData structure
   const handleAddPhoto = async (
     source: 'camera' | 'gallery',
     stepId: string,
-    fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' = 'photo',
+    fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto' = 'photo',
     isCorrectiveOrPlanned: boolean = false
   ) => {
     setLoadingImage(stepId + fieldPrefix);
     try {
-      // 使用 Capacitor Camera 替代 HTML file input
       const photo = source === 'camera' ? await takePhoto() : await pickPhoto();
 
       if (!photo) {
@@ -276,7 +228,6 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         return;
       }
 
-      // 将 base64 DataUrl 转换为 File 对象
       const response = await fetch(photo);
       const blob = await response.blob();
       const file = new File([blob], `photo-${Date.now()}.jpg`, {type: 'image/jpeg'});
@@ -288,29 +239,43 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       console.log('[DEBUG] handleAddPhoto - isCorrectiveOrPlanned:', isCorrectiveOrPlanned);
 
       if (isCorrectiveOrPlanned) {
-        // 更新本地状态 - 使用 fieldPrefix + 'Urls' 作为 key
-        const fieldKey = `${fieldPrefix}Urls`;
-        console.log('[DEBUG] handleAddPhoto - fieldKey:', fieldKey);
-        const existingPhotos = localFieldValues[fieldKey] || (ticket as any)[fieldKey] || [];
-        console.log('[DEBUG] handleAddPhoto - existingPhotos before:', existingPhotos);
-        setLocalFieldValues(prev => {
-          const newValues = [...(prev[fieldKey] || existingPhotos), fullUrl];
-          console.log('[DEBUG] handleAddPhoto - new localFieldValues:', newValues);
-          return {
-            ...prev,
-            [fieldKey]: newValues
-          };
-        });
+        const reverseFieldPrefixMap: Record<string, string> = {
+          'beforePhoto': 'field-before-photos',
+          'afterPhoto': 'field-after-photos',
+          'feedbackPhoto': 'field-feedback-photos',
+          'problemPhoto': 'field-problem-photos'
+        };
+
+        const fieldId = reverseFieldPrefixMap[fieldPrefix] || fieldPrefix;
+        const existingPhotos = localFieldValues[fieldId] || [];
+        const newPhotos = Array.isArray(existingPhotos) ? existingPhotos : [];
+        setLocalFieldValues(prev => ({
+          ...prev,
+          [fieldId]: [...newPhotos, fullUrl]
+        }));
       } else {
-        const step = ticket.steps?.find(s => s.id === stepId);
-        // 根据 fieldPrefix 使用正确的字段名
-        const photoField = fieldPrefix === 'beforePhoto' ? 'beforePhotoUrls' :
-          fieldPrefix === 'afterPhoto' ? 'afterPhotoUrls' : 'photoUrls';
-        const existingPhotos = step?.[photoField] || (step?.[`${fieldPrefix}Url`] ? [step[`${fieldPrefix}Url`]] : []);
-        handlePreventiveStepUpdate(stepId, {
-          [photoField]: [...existingPhotos, uploaded.url],
-          timestamp: new Date().toISOString()
-        });
+        const steps = getSteps();
+        const step = steps.find(s => s.id === stepId);
+        if (!step) return;
+
+        const inspectionField = step.fields.find(f => f.type === 'INSPECTION');
+        if (!inspectionField) return;
+
+        const currentValue = inspectionField.value as InspectionValue | undefined;
+        const newValue: InspectionValue = currentValue || { status: undefined };
+
+        if (fieldPrefix === 'evidencePhoto') {
+          const existingPhotos = currentValue?.evidencePhotos || [];
+          newValue.evidencePhotos = [...existingPhotos, fullUrl];
+        } else if (fieldPrefix === 'beforePhoto') {
+          const existingPhotos = currentValue?.beforePhotos || [];
+          newValue.beforePhotos = [...existingPhotos, fullUrl];
+        } else if (fieldPrefix === 'afterPhoto') {
+          const existingPhotos = currentValue?.afterPhotos || [];
+          newValue.afterPhotos = [...existingPhotos, fullUrl];
+        }
+
+        handleInspectionChange(stepId, inspectionField.id, newValue);
       }
 
       toast.success('Photo uploaded successfully');
@@ -329,42 +294,21 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   // Get field value from ticket using legacy field name
   // Get field value from ticket using templateData or legacy field
   const getFieldValue = (fieldId: string): any => {
-    // 优先从本地状态读取
-    console.log('[DEBUG] getFieldValue - fieldId:', fieldId);
-    console.log('[DEBUG] getFieldValue - localFieldValues:', localFieldValues);
-    // 优先从本地状态读取
+    // 1) 本地缓存
     if (localFieldValues[fieldId] !== undefined) {
-      console.log('[DEBUG] getFieldValue - found in localFieldValues:', localFieldValues[fieldId]);
       return localFieldValues[fieldId];
     }
-    // 检查 fieldPrefix + 'Urls' 格式的 key
-    const reverseFieldPrefixMap: Record<string, string> = {
-      'field-before-photos': 'beforePhotoUrls',
-      'field-after-photos': 'afterPhotoUrls',
-      'field-feedback-photos': 'feedbackPhotoUrls',
-      'field-problem-photos': 'problemPhotoUrls'
-    };
-    const fieldKey = reverseFieldPrefixMap[fieldId];
-    if (fieldKey && localFieldValues[fieldKey] !== undefined) {
-      console.log('[DEBUG] getFieldValue - found in localFieldValues with fieldKey:', fieldKey, localFieldValues[fieldKey]);
-      return localFieldValues[fieldKey];
-    }
-    // 其次从 templateData 中查找
+    // 2) 模板数据中查找
     if (ticket.templateData?.steps) {
       for (const step of ticket.templateData.steps) {
-        const field = step.fields.find(f => f.id === fieldId);
+        const field = step.fields.find((f: any) => f.id === fieldId);
         if (field) {
-          console.log('[DEBUG] getFieldValue - found in templateData field.value:', field.value);
+          // PHOTOS 使用 field.value（通常为 string[]）作为值; 其他类型也通过 field.value 读取
           return field.value;
         }
       }
     }
-    // Fallback 到旧字段（向后兼容）
-    const legacyField = FIELD_ID_TO_LEGACY_FIELD[fieldId];
-    console.log('[DEBUG] getFieldValue - legacyField:', legacyField);
-    if (legacyField) {
-      return (ticket as any)[legacyField];
-    }
+    // 3) 未找到返回 undefined
     return undefined;
   };
 
@@ -388,7 +332,8 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         const value = getFieldValue(field.id);
         if (field.required) {
           if (field.type === 'PHOTOS') {
-            if (!value || (Array.isArray(value) && value.length === 0)) {
+            const photoArray = Array.isArray(value) ? value : [];
+            if (photoArray.length === 0) {
               return false;
             }
           } else {
@@ -431,7 +376,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
               const value = localFieldValues[field.id];
               return {
                 ...field,
-                ...(Array.isArray(value) ? {values: value} : {value: value}),
+                value: value,
                 timestamp: new Date().toISOString()
               };
             }
@@ -459,7 +404,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       <div className="space-y-2">
         <div className="flex justify-between border-b pb-2">
           <span className="text-slate-500">Steps Completed:</span>
-          <span className="font-medium">{getTemplateSteps().filter(s => isStepCompleted(s.id)).length}/{getTemplateSteps().length}</span>
+          <span className="font-medium">{getSteps().filter(s => isStepCompleted(s.id)).length}/{getSteps().length}</span>
         </div>
         {ticket.type !== 'problem' && (
           <>
@@ -478,10 +423,10 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       </div>
 
       {/* Preventive Maintenance Summary */}
-      {ticket.type === 'preventive' && getTemplateSteps().length > 0 && (
+      {ticket.type === 'preventive' && getSteps().length > 0 && (
         <div className="space-y-3 pt-2 border-t">
           <h4 className="font-medium text-slate-900 text-xs uppercase tracking-wider">Findings</h4>
-          {getTemplateSteps().map(step => {
+          {getSteps().map(step => {
             const inspectionField = step.fields.find(f => f.type === 'INSPECTION') as TemplateFieldValue | undefined;
             const inspectionValue = inspectionField?.value as InspectionValue | undefined;
             const status = inspectionValue?.status;
@@ -512,7 +457,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                 )}
                 {status === 'pass' && (inspectionValue?.evidencePhotos || []).length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-2">
-                    {(inspectionValue.evidencePhotos || []).map((url, i) => (
+                    {(inspectionValue?.evidencePhotos || []).map((url, i) => (
                       <img key={i} src={url} className="w-10 h-10 rounded object-cover border" title="Evidence"/>
                     ))}
                   </div>
@@ -523,7 +468,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
         </div>
       )}
 
-      {/* Corrective Maintenance Summary */}
+      // Corrective Maintenance Summary
       {ticket.type === 'corrective' && (
         <div className="space-y-3 pt-2 border-t text-xs">
           <div className="space-y-1">
@@ -651,9 +596,9 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
           </div>
         );
 
-      case 'arrived':
-        // Dynamic form for Corrective, Planned, Problem types
+case 'arrived':
         const template = getTemplateByType(ticket.type);
+
         if (template && (ticket.type === 'corrective' || ticket.type === 'planned' || ticket.type === 'problem')) {
           const typeColors = {
             corrective: {
@@ -691,14 +636,14 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
             <div className="space-y-6">
               <div className={`flex items-center justify-between ${colors.bg} p-4 rounded-lg ${colors.border}`}>
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 ${colors.iconBg} rounded-full flex items-center justify-center ${colors.iconColor}`}>
+                  <div className={`w-10 h-10 ${colors.iconBg} rounded-full flex items-center justify-center ${colors.iconColor}`}>
                     <IconComponent className="w-5 h-5"/>
                   </div>
                   <div>
                     <h3 className={`font-semibold ${colors.titleColor}`}>On Site - {template.name}</h3>
-                    <p className={`text-xs ${colors.subTitleColor}`}>Arrived
-                      at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
+                    <p className={`text-xs ${colors.subTitleColor}`}>
+                      Arrived at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -707,7 +652,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                 <Button
                   variant="outline"
                   className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 flex items-center gap-2"
-                  onClick={() => onViewRelatedTicket?.(ticket.relatedTicketId)}
+                  onClick={() => onViewRelatedTicket?.(ticket.relatedTicketId || '')}
                 >
                   <Wrench className="w-4 h-4"/>
                   View Related Corrective Ticket
@@ -719,7 +664,6 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                 <div className="space-y-4">
                   {template.steps[0]?.fields.map(field => (
                     <DynamicFieldRenderer
-                      key={field.id}
                       field={field}
                       value={getFieldValue(field.id)}
                       onChange={handleFieldChange}
@@ -733,17 +677,18 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
 
               <Button
                 size="lg"
-                className={`w-full ${isFormComplete() ? colors.btnColor : 'bg-slate-300 cursor-not-allowed'}`}
+                className={`w-full ${isFormComplete() ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
                 onClick={handleFinish}
                 disabled={!isFormComplete()}
               >
-                Finish {ticket.type === 'problem' ? 'Management' : 'Maintenance'}
+                Finish Work
               </Button>
             </div>
           );
         }
 
         if (ticket.type === 'preventive') {
+          const steps = getSteps();
           return (
             <div className="space-y-6">
               <div className="flex items-center justify-between bg-green-50 p-4 rounded-lg border border-green-100">
@@ -752,11 +697,17 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                     <ShieldCheck className="w-5 h-5"/>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-green-900">On Site - Preventive Maintenance</h3>
-                    <p className="text-xs text-green-700">Arrived
-                      at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
+                    <h3 className="font-semibold text-green-900">On Site - Work in Progress</h3>
+                    <p className="text-xs text-green-700">
+                      Arrived at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}
+                    </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium text-slate-700">Progress</span>
+                <span className="font-medium">{steps.filter(s => isStepCompleted(s.id)).length}/{steps.length}</span>
               </div>
 
               <div className="space-y-4">
@@ -766,80 +717,93 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
                 </h3>
 
                 <div className="space-y-4">
-                  {ticket.templateData.steps?.map((step) => (
-                    <div key={step.id}
-                         className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-slate-900">{step.name}</label>
-                          {step.completed &&
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Completed</Badge>}
-                        </div>
+                  {steps.map((step) => {
+                    const inspectionField = step.fields[0];
+                    const inspectionValue = inspectionField?.value as InspectionValue;
+                    if (!inspectionField || inspectionField.type !== 'INSPECTION') return null;
 
-                        <ToggleGroup type="single" value={(step.fields[0].value as InspectionValue).status || ''}
-                                     onValueChange={(val) => handlePreventiveStepUpdate(step.id, {status: val as any})}
-                                     className="justify-start">
-                          <ToggleGroupItem value="pass" aria-label="Pass"
-                                           className="data-[state=on]:bg-green-100 data-[state=on]:text-green-700 gap-2">
-                            <ThumbsUp className="w-4 h-4"/> Pass
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="fail" aria-label="Not Pass"
-                                           className="data-[state=on]:bg-red-100 data-[state=on]:text-red-700 gap-2">
-                            <ThumbsDown className="w-4 h-4"/> Not Pass
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="na" aria-label="N/A"
-                                           className="data-[state=on]:bg-slate-100 data-[state=on]:text-slate-700 gap-2">
-                            <MinusCircle className="w-4 h-4"/> N/A
-                          </ToggleGroupItem>
-                        </ToggleGroup>
-
-                        {step.status === 'pass' && (
-                          <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
-                            <PhotoUploader
-                              stepId={step.id}
-                              fieldPrefix="photo"
-                              isCorrectiveOrPlanned={false}
-                              existingPhotos={(step.fields[0].value as InspectionValue).evidencePhotos || []}
-                              label="Evidence Photos"
-                              loadingImage={loadingImage}
-                              onAddPhoto={handleAddPhoto}
-                            />
+                    return (
+                      <div key={step.id}
+                           className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium text-slate-900">{step.name}</label>
+                            {step.completed &&
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Completed</Badge>}
                           </div>
-                        )}
 
-                        {step.status === 'fail' && (
-                          <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
-                            <Textarea
-                              placeholder="Describe the cause of failure..."
-                              value={(step.fields[0].value as InspectionValue).cause || ''}
-                              onChange={(e) => handlePreventiveStepUpdate(step.id, {cause: e.target.value})}
-                              className="text-sm min-h-[80px]"
-                            />
-                            <div className="grid grid-cols-2 gap-4">
+                          <ToggleGroup type="single" value={inspectionValue?.status || ''}
+                                       onValueChange={(val) => {
+                                         const newValue: InspectionValue = inspectionValue || { status: undefined };
+                                         newValue.status = val as 'pass' | 'fail' | 'na';
+                                         handleInspectionChange(step.id, inspectionField.id, newValue);
+                                       }}
+                                       className="justify-start">
+                            <ToggleGroupItem value="pass" aria-label="Pass"
+                                             className="data-[state=on]:bg-green-100 data-[state=on]:text-green-700 gap-2">
+                              <ThumbsUp className="w-4 h-4"/> Pass
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="fail" aria-label="Not Pass"
+                                             className="data-[state=on]:bg-red-100 data-[state=on]:text-red-700 gap-2">
+                              <ThumbsDown className="w-4 h-4"/> Not Pass
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="na" aria-label="N/A"
+                                             className="data-[state=on]:bg-slate-100 data-[state=on]:text-slate-700 gap-2">
+                              <MinusCircle className="w-4 h-4"/> N/A
+                            </ToggleGroupItem>
+                          </ToggleGroup>
+
+                          {inspectionValue?.status === 'pass' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
                               <PhotoUploader
                                 stepId={step.id}
-                                fieldPrefix="beforePhoto"
+                                fieldPrefix="evidencePhoto"
                                 isCorrectiveOrPlanned={false}
-                                existingPhotos={(step.fields[0].value as InspectionValue).beforePhotos || []}
-                                label="Before"
-                                loadingImage={loadingImage}
-                                onAddPhoto={handleAddPhoto}
-                              />
-                              <PhotoUploader
-                                stepId={step.id}
-                                fieldPrefix="afterPhoto"
-                                isCorrectiveOrPlanned={false}
-                                existingPhotos={(step.fields[0].value as InspectionValue).afterPhotos || []}
-                                label="After"
+                                existingPhotos={inspectionValue?.evidencePhotos || []}
+                                label="Evidence Photos"
                                 loadingImage={loadingImage}
                                 onAddPhoto={handleAddPhoto}
                               />
                             </div>
-                          </div>
-                        )}
+                          )}
+
+                          {inspectionValue?.status === 'fail' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 space-y-3">
+                              <Textarea
+                                placeholder="Describe the cause of failure..."
+                                value={inspectionValue?.cause || ''}
+                                onChange={(e) => {
+                                  const newValue: InspectionValue = { ...inspectionValue, status: 'fail', cause: e.target.value };
+                                  handleInspectionChange(step.id, inspectionField.id, newValue);
+                                }}
+                                className="text-sm min-h-[80px]"
+                              />
+                              <div className="grid grid-cols-2 gap-4">
+                                <PhotoUploader
+                                  stepId={step.id}
+                                  fieldPrefix="beforePhoto"
+                                  isCorrectiveOrPlanned={false}
+                                  existingPhotos={inspectionValue?.beforePhotos || []}
+                                  label="Before"
+                                  loadingImage={loadingImage}
+                                  onAddPhoto={handleAddPhoto}
+                                />
+                                <PhotoUploader
+                                  stepId={step.id}
+                                  fieldPrefix="afterPhoto"
+                                  isCorrectiveOrPlanned={false}
+                                  existingPhotos={inspectionValue?.afterPhotos || []}
+                                  label="After"
+                                  loadingImage={loadingImage}
+                                  onAddPhoto={handleAddPhoto}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -855,109 +819,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
           );
         }
 
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between bg-green-50 p-4 rounded-lg border border-green-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                  <ShieldCheck className="w-5 h-5"/>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-green-900">On Site - Work in Progress</h3>
-                  <p className="text-xs text-green-700">Arrived
-                    at {ticket.history?.arrivedAt ? new Date(ticket.history.arrivedAt).toLocaleTimeString() : 'Just now'}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <CheckSquare className="w-4 h-4"/>
-                Required Steps
-              </h3>
-
-              <div className="space-y-4">
-                {ticket.templateData.steps?.map((step, index) => (
-                  <div key={step.id}
-                       className={`border rounded-xl p-4 transition-all ${step.completed ? 'bg-slate-50 border-slate-200' : 'bg-white border-indigo-100 shadow-sm'}`}>
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id={`step-${step.id}`}
-                        checked={step.completed}
-                        disabled
-                        className={`mt-1 ${step.completed ? "data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 opacity-100" : ""}`}
-                      />
-                      <div className="flex-1 space-y-3">
-                        <label
-                          htmlFor={`step-${step.id}`}
-                          className={`text-sm font-medium leading-none block transition-colors ${step.completed ? 'text-green-700' : 'text-slate-900'}`}
-                        >
-                          {step.name}
-                        </label>
-
-                        {!step.completed && (
-                          <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                            <Textarea
-                              placeholder="Add notes/description..."
-                              value={step.description || ''}
-                              onChange={(e) => handleStepDescription(step.id, e.target.value)}
-                              className="text-sm min-h-[80px]"
-                            />
-                            <div className="flex items-center justify-between gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs gap-2 h-9"
-                                onClick={() => handleAddPhoto('gallery', step.id, 'photo')}
-                                disabled={loadingImage === step.id}
-                              >
-                                <Camera className="w-3 h-3"/>
-                                {step.fields[0].value ? 'Retake Photo' : 'Add Photo'}
-                              </Button>
-
-                              <Button
-                                size="sm"
-                                className="text-xs gap-2 h-9 bg-green-600 hover:bg-green-700 text-white"
-                                onClick={() => handleStepToggle(step.id, true)}
-                              >
-                                <CheckCircle2 className="w-3 h-3"/>
-                                Complete
-                              </Button>
-                            </div>
-                            {/* 这里根据配置的表单项来进行数据展示 这里改成如果检查到 location 类型的 field 数据*/}
-                            {
-                              step.fields.map(field => {
-                                if (field.type == "LOCATION") {
-                                  return (
-                                    <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1 justify-end">
-                                      <MapPin className="w-3 h-3"/>
-                                      Loc: {field.value}
-                                    </div>
-                                  )
-                                }
-                              })
-                            }
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Button
-              size="lg"
-              className={`w-full ${areAllStepsCompleted() ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-300 cursor-not-allowed'}`}
-              onClick={handleFinish}
-              disabled={!areAllStepsCompleted()}
-            >
-              Finish Work
-            </Button>
-          </div>
-        );
-
-      case 'review':
+        return null;
         return (
           <div className="p-6 bg-purple-50 border border-purple-100 rounded-xl flex flex-col items-center text-center space-y-4">
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-2">

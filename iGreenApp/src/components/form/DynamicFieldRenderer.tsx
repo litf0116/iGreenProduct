@@ -40,6 +40,19 @@ export function DynamicFieldRenderer({field, value, onChange, ticketId, loadingI
         </div>
       );
 
+    case 'NUMBER':
+      return (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-900">{field.name}</label>
+          <Input
+            type="number"
+            placeholder={field.description || `Enter ${field.name.toLowerCase()}...`}
+            value={value !== undefined ? value : (field.value || '')}
+            onChange={(e) => onChange(field.id, e.target.value)}
+          />
+        </div>
+      );
+
     case 'DATE':
       return (
         <div className="space-y-2">
@@ -52,16 +65,54 @@ export function DynamicFieldRenderer({field, value, onChange, ticketId, loadingI
         </div>
       );
 
+    case 'LOCATION':
+      return (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-900">{field.name}</label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Select location..."
+              value={value?.address || (value && typeof value === 'string' ? value : '')}
+              readOnly
+              className="bg-slate-50 cursor-pointer"
+              onClick={() => {
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    const { latitude, longitude } = position.coords;
+                    onChange(field.id, {
+                      latitude,
+                      longitude,
+                      address: `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`
+                    });
+                  },
+                  (error) => {
+                    console.error('Location error:', error);
+                    alert('Failed to get location. Please enable GPS.');
+                  },
+                  { enableHighAccuracy: true }
+                );
+              }}
+            />
+          </div>
+          <p className="text-xs text-slate-500">Tap to capture current GPS location</p>
+        </div>
+      );
+
     case 'PHOTOS': {
       const fieldPrefix = fieldPrefixMap[field.id] || 'problemPhoto';
       console.log('[DEBUG] DynamicFieldRenderer PHOTOS - field.id:', field.id, 'fieldPrefix:', fieldPrefix);
       console.log('[DEBUG] DynamicFieldRenderer PHOTOS - value:', value);
+
+      // value 已经是 string[] 类型，不需要转换
+      const photoArray = Array.isArray(value) ? value : [];
+
       return (
         <PhotoUploader
           stepId={String(ticketId)}
           fieldPrefix={fieldPrefix}
           isCorrectiveOrPlanned={true}
-          existingPhotos={value !== undefined ? (value || []) : (field.values || [])}
+          existingPhotos={photoArray}
           label={field.name}
           loadingImage={loadingImage}
           onAddPhoto={onAddPhoto}
@@ -76,7 +127,6 @@ export function DynamicFieldRenderer({field, value, onChange, ticketId, loadingI
           <InspectionField
             value={value !== undefined ? value : field.value}
             onChange={(val) => onChange(field.id, val)}
-            ticketId={String(ticketId)}
             stepId={String(ticketId)}
             loadingImage={loadingImage}
             onAddPhoto={onAddPhoto}
