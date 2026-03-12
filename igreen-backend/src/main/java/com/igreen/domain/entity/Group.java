@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.igreen.common.typehandler.GroupStatusTypeHandler;
 import com.igreen.domain.enums.GroupStatus;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class Group {
     @JsonIgnore
     private String tags;
 
+    @TableField(typeHandler = GroupStatusTypeHandler.class)
     private GroupStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,6 +1,8 @@
 package com.igreen.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.igreen.common.typehandler.SiteStatusTypeHandler;
 import com.igreen.domain.enums.SiteStatus;
 import lombok.*;
 
@@ -18,6 +20,7 @@ public class Site {
     private String name;
     private String address;
     private String level;
+    @TableField(typeHandler = SiteStatusTypeHandler.class)
     private SiteStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

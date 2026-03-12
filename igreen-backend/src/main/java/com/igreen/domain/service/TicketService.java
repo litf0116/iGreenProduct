@@ -12,6 +12,7 @@ import com.igreen.common.result.PageResult;
 import com.igreen.domain.dto.*;
 import com.igreen.domain.entity.*;
 import com.igreen.domain.enums.CommentType;
+import com.igreen.domain.enums.TicketStatus;
 import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class TicketService {
             relatedTicketIdsJson = String.join(",", request.relatedTicketIds());
         }
 
-        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status("OPEN").problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
+        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status(TicketStatus.OPEN).problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
 
@@ -150,7 +151,7 @@ public class TicketService {
             ticket.setSiteId(request.siteId());
         }
         if (request.status() != null) {
-            ticket.setStatus(request.status());
+            ticket.setStatus(TicketStatus.fromValue(request.status()));
         }
         if (request.priority() != null) {
             ticket.setPriority(request.priority());
@@ -218,14 +219,14 @@ public class TicketService {
 
         // OPEN/ASSIGNED 状态：用户组成员可抢单
         // 抢单后：assignedTo(组ID)不变，设置acceptedUserId
-        if ("OPEN".equals(ticket.getStatus()) || "ASSIGNED".equals(ticket.getStatus())) {
+        if (ticket.getStatus() == TicketStatus.OPEN || ticket.getStatus() == TicketStatus.ASSIGNED) {
             // 设置抢单用户ID，assignedTo保持不变（仍为组ID）
             ticket.setAcceptedUserId(userId);
         } else {
             throw new BusinessException(ErrorCode.TICKET_ALREADY_ACCEPTED);
         }
 
-        ticket.setStatus("ACCEPTED");
+        ticket.setStatus(TicketStatus.ACCEPTED);
         ticket.setAccepted(true);
         ticket.setAcceptedAt(LocalDateTime.now());
 
@@ -251,7 +252,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus("CANCELLED");
+        ticket.setStatus(TicketStatus.CANCELLED);
         ticket.setAccepted(false);
 
         TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(CommentType.DECLINE).ticketId(id).userId(userId).build();
@@ -273,7 +274,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_CREATOR);
         }
 
-        ticket.setStatus("CANCELLED");
+        ticket.setStatus(TicketStatus.CANCELLED);
 
         TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.reason()).type(CommentType.CANCEL).ticketId(id).userId(userId).build();
         ticketCommentMapper.insert(comment);
@@ -297,11 +298,11 @@ public class TicketService {
         }
 
         // Allow depart from ASSIGNED or ACCEPTED status
-        if (!"ASSIGNED".equals(ticket.getStatus()) && !"ACCEPTED".equals(ticket.getStatus())) {
+        if (ticket.getStatus() != TicketStatus.DEPARTED && ticket.getStatus() != TicketStatus.ACCEPTED) {
             throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
         }
 
-        ticket.setStatus("DEPARTED");
+        ticket.setStatus(TicketStatus.DEPARTED);
         ticket.setDepartureAt(LocalDateTime.now());
         if (departurePhoto != null) {
             ticket.setDeparturePhoto(departurePhoto);
@@ -326,11 +327,11 @@ public class TicketService {
         }
 
         // Allow arrive from DEPARTED status
-        if (!"DEPARTED".equals(ticket.getStatus())) {
+        if (ticket.getStatus() != TicketStatus.DEPARTED) {
             throw new BusinessException(ErrorCode.TICKET_INVALID_STATUS);
         }
 
-        ticket.setStatus("ARRIVED");
+        ticket.setStatus(TicketStatus.ARRIVED);
         ticket.setArrivalAt(LocalDateTime.now());
         if (arrivalPhoto != null) {
             ticket.setArrivalPhoto(arrivalPhoto);
@@ -455,7 +456,7 @@ public class TicketService {
             throw new BusinessException(ErrorCode.NOT_ASSIGNEE);
         }
 
-        ticket.setStatus("COMPLETED");
+        ticket.setStatus(TicketStatus.COMPLETED);
         if (completionPhoto != null) {
             ticket.setCompletionPhoto(completionPhoto);
         }
@@ -473,7 +474,7 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // 检查工单状态是否为 ARRIVED（工程师已到达现场）
-        if (!"ARRIVED".equals(ticket.getStatus())) {
+        if (ticket.getStatus() != TicketStatus.ARRIVED) {
             throw new BusinessException("工单状态不正确，无法提交审核");
         }
 
@@ -488,7 +489,7 @@ public class TicketService {
         }
 
         // 将工单状态设置为 REVIEW（待审核）
-        ticket.setStatus("REVIEW");
+        ticket.setStatus(TicketStatus.REVIEW);
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
@@ -501,12 +502,12 @@ public class TicketService {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
         // 检查工单状态是否为 ARRIVED（工程师已到达现场）
-        if (!"ARRIVED".equals(ticket.getStatus())) {
+        if (ticket.getStatus() != TicketStatus.ARRIVED) {
             throw new BusinessException("工单状态不正确，无法提交审核");
         }
 
         // 将工单状态设置为 REVIEW（待审核）
-        ticket.setStatus("REVIEW");
+        ticket.setStatus(TicketStatus.REVIEW);
         ticketMapper.updateById(ticket);
 
         User creator = ticket.getCreator();
@@ -522,10 +523,10 @@ public class TicketService {
         if (cause != null && !cause.trim().isEmpty()) {
             // 有原因 → 管理员拒绝，退回给工程师，状态回退到 ARRIVED
             ticket.setCause(cause);
-            ticket.setStatus("ARRIVED");
+            ticket.setStatus(TicketStatus.ARRIVED);
         } else {
             // 无原因 → 管理员审核通过，工单完成
-            ticket.setStatus("COMPLETED");
+ticket.setStatus(TicketStatus.COMPLETED);
         }
 
         ticketMapper.updateById(ticket);
@@ -565,7 +566,8 @@ public class TicketService {
         try {
             List<Ticket> tickets = ticketMapper.selectByAcceptedUserId(userId);
             if (status != null && !status.isEmpty()) {
-                tickets = tickets.stream().filter(t -> status.equalsIgnoreCase(t.getStatus())).collect(Collectors.toList());
+                TicketStatus targetStatus = TicketStatus.fromValue(status);
+                tickets = tickets.stream().filter(t -> t.getStatus() == targetStatus).collect(Collectors.toList());
             }
 
             List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
@@ -675,7 +677,7 @@ public class TicketService {
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().toLowerCase() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
     }
 
     @Transactional

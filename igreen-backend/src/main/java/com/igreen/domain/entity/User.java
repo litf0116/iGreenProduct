@@ -2,6 +2,7 @@ package com.igreen.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.igreen.common.typehandler.UserStatusTypeHandler;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
 import lombok.*;
@@ -25,6 +26,7 @@ public class User {
     private String phone;
     private String hashedPassword;
     private UserRole role;
+    @TableField(typeHandler = UserStatusTypeHandler.class)
     private UserStatus status;
     private String groupId;
     private String country;

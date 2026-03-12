@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.igreen.common.typehandler.TicketStatusTypeHandler;
+import com.igreen.domain.enums.TicketStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +27,8 @@ public class Ticket {
     private String title;
     private String description;
     private String type;
-    private String status;
+    @TableField(typeHandler = TicketStatusTypeHandler.class)
+    private TicketStatus status;
     private String priority;
     private String siteId;
     private String templateId;
