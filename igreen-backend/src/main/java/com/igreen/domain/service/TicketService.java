@@ -99,7 +99,6 @@ public class TicketService {
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
         PageHelper.startPage(page, size);
-        final String keywordLower = keyword != null ? keyword.toLowerCase() : null;
         try {
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
             if (type != null) {
@@ -117,10 +116,20 @@ public class TicketService {
             if (createdAfter != null) {
                 wrapper.ge(Ticket::getCreatedAt, createdAfter);
             }
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String keywordLower = keyword.trim().toLowerCase();
+                wrapper.and(w -> w
+                    .like(Ticket::getTitle, keywordLower)
+                    .or()
+                    .like(Ticket::getDescription, keywordLower)
+                    .or()
+                    .apply("CAST(id AS CHAR) LIKE {0}", "%" + keywordLower + "%")
+                );
+            }
 
             List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
-            List<TicketResponse> ticketResponses = tickets.stream().filter(ticket -> keywordLower == null || (ticket.getTitle() != null && ticket.getTitle().toLowerCase().contains(keywordLower)) || (ticket.getDescription() != null && ticket.getDescription().toLowerCase().contains(keywordLower))).map(ticket -> {
+            List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
                 User creator = userMapper.selectById(ticket.getCreatedBy());
                 Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
                 Site site = siteMapper.selectById(ticket.getSiteId());
