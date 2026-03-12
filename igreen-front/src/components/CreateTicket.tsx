@@ -218,7 +218,7 @@ export function CreateTicket(props: CreateTicketProps) {
             <Card className="p-6 bg-secondary border-primary">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <Label>{t("ticketTitle")}</Label>
+                        <Label required>{t("ticketTitle")}</Label>
                         <Input
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
@@ -238,7 +238,7 @@ export function CreateTicket(props: CreateTicketProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>{t("selectTemplate")}</Label>
+                        <Label required>{t("selectTemplate")}</Label>
                         <Select value={templateId} onValueChange={setTemplateId} required>
                             <SelectTrigger>
                                 <SelectValue placeholder={t("selectTemplate")}/>
@@ -286,7 +286,7 @@ export function CreateTicket(props: CreateTicketProps) {
 
                         {!isProblemTicket && (
                             <div className="space-y-2">
-                                <Label>{t("site")}</Label>
+                                <Label required>{t("site")}</Label>
                                 <Select value={site} onValueChange={setSite} required={!isProblemTicket}>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t("selectSite")}/>
@@ -305,7 +305,7 @@ export function CreateTicket(props: CreateTicketProps) {
                         {isProblemTicket && (
                             <>
                                 <div className="space-y-2">
-                                    <Label>{t("problemType") || "Problem Type"}</Label>
+                                    <Label required>{t("problemType") || "Problem Type"}</Label>
                                     <Select value={problemType} onValueChange={setProblemType} required={isProblemTicket}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select problem type"/>
@@ -413,7 +413,7 @@ export function CreateTicket(props: CreateTicketProps) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>{t("assignTo")}</Label>
+                            <Label required>{t("assignTo")}</Label>
                             <Select value={assignedTo} onValueChange={setAssignedTo} required>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t("assignTo")}/>
