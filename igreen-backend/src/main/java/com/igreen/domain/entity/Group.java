@@ -29,6 +29,7 @@ public class Group {
 
     @TableField(typeHandler = GroupStatusTypeHandler.class)
     private GroupStatus status;
+    private String country;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default

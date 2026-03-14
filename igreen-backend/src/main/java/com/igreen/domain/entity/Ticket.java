@@ -29,6 +29,7 @@ public class Ticket {
     private String type;
     @TableField(typeHandler = TicketStatusTypeHandler.class)
     private TicketStatus status;
+    private String country;
     private String priority;
     private String siteId;
     private String templateId;

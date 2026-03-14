@@ -22,6 +22,7 @@ public class Site {
     private String level;
     @TableField(typeHandler = SiteStatusTypeHandler.class)
     private SiteStatus status;
+    private String country;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

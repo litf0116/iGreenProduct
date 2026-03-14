@@ -1,5 +1,7 @@
 package com.igreen.domain.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.igreen.common.context.CountryContext;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.CreateTemplateRequest;
@@ -27,7 +29,11 @@ public class TemplateService {
 
     @Transactional
     public Template createTemplate(CreateTemplateRequest request) {
-        if (templateMapper.countByName(request.name()) > 0) {
+        String country = CountryContext.get();
+        
+        LambdaQueryWrapper<Template> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Template::getName, request.name()).eq(Template::getCountry, country);
+        if (templateMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
         }
 
@@ -35,10 +41,10 @@ public class TemplateService {
         template.setId(UUID.randomUUID().toString());
         template.setName(request.name());
         template.setDescription(request.description());
+        template.setCountry(country);
 
-        // 将 steps 转换为实体对象并设置到 template 中
         List<TemplateStep> steps = convertStepsRequest(request.steps());
-        template.setSteps(steps); // 这会自动将 steps 序列化为 JSON 并保存到 stepConfig
+        template.setSteps(steps);
 
         templateMapper.insert(template);
 
@@ -47,13 +53,16 @@ public class TemplateService {
 
     @Transactional
     public Template updateTemplate(String id, CreateTemplateRequest request) {
+        String country = CountryContext.get();
         Template existing = templateMapper.selectById(id);
         if (existing == null) {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
         if (request.name() != null && !request.name().equals(existing.getName())) {
-            if (templateMapper.countByName(request.name()) > 0) {
+            LambdaQueryWrapper<Template> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Template::getName, request.name()).eq(Template::getCountry, country);
+            if (templateMapper.selectCount(wrapper) > 0) {
                 throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
             }
             existing.setName(request.name());
@@ -63,9 +72,8 @@ public class TemplateService {
         }
 
         if (request.steps() != null) {
-            // 将 steps 转换为实体对象并设置到 existing 中
             List<TemplateStep> steps = convertStepsRequest(request.steps());
-            existing.setSteps(steps); // 这会自动将 steps 序列化为 JSON 并保存到 stepConfig
+            existing.setSteps(steps);
         }
 
         templateMapper.updateById(existing);
@@ -127,9 +135,12 @@ public class TemplateService {
 
     @Transactional(readOnly = true)
     public List<Template> getAllTemplates() {
-        List<Template> templates = templateMapper.selectList(null);
+        String country = CountryContext.get();
+        LambdaQueryWrapper<Template> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Template::getCountry, country);
+        
+        List<Template> templates = templateMapper.selectList(wrapper);
 
-        // 为每个 template 从 stepConfig 反序列化 steps
         for (Template template : templates) {
             template.getSteps();
         }

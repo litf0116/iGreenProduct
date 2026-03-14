@@ -78,6 +78,11 @@ public class JwtUtils {
         return claims.get("role", String.class);
     }
 
+    public String extractCountry(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("country", String.class);
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -96,6 +101,15 @@ public class JwtUtils {
         claims.put("userId", userId);
         claims.put("username", username);
         claims.put("role", role);
+        return createToken(claims, username, jwtExpirationMs);
+    }
+
+    public String generateToken(String userId, String username, String role, String country) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("username", username);
+        claims.put("role", role);
+        claims.put("country", country);
         return createToken(claims, username, jwtExpirationMs);
     }
 

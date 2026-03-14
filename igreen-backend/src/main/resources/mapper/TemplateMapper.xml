@@ -6,12 +6,13 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="description" column="description"/>
+        <result property="country" column="country"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, description, created_at, updated_at
+        id, name, description, country, created_at, updated_at
     </sql>
 
     <select id="selectByName" resultMap="BaseResultMap">

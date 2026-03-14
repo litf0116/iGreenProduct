@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 public record TicketResponse(@JsonSerialize(using = ToStringSerializer.class) Long id, String title, String description, String type,
-                             String status, String priority, String siteId, String siteName, String siteAddress, String templateId,
-                             String templateName, String assignedTo, String assignedToName, String createdBy, String createdByName,
-                             String createdAt, String updatedAt, String dueDate, List<String> completedSteps,
-                             Map<String, Object> templateData, Boolean accepted, String acceptedAt, String acceptedUserId,
-                             String acceptedUserName, String departureAt, String departurePhoto, String arrivalAt, String arrivalPhoto,
-                             String completionPhoto, String cause, String solution, List<TicketCommentResponse> comments,
-                             List<String> relatedTicketIds, String problemType) {
+                              String status, String priority, String siteId, String siteName, String siteAddress, String templateId,
+                              String templateName, String assignedTo, String assignedToName, String createdBy, String createdByName,
+                              String createdAt, String updatedAt, String dueDate, List<String> completedSteps,
+                              Map<String, Object> templateData, Boolean accepted, String acceptedAt, String acceptedUserId,
+                              String acceptedUserName, String departureAt, String departurePhoto, String arrivalAt, String arrivalPhoto,
+                              String completionPhoto, String cause, String solution, List<TicketCommentResponse> comments,
+                              List<String> relatedTicketIds, String problemType, String country) {
 }

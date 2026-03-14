@@ -26,6 +26,7 @@ public class Template {
     private String id;
     private String name;
     private String description;
+    private String country;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -3,6 +3,7 @@ package com.igreen.domain.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.igreen.common.context.CountryContext;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
@@ -29,7 +30,11 @@ public class SiteService {
 
     @Transactional
     public Site createSite(SiteCreateRequest request) {
-        if (siteMapper.countByName(request.name()) > 0) {
+        String country = CountryContext.get();
+        
+        LambdaQueryWrapper<Site> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(Site::getName, request.name()).eq(Site::getCountry, country);
+        if (siteMapper.selectCount(nameWrapper) > 0) {
             throw new BusinessException(ErrorCode.SITE_EXISTS);
         }
 
@@ -39,6 +44,7 @@ public class SiteService {
                 .address(request.address())
                 .level(request.level() != null ? request.level() : "normal")
                 .status(request.status() != null ? request.status() : SiteStatus.ONLINE)
+                .country(country)
                 .build();
 
         siteMapper.insert(site);
@@ -56,7 +62,8 @@ public class SiteService {
 
     @Transactional(readOnly = true)
     public PageResult<Site> getAllSites(int page, int size, String keyword, String level, String status) {
-        // 参数验证
+        String country = CountryContext.get();
+        
         if (page < 1) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
@@ -70,6 +77,7 @@ public class SiteService {
         PageHelper.startPage(page, size);
         try {
             LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Site::getCountry, country);
             
             if (keyword != null && !keyword.isEmpty()) {
                 wrapper.and(w -> w.like(Site::getName, keyword).or().like(Site::getAddress, keyword));
@@ -96,25 +104,30 @@ public class SiteService {
 
     @Transactional(readOnly = true)
     public List<Site> getSitesByStatus(SiteStatus status) {
-        return siteMapper.selectByStatus(status.name());
+        String country = CountryContext.get();
+        LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Site::getCountry, country).eq(Site::getStatus, status);
+        return siteMapper.selectList(wrapper);
     }
 
     @Transactional(readOnly = true)
     public SiteStats getSiteStats() {
-        LambdaQueryWrapper<Site> wrapper = new LambdaQueryWrapper<>();
+        String country = CountryContext.get();
+        LambdaQueryWrapper<Site> baseWrapper = new LambdaQueryWrapper<>();
+        baseWrapper.eq(Site::getCountry, country);
         
-        long totalSites = siteMapper.selectCount(wrapper);
+        long totalSites = siteMapper.selectCount(baseWrapper);
         
         long onlineSites = siteMapper.selectCount(
-            new LambdaQueryWrapper<Site>().eq(Site::getStatus, SiteStatus.ONLINE)
+            new LambdaQueryWrapper<Site>().eq(Site::getCountry, country).eq(Site::getStatus, SiteStatus.ONLINE)
         );
         
         long offlineSites = siteMapper.selectCount(
-            new LambdaQueryWrapper<Site>().eq(Site::getStatus, SiteStatus.OFFLINE)
+            new LambdaQueryWrapper<Site>().eq(Site::getCountry, country).eq(Site::getStatus, SiteStatus.OFFLINE)
         );
         
         long vipSites = siteMapper.selectCount(
-            new LambdaQueryWrapper<Site>().like(Site::getLevel, "vip")
+            new LambdaQueryWrapper<Site>().eq(Site::getCountry, country).like(Site::getLevel, "vip")
         );
         
         return new SiteStats(totalSites, onlineSites, offlineSites, vipSites);

@@ -27,6 +27,7 @@ public class GroupConverter {
                 .description(group.getDescription())
                 .tags(parseTags(group.getTags()))
                 .status(group.getStatus() != null ? group.getStatus().name().toLowerCase() : null)
+                .country(group.getCountry())
                 .createdAt(group.getCreatedAt())
                 .updatedAt(group.getUpdatedAt())
                 .memberCount(group.getMemberCount())

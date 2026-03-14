@@ -29,6 +29,7 @@
         <result property="solution" column="solution"/>
         <result property="relatedTicketIds" column="related_ticket_ids"/>
         <result property="problemType" column="problem_type"/>
+        <result property="country" column="country"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="dueDate" column="due_date"/>
@@ -59,7 +60,7 @@
         id, title, description, type, status, priority, site_id, template_id, template_data, assigned_to, created_by,
         completed_steps, step_data, accepted, accepted_at, accepted_user_id, departure_at, departure_photo,
         arrival_at, arrival_photo, completion_photo, cause, solution, related_ticket_ids,
-        problem_type, created_at, updated_at, due_date
+        problem_type, country, created_at, updated_at, due_date
     </sql>
 
     <select id="selectByIdWithDetails" resultMap="TicketWithDetailsResultMap">
@@ -196,6 +197,9 @@
         <where>
             <if test="type != null">
                 AND type = #{type}
+            </if>
+            <if test="country != null and country != ''">
+                AND country = #{country}
             </if>
         </where>
         GROUP BY status

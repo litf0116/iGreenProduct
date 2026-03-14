@@ -1,5 +1,6 @@
 package com.igreen.common.utils;
 
+import com.igreen.common.context.CountryContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,13 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        // 跳过 OPTIONS 预检请求，让 CORS 过滤器处理
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 跳过上传文件访问请求
         if (request.getRequestURI().startsWith("/uploads/")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,6 +48,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt) && jwtUtils.validateToken(jwt)) {
                 String username = jwtUtils.extractUsername(jwt);
+                String country = jwtUtils.extractCountry(jwt);
+
+                CountryContext.set(country);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -66,7 +68,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Cannot set user authentication: {}", e.getMessage());
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            CountryContext.clear();
+        }
     }
 
     private String extractJwtFromRequest(HttpServletRequest request) {

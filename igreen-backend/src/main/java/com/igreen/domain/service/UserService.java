@@ -3,6 +3,7 @@ package com.igreen.domain.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.igreen.common.context.CountryContext;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
@@ -60,35 +61,42 @@ public class UserService {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, request.getUsername());
         wrapper.last("LIMIT 1");
-        User users = userMapper.selectOne(wrapper);
+        User user = userMapper.selectOne(wrapper);
 
-        if (users == null) {
+        if (user == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        User matchedUser = null;
-
-        if (passwordEncoder.matches(request.getPassword(), users.getHashedPassword())) {
-            matchedUser = users;
-        }
-
-
-        if (matchedUser == null) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getHashedPassword())) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        if (matchedUser.getStatus() != UserStatus.ACTIVE) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BusinessException(ErrorCode.USER_INACTIVE);
         }
 
-        // ADMIN 跳过国家校验，ENGINEER/MANAGER 使用账号自己的 country 属性
-        if (matchedUser.getRole() == UserRole.ADMIN || matchedUser.getRole() == UserRole.MANAGER) {
-            if (matchedUser.getCountry() == null || matchedUser.getCountry().isBlank()) {
-                throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+        String tokenCountry;
+
+        if (user.getRole() == UserRole.ADMIN) {
+            if (request.getCountry() == null || request.getCountry().isBlank()) {
+                throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
+            }
+            if (!CountryCode.isValidCode(request.getCountry())) {
+                throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
+            }
+            tokenCountry = request.getCountry();
+        } else {
+            if (request.getCountry() == null || request.getCountry().isBlank()) {
+                tokenCountry = user.getCountry();
+            } else {
+                if (!request.getCountry().equalsIgnoreCase(user.getCountry())) {
+                    throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+                }
+                tokenCountry = user.getCountry();
             }
         }
 
-        String token = jwtUtils.generateToken(matchedUser.getId(), matchedUser.getUsername(), matchedUser.getRole().name());
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name(), tokenCountry);
         return new TokenResponse(token, null, 0);
     }
 
@@ -154,9 +162,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public PageResult<UserResponse> getAllUsers(int page, int size, String keyword) {
+        String country = CountryContext.get();
+        
         PageHelper.startPage(page, size);
         try {
             LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(User::getCountry, country);
+            
             if (keyword != null && !keyword.isBlank()) {
                 wrapper.and(w -> w.like(User::getUsername, keyword).or().like(User::getName, keyword));
             }
@@ -242,8 +254,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> getEngineers() {
+        String country = CountryContext.get();
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getRole, UserRole.ENGINEER);
+        wrapper.eq(User::getCountry, country).eq(User::getRole, UserRole.ENGINEER);
         return userMapper.selectList(wrapper).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

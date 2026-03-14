@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.igreen.common.context.CountryContext;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
@@ -71,7 +72,9 @@ public class TicketService {
             relatedTicketIdsJson = String.join(",", request.relatedTicketIds());
         }
 
-        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status(TicketStatus.OPEN).problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
+        String country = CountryContext.get();
+
+        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status(TicketStatus.OPEN).country(country).problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
 
@@ -98,9 +101,16 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
+        String country = CountryContext.get();
+        
         PageHelper.startPage(page, size);
         try {
             LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+            
+            if (country != null && !country.isBlank()) {
+                wrapper.eq(Ticket::getCountry, country);
+            }
+            
             if (type != null) {
                 wrapper.eq(Ticket::getType, type);
             }
@@ -571,13 +581,18 @@ ticket.setStatus(TicketStatus.COMPLETED);
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getMyTickets(int page, int size, String status, String userId) {
+        String country = CountryContext.get();
+        
         PageHelper.startPage(page, size);
         try {
-            List<Ticket> tickets = ticketMapper.selectByAcceptedUserId(userId);
+            LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Ticket::getAcceptedUserId, userId).eq(Ticket::getCountry, country);
+            
             if (status != null && !status.isEmpty()) {
-                TicketStatus targetStatus = TicketStatus.fromValue(status);
-                tickets = tickets.stream().filter(t -> t.getStatus() == targetStatus).collect(Collectors.toList());
+                wrapper.eq(Ticket::getStatus, TicketStatus.fromValue(status));
             }
+            
+            List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
             List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
                 User creator = userMapper.selectById(ticket.getCreatedBy());
@@ -595,16 +610,19 @@ ticket.setStatus(TicketStatus.COMPLETED);
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getPendingTickets(String userId) {
-        // 获取当前工程师的 ID
-
+        String country = CountryContext.get();
+        
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        // Queue: 只返回 OPEN 状态的工单（未分配，任何工程师可接单）
-        List<String> statuses = Arrays.asList("OPEN");
-        List<Ticket> tickets = ticketMapper.selectByStatusIn(statuses, user.getGroupId());
+        LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Ticket::getStatus, TicketStatus.OPEN)
+               .eq(Ticket::getAssignedTo, user.getGroupId())
+               .eq(Ticket::getCountry, country);
+        
+        List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
         List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
             User creator = userMapper.selectById(ticket.getCreatedBy());
@@ -618,9 +636,15 @@ ticket.setStatus(TicketStatus.COMPLETED);
 
     @Transactional(readOnly = true)
     public PageResult<TicketResponse> getCompletedTickets(int page, int size) {
+        String country = CountryContext.get();
+        
         PageHelper.startPage(page, size);
         try {
-            List<Ticket> tickets = ticketMapper.selectByStatus("COMPLETED");
+            LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Ticket::getStatus, TicketStatus.COMPLETED)
+                   .eq(Ticket::getCountry, country);
+            
+            List<Ticket> tickets = ticketMapper.selectList(wrapper);
 
             List<TicketResponse> ticketResponses = tickets.stream().map(ticket -> {
                 User creator = userMapper.selectById(ticket.getCreatedBy());
@@ -638,8 +662,9 @@ ticket.setStatus(TicketStatus.COMPLETED);
 
     @Transactional(readOnly = true)
     public TicketStatsResponse getTicketStats(String type) {
+        String country = CountryContext.get();
         String queryType = "all".equalsIgnoreCase(type) ? null : type;
-        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(queryType);
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(queryType, country);
 
         long total = 0;
         long open = 0;
@@ -686,7 +711,7 @@ ticket.setStatus(TicketStatus.COMPLETED);
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType());
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType(), ticket.getCountry());
     }
 
     @Transactional

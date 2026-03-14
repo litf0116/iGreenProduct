@@ -8,12 +8,13 @@
         <result property="description" column="description"/>
         <result property="tags" column="tags"/>
         <result property="status" column="status"/>
+        <result property="country" column="country"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, description, tags, status, created_at, updated_at
+        id, name, description, tags, status, country, created_at, updated_at
     </sql>
 
     <select id="countByName" resultType="int">
@@ -28,15 +29,11 @@
         WHERE id = #{id}
     </select>
 
-    <select id="selectList" resultMap="GroupResultMap">
-        SELECT id, name, description, tags, status, created_at, updated_at
-        FROM `groups`
-        ORDER BY created_at DESC
-    </select>
+    
 
     <insert id="insert" parameterType="com.igreen.domain.entity.Group">
-        INSERT INTO `groups` (id, name, description, tags, status, created_at, updated_at)
-        VALUES (#{id}, #{name}, #{description}, #{tags}, #{status}, NOW(), NOW())
+        INSERT INTO `groups` (id, name, description, tags, status, country, created_at, updated_at)
+        VALUES (#{id}, #{name}, #{description}, #{tags}, #{status}, #{country}, NOW(), NOW())
     </insert>
 
     <update id="update" parameterType="com.igreen.domain.entity.Group">

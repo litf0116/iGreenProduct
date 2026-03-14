@@ -1,6 +1,7 @@
 package com.igreen.domain.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.igreen.common.context.CountryContext;
 import com.igreen.common.exception.BusinessException;
 import com.igreen.common.exception.ErrorCode;
 import com.igreen.domain.dto.GroupCreateRequest;
@@ -28,6 +29,8 @@ public class GroupService {
 
     @Transactional
     public Group createGroup(GroupCreateRequest request) {
+        String country = CountryContext.get();
+        
         if (groupMapper.countByName(request.name()) > 0) {
             throw new BusinessException(ErrorCode.GROUP_EXISTS);
         }
@@ -37,6 +40,7 @@ public class GroupService {
                 .name(request.name())
                 .description(request.description())
                 .status(request.status() != null ? request.status() : GroupStatus.ACTIVE)
+                .country(country)
                 .memberCount(0)
                 .build();
 
@@ -61,7 +65,10 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public List<Group> getAllGroups() {
-        List<Group> groups = groupMapper.selectList(null);
+        String country = CountryContext.get();
+        LambdaQueryWrapper<Group> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Group::getCountry, country);
+        List<Group> groups = groupMapper.selectList(wrapper);
         for (Group group : groups) {
             Integer memberCount = userMapper.countByGroupId(group.getId());
             group.setMemberCount(memberCount != null ? memberCount : 0);
@@ -71,22 +78,19 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public List<Group> searchGroups(String keyword) {
+        String country = CountryContext.get();
         if (keyword == null || keyword.trim().isEmpty()) {
-            System.out.println("[DEBUG searchGroups] Keyword is empty, returning all groups");
             return getAllGroups();
         }
         String searchKeyword = keyword.trim();
-        System.out.println("[DEBUG searchGroups] Searching with keyword: " + searchKeyword);
 
         LambdaQueryWrapper<Group> wrapper = new LambdaQueryWrapper<Group>();
+        wrapper.eq(Group::getCountry, country);
         wrapper.and(w -> w.like(Group::getName, searchKeyword)
                            .or()
                            .like(Group::getDescription, searchKeyword));
 
-        System.out.println("[DEBUG searchGroups] SQL condition: name LIKE %" + searchKeyword + "% OR description LIKE %" + searchKeyword + "%");
-
         List<Group> groups = groupMapper.selectList(wrapper);
-        System.out.println("[DEBUG searchGroups] Found groups: " + groups.size());
 
         for (Group group : groups) {
             Integer memberCount = userMapper.countByGroupId(group.getId());
