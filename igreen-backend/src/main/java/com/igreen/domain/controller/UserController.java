@@ -44,7 +44,7 @@ public class UserController {
 
     @Operation(summary = "获取所有用户")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<PageResult<UserResponse>>> getAllUsers(
             @RequestParam @Min(1) int page,
             @RequestParam @Min(1) @Max(100) int size,
@@ -60,14 +60,14 @@ public class UserController {
 
     @Operation(summary = "创建用户")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<UserResponse>> createUser(@Valid @RequestBody UserCreateRequest request) {
         return ResponseEntity.ok(Result.success(userService.createUser(request)));
     }
 
     @Operation(summary = "更新用户")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<UserResponse>> updateUser(
             @PathVariable String id,
             @Valid @RequestBody UserUpdateRequest request) {
@@ -76,7 +76,7 @@ public class UserController {
 
     @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Void>> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(Result.successResult());
@@ -84,7 +84,7 @@ public class UserController {
 
     @Operation(summary = "更新用户(POST方式)")
     @PostMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<UserResponse>> updateUserByPost(
             @PathVariable String id,
             @Valid @RequestBody UserUpdateRequest request) {

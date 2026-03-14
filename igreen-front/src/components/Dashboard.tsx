@@ -12,6 +12,7 @@ import {Ticket, TicketStatus, TicketType} from "../lib/types";
 import {TranslationKey, translations} from "../lib/i18n";
 import {useUIStore} from "../store";
 import api from "../lib/api";
+import {formatDateTime} from "../lib/utils";
 import {toast} from "sonner";
 import {AlertCircle, Calendar, CheckCircle2, ClipboardList, Clock, Filter, Plus, Search,} from "lucide-react";
 
@@ -310,14 +311,6 @@ export function Dashboard() {
         return priorityMap[priority] || priority as TranslationKey;
     };
 
-    const formatDate = (date: Date) => {
-        return new Date(date).toLocaleDateString(language === "th" ? "th-TH" : "en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        });
-    };
-
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -601,11 +594,11 @@ export function Dashboard() {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>{ticket.assignedToName || "-"}</TableCell>
-                                                <TableCell>{formatDate(ticket.createdAt)}</TableCell>
+                                                <TableCell>{formatDateTime(ticket.createdAt)}</TableCell>
                                                 <TableCell>
                           <span
                               className={new Date(ticket.dueDate) < new Date() && ticket.status !== "closed" ? "text-red-500 font-medium" : ""}>
-                            {formatDate(ticket.dueDate)}
+                            {formatDateTime(ticket.dueDate)}
                           </span>
                                                 </TableCell>
                                                 <TableCell>

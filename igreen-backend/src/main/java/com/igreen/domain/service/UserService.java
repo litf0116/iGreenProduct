@@ -40,6 +40,15 @@ public class UserService {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
 
+        // 处理 country 字段：优先使用请求中的 country，否则从当前用户继承
+        String country = request.getCountry();
+        if (country == null || country.isBlank()) {
+            country = CountryContext.get();
+            if (country == null || country.isBlank()) {
+                throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
+            }
+        }
+
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(request.getName())
@@ -49,7 +58,7 @@ public class UserService {
                 .role(request.getRole() != null ? request.getRole() : UserRole.ENGINEER)
                 .groupId(request.getGroupId())
                 .status(request.getStatus() != null ? request.getStatus() : UserStatus.ACTIVE)
-                .country(request.getCountry())
+                .country(country)
                 .build();
 
         userMapper.insert(user);

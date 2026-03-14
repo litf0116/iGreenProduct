@@ -41,13 +41,13 @@ public class TemplateController {
 
     @Operation(summary = "创建模板")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Template>> createTemplate(@Valid @RequestBody CreateTemplateRequest request) {
         return ResponseEntity.ok(Result.success(templateService.createTemplate(request)));
     }
     @Operation(summary = "更新模板")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Template>> updateTemplate(
             @PathVariable String id,
             @Valid @RequestBody CreateTemplateRequest request) {
@@ -56,7 +56,7 @@ public class TemplateController {
 
     @Operation(summary = "删除模板")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Void>> deleteTemplate(@PathVariable String id) {
         templateService.deleteTemplate(id);
         return ResponseEntity.ok(Result.success(null));

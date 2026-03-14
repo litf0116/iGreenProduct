@@ -54,7 +54,7 @@ public class GroupController {
 
     @Operation(summary = "创建分组")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<GroupVO>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
         Group group = groupService.createGroup(request);
         GroupVO vo = groupConverter.toVO(group);
@@ -63,7 +63,7 @@ public class GroupController {
 
     @Operation(summary = "更新分组")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<GroupVO>> updateGroup(
             @PathVariable String id,
             @Valid @RequestBody GroupUpdateRequest request) {
@@ -74,7 +74,7 @@ public class GroupController {
 
     @Operation(summary = "删除分组")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Result<Void>> deleteGroup(@PathVariable String id) {
         groupService.deleteGroup(id);
         return ResponseEntity.ok(Result.successResult());

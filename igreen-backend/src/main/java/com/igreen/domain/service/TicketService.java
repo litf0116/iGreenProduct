@@ -15,6 +15,7 @@ import com.igreen.domain.entity.*;
 import com.igreen.domain.enums.CommentType;
 import com.igreen.domain.enums.TicketStatus;
 import com.igreen.domain.enums.TicketType;
+import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.mapper.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,8 +101,12 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter) {
+    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter, String currentUserId) {
         String country = CountryContext.get();
+        
+        // 查询当前用户信息，用于权限判断
+        User currentUser = userMapper.selectById(currentUserId);
+        UserRole currentUserRole = currentUser != null ? currentUser.getRole() : null;
         
         PageHelper.startPage(page, size);
         try {
@@ -109,6 +114,16 @@ public class TicketService {
             
             if (country != null && !country.isBlank()) {
                 wrapper.eq(Ticket::getCountry, country);
+            }
+            
+            // 权限过滤：ENGINEER 只能查看自己的工单和同组的工单
+            if (currentUserRole == UserRole.ENGINEER) {
+                String groupId = currentUser.getGroupId();
+                wrapper.and(w -> w
+                    .eq(Ticket::getAcceptedUserId, currentUserId)
+                    .or()
+                    .eq(Ticket::getAssignedTo, groupId)
+                );
             }
             
             if (type != null) {

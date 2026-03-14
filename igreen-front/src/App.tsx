@@ -123,7 +123,7 @@ function AppLayout() {
         }
     }, [currentUser, loadInitialData, loadConfigData]);
 
-    const getStatusColor = (status: TicketStatus) => {
+const getStatusColor = (status: TicketStatus) => {
         switch (status) {
             case "open":
                 return "bg-blue-500";
@@ -131,14 +131,14 @@ function AppLayout() {
                 return "bg-indigo-500";
             case "accepted":
                 return "bg-cyan-500";
-            case "in_progress":
+            case "departed":
                 return "bg-orange-500";
-            case "submitted":
+            case "arrived":
+                return "bg-amber-500";
+            case "review":
                 return "bg-purple-500";
             case "completed":
                 return "bg-green-500";
-            case "on_hold":
-                return "bg-yellow-500";
             case "cancelled":
                 return "bg-red-500";
             default:
@@ -158,9 +158,11 @@ function AppLayout() {
 
     const stats = {
         total: Array.isArray(tickets) ? tickets.length : 0,
-        pending: Array.isArray(tickets) ? tickets.filter((t) => t.status === "open").length : 0,
-        inProgress: Array.isArray(tickets) ? tickets.filter((t) => t.status === "in_progress" || t.status === "accepted").length : 0,
-        completed: Array.isArray(tickets) ? tickets.filter((t) => t.status === "completed").length : 0,
+        pending: Array.isArray(tickets) ? tickets.filter((t) => t.status === "open" || t.status === "assigned").length : 0,
+        inProgress: Array.isArray(tickets) ? tickets.filter((t) => 
+            t.status === "accepted" || t.status === "departed" || t.status === "arrived").length : 0,
+        submitted: Array.isArray(tickets) ? tickets.filter((t) => t.status === "review").length : 0,
+        completed: Array.isArray(tickets) ? tickets.filter((t) => t.status === "completed" || t.status === "cancelled").length : 0,
     };
 
     const handleLogout = () => {
@@ -344,7 +346,7 @@ function AppLayout() {
         try {
             const updated = await api.updateTicket(ticketId, {
                 assignedTo: newAssigneeId,
-              status: "opened" as TicketStatus,
+              status: "open" as TicketStatus,
             });
             await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));

@@ -34,8 +34,18 @@ public class TicketController {
 
     @Operation(summary = "获取工单列表")
     @GetMapping
-    public ResponseEntity<Result<PageResult<TicketResponse>>> getTickets(@RequestParam @Min(1) int page, @RequestParam @Min(1) @Max(100) int size, @RequestParam(required = false) String type, @RequestParam(required = false) String status, @RequestParam(required = false) String priority, @RequestParam(required = false) String assignedTo, @RequestParam(required = false) String keyword, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter) {
-        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter)));
+    public ResponseEntity<Result<PageResult<TicketResponse>>> getTickets(
+            HttpServletRequest httpRequest,
+            @RequestParam @Min(1) int page, 
+            @RequestParam @Min(1) @Max(100) int size, 
+            @RequestParam(required = false) String type, 
+            @RequestParam(required = false) String status, 
+            @RequestParam(required = false) String priority, 
+            @RequestParam(required = false) String assignedTo, 
+            @RequestParam(required = false) String keyword, 
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter) {
+        String userId = getCurrentUserId(httpRequest);
+        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter, userId)));
     }
 
     @Operation(summary = "获取工单详情")

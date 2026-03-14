@@ -1,10 +1,8 @@
 export type TicketStatus =
     | 'open' | 'assigned' | 'accepted' | 'departed'
-    | 'arrived' | 'submitted' | 'review' | 'completed'
-    | 'cancelled' | 'declined';
+    | 'arrived' | 'review' | 'completed' | 'cancelled';
 
-// Admin status: 6 statuses for management view
-export type AdminTicketStatus = 'open' | 'accepted' | 'in_process' | 'submitted' | 'on_hold' | 'closed';
+export type AdminTicketStatus = 'open' | 'in_progress' | 'submitted' | 'on_hold' | 'closed';
 
 export type TicketType = 'planned' | 'preventive' | 'corrective' | 'problem';
 
@@ -187,6 +185,42 @@ export const DEFAULT_PAGE_PARAMS: PageParams = {
     page: 0,
     size: DEFAULT_PAGE_SIZE,
 };
+
+export function toAdminStatus(status: TicketStatus): AdminTicketStatus {
+    switch (status) {
+        case 'open':
+        case 'assigned':
+            return 'open';
+        case 'accepted':
+        case 'departed':
+        case 'arrived':
+            return 'in_progress';
+        case 'review':
+            return 'submitted';
+        case 'completed':
+        case 'cancelled':
+            return 'closed';
+        default:
+            return 'open';
+    }
+}
+
+export function fromAdminStatus(adminStatus: AdminTicketStatus): TicketStatus[] {
+    switch (adminStatus) {
+        case 'open':
+            return ['open', 'assigned'];
+        case 'in_progress':
+            return ['accepted', 'departed', 'arrived'];
+        case 'submitted':
+            return ['review'];
+        case 'on_hold':
+            return [];
+        case 'closed':
+            return ['completed', 'cancelled'];
+        default:
+            return [];
+    }
+}
 
 export interface LoginRequest {
     email: string;

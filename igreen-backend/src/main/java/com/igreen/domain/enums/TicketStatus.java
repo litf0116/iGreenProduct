@@ -13,8 +13,15 @@ public enum TicketStatus {
     ARRIVED,
     REVIEW,
     COMPLETED,
+    CANCELLED,
+    
+    // 已废弃状态 - 保留用于数据库兼容，不用于新业务
+    @Deprecated
+    SUBMITTED,
+    @Deprecated
     ON_HOLD,
-    CANCELLED;
+    @Deprecated
+    DECLINED;
 
     @JsonValue
     public String getValue() {

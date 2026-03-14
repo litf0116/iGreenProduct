@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {Group, Template, Ticket, TicketStatus} from "../lib/types";
 import {Language, TranslationKey, translations} from "../lib/i18n";
+import {formatDate, formatDateTime} from "../lib/utils";
 import {Card} from "./ui/card";
 import {Badge} from "./ui/badge";
 import {Button} from "./ui/button";
@@ -35,29 +36,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-
-// Helper functions for date formatting to handle both string and Date inputs
-function formatDate(date: Date | string | undefined | null): string {
-    if (!date) return "-";
-    if (typeof date === "string") {
-        // Handle format: 2025-01-20 10:00:00 or 2025-01-20T10:00:00.000Z
-        const dateObj = new Date(date.replace(" ", "T"));
-        if (isNaN(dateObj.getTime())) return date;
-        return dateObj.toLocaleDateString();
-    }
-    return date.toLocaleDateString();
-}
-
-function formatDateTime(date: Date | string | undefined | null): string {
-    if (!date) return "-";
-    if (typeof date === "string") {
-        // Handle format: 2025-01-20 10:00:00 or 2025-01-20T10:00:00.000Z
-        const dateObj = new Date(date.replace(" ", "T"));
-        if (isNaN(dateObj.getTime())) return date;
-        return dateObj.toLocaleString();
-    }
-    return date.toLocaleString();
-}
 
 interface TicketDetailProps {
     ticket: Ticket;

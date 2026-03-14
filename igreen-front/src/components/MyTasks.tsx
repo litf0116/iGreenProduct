@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {Ticket, Template} from "../lib/types";
 import {translations, TranslationKey, Language} from "../lib/i18n";
+import {formatDateTime} from "../lib/utils";
 import {Card} from "./ui/card";
 import {Button} from "./ui/button";
 import {Badge} from "./ui/badge";
@@ -265,7 +266,7 @@ export function MyTasks({
 
                             <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  Due: {ticket.dueDate.toLocaleDateString()}
+                  Due: {formatDateTime(ticket.dueDate)}
                 </span>
                                 <Button
                                     onClick={() => handleOpenTicket(ticket)}
