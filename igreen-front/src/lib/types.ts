@@ -90,6 +90,7 @@ export interface Template {
     id: string;
     name: string;
     description: string;
+    type?: TicketType;
     createdAt: string;
     updatedAt: string;
     steps: TemplateStep[];
@@ -121,6 +122,8 @@ export interface Ticket {
   template: Template;
     assignedTo: string;
     assignedToName: string;
+    acceptedUserId?: string;
+    acceptedUserName?: string;
     createdBy: string;
     createdByName: string;
     createdAt: string;
@@ -140,6 +143,7 @@ export interface Ticket {
     comments?: TicketComment[];
     relatedTicketIds?: string[];
     problemType?: string;
+    country?: string;
 }
 
 export interface User {
@@ -157,6 +161,7 @@ export interface User {
 
 export interface Site {
     id: string;
+    code?: string;
     name: string;
     address: string;
     level: string;
@@ -346,6 +351,7 @@ export interface StepData {
 }
 
 export interface SiteCreateRequest {
+    code?: string;
     name: string;
     address: string;
     level?: string;
@@ -404,11 +410,13 @@ export interface UserUpdateRequest {
 export interface TemplateCreateRequest {
     name: string;
     description?: string;
+    type?: TicketType;
 }
 
 export interface TemplateUpdateRequest {
     name?: string;
     description?: string;
+    type?: TicketType;
 }
 
 export interface TemplateStepCreateRequest {

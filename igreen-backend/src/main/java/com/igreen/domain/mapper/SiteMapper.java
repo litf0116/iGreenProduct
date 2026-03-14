@@ -13,6 +13,8 @@ public interface SiteMapper extends com.baomidou.mybatisplus.core.mapper.BaseMap
 
     int countByName(@Param("name") String name);
 
+    int countByCode(@Param("code") String code);
+
     List<Site> selectByNameContaining(@Param("name") String name);
 
     List<Site> selectByStatus(@Param("status") String status);

@@ -29,14 +29,18 @@ CREATE TABLE IF NOT EXISTS `groups` (
 
 CREATE TABLE IF NOT EXISTS sites (
     id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
+    code VARCHAR(100) UNIQUE,
+    name VARCHAR(255) NOT NULL,
     address TEXT,
     level ENUM('normal', 'vip', 'enterprise') DEFAULT 'normal',
     status ENUM('ONLINE', 'OFFLINE', 'MAINTENANCE') NOT NULL DEFAULT 'ONLINE',
+    country VARCHAR(10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_sites_code (code),
     INDEX idx_sites_name (name),
-    INDEX idx_sites_status (status)
+    INDEX idx_sites_status (status),
+    INDEX idx_sites_country (country)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS templates (

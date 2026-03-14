@@ -451,6 +451,19 @@ export function TicketDetail({
                                 </Avatar>
                                 <p className="text-foreground truncate">{ticket.assignedToName}</p>
                             </div>
+                            {ticket.acceptedUserName && (
+                                <div className="mt-2 pt-2 border-t border-border">
+                                    <p className="text-xs text-muted-foreground">Accepted by</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Avatar className="h-5 w-5 flex-shrink-0">
+                                            <AvatarFallback className="bg-green-500 text-white text-xs">
+                                                {ticket.acceptedUserName?.charAt(0).toUpperCase() || "?"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <p className="text-sm text-green-600 truncate">{ticket.acceptedUserName}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Card>

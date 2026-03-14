@@ -1,6 +1,7 @@
 package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.igreen.domain.enums.TicketType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,8 @@ public record CreateTemplateRequest(
 
     @Size(max = 500, message = "模板描述不能超过500个字符")
     String description,
+
+    TicketType type,
 
     @Valid
     List<TemplateStepRequest> steps

@@ -102,6 +102,7 @@ export function SiteManagement() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
+        code: "",
         name: "",
         address: "",
         level: "normal" as SiteLevel,
@@ -112,6 +113,7 @@ export function SiteManagement() {
         if (site) {
             setEditingSite(site);
             setFormData({
+                code: site.code || "",
                 name: site.name,
                 address: site.address,
                 level: site.level,
@@ -120,6 +122,7 @@ export function SiteManagement() {
         } else {
             setEditingSite(null);
             setFormData({
+                code: "",
                 name: "",
                 address: "",
                 level: "normal",
@@ -450,7 +453,7 @@ export function SiteManagement() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>ID</TableHead>
+                                <TableHead>ID / Code</TableHead>
                                 <TableHead>{t("siteName")}</TableHead>
                                 <TableHead>{t("address")}</TableHead>
                                 <TableHead>{t("level")}</TableHead>
@@ -481,7 +484,7 @@ export function SiteManagement() {
                             ) : (
                                 filteredSites.map((site) => (
                                     <TableRow key={site.id}>
-                                        <TableCell className="font-medium">{site.id}</TableCell>
+                                        <TableCell className="font-medium">{site.code || site.id.substring(0, 8)}</TableCell>
                                         <TableCell>{site.name}</TableCell>
                                         <TableCell className="max-w-xs truncate">{site.address}</TableCell>
                                         <TableCell>
@@ -535,6 +538,16 @@ export function SiteManagement() {
                         </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Site Code</Label>
+                            <Input
+                                value={formData.code}
+                                onChange={(e) =>
+                                    setFormData({...formData, code: e.target.value})
+                                }
+                                placeholder="Enter site code (optional)"
+                            />
+                        </div>
                         <div className="space-y-2">
                             <Label>{t("siteName")} *</Label>
                             <Input

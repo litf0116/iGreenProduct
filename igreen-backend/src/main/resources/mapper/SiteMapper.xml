@@ -4,6 +4,7 @@
 
     <resultMap id="SiteResultMap" type="com.igreen.domain.entity.Site">
         <id property="id" column="id"/>
+        <result property="code" column="code"/>
         <result property="name" column="name"/>
         <result property="address" column="address"/>
         <result property="level" column="level"/>
@@ -14,13 +15,19 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, address, level, status, country, created_at, updated_at
+        id, code, name, address, level, status, country, created_at, updated_at
     </sql>
 
     <select id="countByName" resultType="int">
         SELECT COUNT(*)
         FROM sites
         WHERE name = #{name}
+    </select>
+
+    <select id="countByCode" resultType="int">
+        SELECT COUNT(*)
+        FROM sites
+        WHERE code = #{code}
     </select>
 
     <select id="selectByNameContaining" resultMap="SiteResultMap">

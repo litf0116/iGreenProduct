@@ -10,6 +10,7 @@ import com.igreen.domain.dto.TemplateStepRequest;
 import com.igreen.domain.entity.Template;
 import com.igreen.domain.entity.TemplateField;
 import com.igreen.domain.entity.TemplateStep;
+import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.mapper.TemplateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class TemplateService {
         template.setId(UUID.randomUUID().toString());
         template.setName(request.name());
         template.setDescription(request.description());
+        template.setType(request.type() != null ? request.type() : TicketType.PLANNED);
         template.setCountry(country);
 
         List<TemplateStep> steps = convertStepsRequest(request.steps());
@@ -69,6 +71,10 @@ public class TemplateService {
         }
         if (request.description() != null) {
             existing.setDescription(request.description());
+        }
+        
+        if (request.type() != null) {
+            existing.setType(request.type());
         }
 
         if (request.steps() != null) {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.igreen.domain.enums.TicketType;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +27,7 @@ public class Template {
     private String id;
     private String name;
     private String description;
+    private TicketType type;
     private String country;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

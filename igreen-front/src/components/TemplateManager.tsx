@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {FieldType, Template, TemplateField, TemplateStep} from "../lib/types";
+import {FieldType, Template, TemplateField, TemplateStep, TicketType} from "../lib/types";
 import {Language, TranslationKey, translations} from "../lib/i18n";
 import {api} from "../lib/api";
 import {Card} from "./ui/card";
@@ -41,6 +41,7 @@ export function TemplateManager({
 
     const [templateName, setTemplateName] = useState("");
     const [templateDescription, setTemplateDescription] = useState("");
+    const [templateType, setTemplateType] = useState<TicketType>("planned");
     const [steps, setSteps] = useState<TemplateStep[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -54,6 +55,7 @@ export function TemplateManager({
         "signature",
         "inspection",
     ];
+    const ticketTypes: TicketType[] = ["planned", "preventive", "corrective", "problem"];
     // Helper to ensure all steps and fields have unique IDs
     const normalizeTemplateData = (templates: Template[]): Template[] => {
         return templates.map((template) => ({
@@ -112,11 +114,13 @@ export function TemplateManager({
             setEditingTemplate(template);
             setTemplateName(template.name);
             setTemplateDescription(template.description);
+            setTemplateType(template.type || "planned");
             setSteps(template.steps || []);
         } else {
             setEditingTemplate(null);
             setTemplateName("");
             setTemplateDescription("");
+            setTemplateType("planned");
             setSteps([]);
         }
         setIsDialogOpen(true);
@@ -214,6 +218,7 @@ export function TemplateManager({
         const templateData = {
             name: templateName,
             description: templateDescription,
+            type: templateType,
             steps,
         };
 
@@ -230,6 +235,7 @@ export function TemplateManager({
             setIsDialogOpen(false);
             setTemplateName("");
             setTemplateDescription("");
+            setTemplateType("planned");
             setSteps([]);
             setEditingTemplate(null);
             return;
@@ -281,6 +287,7 @@ export function TemplateManager({
         setIsDialogOpen(false);
         setTemplateName("");
         setTemplateDescription("");
+        setTemplateType("planned");
         setSteps([]);
         setEditingTemplate(null);
     };
@@ -383,6 +390,22 @@ export function TemplateManager({
                                     onChange={(e) => setTemplateDescription(e.target.value)}
                                     placeholder={t("description")}
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Ticket Type</Label>
+                                <Select value={templateType} onValueChange={(v) => setTemplateType(v as TicketType)}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ticketTypes.map((type) => (
+                                            <SelectItem key={type} value={type}>
+                                                {t(type as TranslationKey)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-4">
@@ -557,6 +580,11 @@ export function TemplateManager({
                                 </div>
                             </div>
                             <p className="text-muted-foreground">{template?.description}</p>
+                            {template?.type && (
+                                <Badge variant="outline" className="w-fit">
+                                    {t(template.type as TranslationKey)}
+                                </Badge>
+                            )}
                         </div>
 
 <div className="space-y-2">

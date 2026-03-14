@@ -38,8 +38,15 @@ public class SiteService {
             throw new BusinessException(ErrorCode.SITE_EXISTS);
         }
 
+        if (request.code() != null && !request.code().isBlank()) {
+            if (siteMapper.countByCode(request.code()) > 0) {
+                throw new BusinessException(ErrorCode.SITE_EXISTS);
+            }
+        }
+
         Site site = Site.builder()
                 .id(UUID.randomUUID().toString())
+                .code(request.code())
                 .name(request.name())
                 .address(request.address())
                 .level(request.level() != null ? request.level() : "normal")

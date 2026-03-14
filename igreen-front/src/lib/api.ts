@@ -317,7 +317,8 @@ export const api = {
         priority?: string;
         assignedTo?: string;
         keyword?: string;
-        createdAfter?: string | null
+        createdAfter?: string | null;
+        createdBefore?: string | null
     }): Promise<{ records: Ticket[]; total: number; current: number; size: number; hasNext: boolean }> => {
         const searchParams = new URLSearchParams();
         searchParams.set('page', String((params?.page ?? 0) + 1));
@@ -329,7 +330,29 @@ export const api = {
         if (params?.assignedTo) searchParams.set('assignedTo', params.assignedTo);
         if (params?.keyword) searchParams.set('keyword', params.keyword);
         if (params?.createdAfter) searchParams.set('createdAfter', params.createdAfter);
+        if (params?.createdBefore) searchParams.set('createdBefore', params.createdBefore);
         return kyInstance.get(`api/tickets?${searchParams}`).json();
+    },
+
+    exportTickets: async (params?: {
+        type?: string;
+        status?: string;
+        priority?: string;
+        assignedTo?: string;
+        keyword?: string;
+        createdAfter?: string | null;
+        createdBefore?: string | null
+    }): Promise<Blob> => {
+        const searchParams = new URLSearchParams();
+        if (params?.type) searchParams.set('type', params.type);
+        if (params?.status) searchParams.set('status', params.status);
+        if (params?.priority) searchParams.set('priority', params.priority);
+        if (params?.assignedTo) searchParams.set('assignedTo', params.assignedTo);
+        if (params?.keyword) searchParams.set('keyword', params.keyword);
+        if (params?.createdAfter) searchParams.set('createdAfter', params.createdAfter);
+        if (params?.createdBefore) searchParams.set('createdBefore', params.createdBefore);
+        const response = await kyInstance.get(`api/tickets/export?${searchParams}`);
+        return response.blob();
     },
 
     getTicket: async (id: number): Promise<Ticket> => {

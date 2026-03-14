@@ -14,13 +14,13 @@
 | FB-001 | 新账号登录报错 | P0 | Bug | ✅ 已验证 | 后端 |
 | FB-002 | 权限配置不明确 | P0 | 功能 | ✅ 已验证 | 后端 |
 | FB-003 | 工单时间显示精度不足 | P1 | 优化 | ✅ 已验证 | 前端 |
-| FB-004 | APP提交后系统侧状态为空 | P0 | Bug | 待处理 | 前端+后端 |
-| FB-005 | 创建工单ticket type可修改 | P1 | 优化 | 待处理 | 前端 |
-| FB-006 | 重分配reassign操作报错 | P0 | Bug | 待处理 | 后端 |
-| FB-007 | 站点导入导出模板表头语言 | P2 | 优化 | 待处理 | 后端 |
-| FB-008 | 新增站点自定义ID | P1 | 功能 | 待处理 | 前端+后端 |
-| FB-009 | 工程师接单后assign to字段变化 | P1 | Bug | 待处理 | 后端 |
-| FB-010 | Dashboard导出和时间过滤功能 | P1 | 功能 | 待处理 | 前端 |
+| FB-004 | APP提交后系统侧状态为空 | P0 | Bug | ✅ 已验证 | 前端+后端 |
+| FB-005 | 创建工单ticket type可修改 | P1 | 优化 | ✅ 已完成 | 前端 |
+| FB-006 | 重分配reassign操作报错 | P0 | Bug | ✅ 已验证 | 后端 |
+| FB-007 | 站点导入导出模板表头语言 | P2 | 优化 | ✅ 已完成 | 后端 |
+| FB-008 | 新增站点自定义ID | P1 | 功能 | ✅ 已验证 | 前端+后端 |
+| FB-009 | 工程师接单后assign to字段变化 | P1 | Bug | ✅ 已完成 | 后端+前端 |
+| FB-010 | Dashboard导出和时间过滤功能 | P1 | 功能 | ✅ 已完成 | 前端+后端 |
 
 ---
 
@@ -181,7 +181,7 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 
 ---
 
-### FB-005: 创建工单ticket type字段可修改 🟡 P1
+### FB-005: 创建工单ticket type字段可修改 ✅ 已完成
 
 **问题描述**:  
 创建工单时，ticket type字段当前可以修改，但这会与模板信息重复。需要：
@@ -189,20 +189,22 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 2. 模板做成动态可配置的（业务场景中不会频繁配置）
 3. Due date时间支持选到秒
 
-**影响范围**:  
-- 创建工单表单
-- 模板配置功能
-- 时间选择组件
+**修复方案**:
+1. Template 添加 `type` 字段
+2. 创建工单选择模板时自动填充 ticketType
+3. ticketType 字段强制只读
 
-**建议解决方案**:
-1. 前端：ticket type字段设置为只读/disabled
-2. 后端：创建模板配置接口和表
-3. 前端：Due date使用支持秒级的时间选择器
+**修复内容**:
+- 后端: Template.java 添加 type 字段
+- 后端: CreateTemplateRequest 添加 type 字段
+- 前端: TemplateManager.tsx 添加 type 选择器
+- 前端: CreateTicket.tsx 自动填充 ticketType 并强制只读
 
 **相关文件**:
-- `iGreenticketing/src/components/CreateTicket.tsx`
-- `igreen-backend/src/main/java/com/igreen/domain/entity/TicketTemplate.java` (新建)
-- `iGreenApp/src/components/ui/datetime-picker.tsx`
+- `igreen-backend/src/main/java/com/igreen/domain/entity/Template.java`
+- `igreen-backend/src/main/java/com/igreen/domain/dto/CreateTemplateRequest.java`
+- `igreen-front/src/components/TemplateManager.tsx`
+- `igreen-front/src/components/CreateTicket.tsx`
 
 ---
 
@@ -247,7 +249,7 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 
 ---
 
-### FB-008: 新增站点自定义ID 🟡 P1
+### FB-008: 新增站点自定义ID ✅ 已验证
 
 **问题描述**:  
 用户新增站点(add site)时需要支持自定义站点ID，而不是使用系统自动生成的ID。
@@ -257,41 +259,57 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 - 后端站点创建接口
 - 数据库站点表
 
-**建议解决方案**:
-1. 后端：允许前端传入自定义site_id
-2. 后端：验证site_id唯一性
-3. 前端：新增站点表单添加站点ID输入框
-4. 数据库：考虑site_id字段类型和约束
+**修复方案**:  
+采用方案一：新增 `code` 字段存储用户自定义编码，保持 `id` 为数据库自增主键。
+
+**修复内容**:
+1. 后端：Site 实体添加 `code` 字段
+2. 后端：SiteCreateRequest 添加 `code` 字段
+3. 后端：SiteService.createSite() 支持 code 唯一性验证
+4. 后端：SiteMapper 添加 countByCode 方法
+5. 前端：SiteManagement.tsx 添加 code 输入框
+6. 前端：表格显示 code 替代 id（若 code 为空则显示 id 前8位）
+
+**数据库迁移**:
+```bash
+mysql -u root -p igreen_db < scripts/migration_add_site_code.sql
+```
 
 **相关文件**:
 - `igreen-backend/src/main/java/com/igreen/domain/entity/Site.java`
-- `igreen-backend/src/main/java/com/igreen/domain/controller/SiteController.java`
-- `iGreenticketing/src/components/SiteManagement.tsx`
+- `igreen-backend/src/main/java/com/igreen/domain/dto/SiteCreateRequest.java`
+- `igreen-backend/src/main/java/com/igreen/domain/service/SiteService.java`
+- `igreen-backend/src/main/java/com/igreen/domain/mapper/SiteMapper.java`
+- `igreen-backend/src/main/resources/mapper/SiteMapper.xml`
+- `igreen-backend/init-scripts/01-schema.sql`
+- `igreen-backend/scripts/migration_add_site_code.sql`
+- `igreen-front/src/lib/types.ts`
+- `igreen-front/src/components/SiteManagement.tsx`
 
 ---
 
-### FB-009: 工程师接单后assign to字段变化 🟡 P1
+### FB-009: 工程师接单后assign to字段变化 ✅ 已完成
 
 **问题描述**:  
 工程师在APP接单后，工单的assign to字段由群组名称变成工程师名称，这个行为需要确认是否符合预期。
 
-**影响范围**:  
-- 工单分配逻辑
-- APP接单流程
-- 工单详情显示
+**修复方案**:
+- `assignedTo` 字段保持为分组ID不变
+- 新增 `acceptedUserId` 和 `acceptedUserName` 字段记录实际接单工程师
+- 前端 TicketDetail 显示接单工程师信息
 
-**建议解决方案**:
-1. 确认业务逻辑：接单后是否应该更新assign_to字段
-2. 如需保留原群组：assign_to保持群组名称，新增字段记录实际接单工程师
-3. 如需更新：确保逻辑一致，前后端统一
+**修复内容**:
+- 后端: Ticket 实体已有 acceptedUserId 字段
+- 前端: types.ts Ticket 接口添加 acceptedUserId/acceptedUserName
+- 前端: TicketDetail.tsx 显示接单工程师信息
 
 **相关文件**:
-- `igreen-backend/src/main/java/com/igreen/domain/service/TicketService.java`
-- `iGreenApp/src/lib/api.ts`
+- `igreen-front/src/lib/types.ts`
+- `igreen-front/src/components/TicketDetail.tsx`
 
 ---
 
-### FB-010: Dashboard导出和时间过滤功能 🟡 P1
+### FB-010: Dashboard导出和时间过滤功能 ✅ 已完成
 
 **问题描述**:  
 需要在Dashboard页面新增以下功能：
@@ -299,25 +317,31 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 2. 时间过滤新增对创建时间字段的过滤，通过起止时间过滤
 3. 添加分页组件
 
-**影响范围**:  
-- Dashboard页面
-- 后端导出接口
-- 数据查询和过滤
+**修复方案**:
 
-**建议解决方案**:
-1. 前端：
-   - 添加export按钮，点击弹出确认对话框
-   - 添加创建时间起止选择器
-   - 实现或优化分页组件
-2. 后端：
-   - 新增导出接口，支持按过滤条件导出Excel
-   - 查询接口支持创建时间范围过滤
-   - 支持分页查询参数（offset, limit）
+**后端**:
+1. TicketController 添加 `/tickets/export` 导出端点
+2. TicketService 添加 `exportTickets` 方法，使用 EasyExcel 导出
+3. getTickets 接口添加 `createdBefore` 参数
+
+**前端**:
+1. Dashboard.tsx 添加 Export 按钮 + 二次确认对话框
+2. 添加创建时间范围选择器（起止时间）
+3. 添加分页组件（每页20条）
+
+**修复内容**:
+- 后端: TicketController.java 添加导出端点
+- 后端: TicketService.java 添加 exportTickets 方法
+- 后端: TicketExcelDTO.java 工单导出 Excel DTO
+- 前端: api.ts 添加 exportTickets 函数
+- 前端: Dashboard.tsx 添加导出按钮、时间过滤、分页
 
 **相关文件**:
-- `iGreenticketing/src/components/Dashboard.tsx`
 - `igreen-backend/src/main/java/com/igreen/domain/controller/TicketController.java`
 - `igreen-backend/src/main/java/com/igreen/domain/service/TicketService.java`
+- `igreen-backend/src/main/java/com/igreen/domain/dto/TicketExcelDTO.java`
+- `igreen-front/src/lib/api.ts`
+- `igreen-front/src/components/Dashboard.tsx`
 
 ---
 
@@ -345,16 +369,21 @@ export function formatDateTime(date: Date | string | undefined | null): string {
 2. [x] FB-002: 权限配置不明确 - 已修复验证
 3. [x] FB-003: 工单时间显示精度不足 - 已修复验证
 4. [x] FB-004: APP提交后系统侧状态为空 - 已修复验证
-5. [ ] FB-005: 创建工单ticket type可修改
+5. [x] FB-005: 创建工单ticket type可修改 - 已完成
 6. [x] FB-006: 重分配reassign操作报错 - 已修复验证
-7. [ ] FB-007: 站点导入导出模板表头语言
-8. [ ] FB-008: 新增站点自定义ID
-9. [ ] FB-009: 工程师接单后assign to字段变化
-10. [ ] FB-010: Dashboard导出和时间过滤功能
+7. [x] FB-007: 站点导入导出模板表头语言 - 已完成
+8. [x] FB-008: 新增站点自定义ID - 已修复验证
+9. [x] FB-009: 工程师接单后assign to字段变化 - 已完成
+10. [x] FB-010: Dashboard导出和时间过滤功能 - 已完成
 
 ---
 
 **更新日志**:
+- 2025-03-15: FB-010 Dashboard导出、时间过滤、分页功能已完成
+- 2025-03-15: FB-009 接单工程师显示已完成
+- 2025-03-15: FB-007 站点导入导出模板表头已改为英文
+- 2025-03-15: FB-005 Template添加type字段，创建工单自动填充
+- 2025-03-15: FB-008 站点自定义ID已修复并验证通过
 - 2025-03-15: FB-003 时间显示精度已修复并验证通过
 - 2025-03-15: FB-001、FB-002 已修复并验证通过
 - 2025-03-14: 初始版本，记录10个客户反馈问题

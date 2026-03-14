@@ -10,7 +10,7 @@ import {Label} from "./ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
 import {Calendar} from "./ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "./ui/popover";
-import {CalendarIcon, Check, Loader2} from "lucide-react";
+import {CalendarIcon, Check, Loader2, Lock} from "lucide-react";
 import {format} from "date-fns";
 import {
     Command,
@@ -103,6 +103,12 @@ export function CreateTicket(props: CreateTicketProps) {
     const selectedTemplate = templates.find((t) => t.id === templateId);
     const correctiveTickets = tickets.filter(t => t.type === "corrective");
     const isProblemTicket = ticketType === "problem";
+    
+    useEffect(() => {
+        if (selectedTemplate && selectedTemplate.type) {
+            setTicketType(selectedTemplate.type);
+        }
+    }, [selectedTemplate]);
 
     const handleCreateTicket = async (ticketData: {
         title: string;
@@ -271,17 +277,25 @@ export function CreateTicket(props: CreateTicketProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>{t("ticketType")}</Label>
-                            <Select value={ticketType} onValueChange={(v) => setTicketType(v as TicketType)}>
-                                <SelectTrigger>
-                                    <SelectValue/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="planned">{t("planned")}</SelectItem>
-                                    <SelectItem value="preventive">{t("preventive")}</SelectItem>
-                                    <SelectItem value="corrective">{t("corrective")}</SelectItem>
-                                    <SelectItem value="problem">{t("problem")}</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <Select value={ticketType} onValueChange={(v) => setTicketType(v as TicketType)} disabled={!!selectedTemplate?.type}>
+                                    <SelectTrigger className={!selectedTemplate?.type ? "" : "bg-muted cursor-not-allowed"}>
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="planned">{t("planned")}</SelectItem>
+                                        <SelectItem value="preventive">{t("preventive")}</SelectItem>
+                                        <SelectItem value="corrective">{t("corrective")}</SelectItem>
+                                        <SelectItem value="problem">{t("problem")}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {selectedTemplate?.type && (
+                                    <Lock className="h-4 w-4 text-muted-foreground" />
+                                )}
+                            </div>
+                            {selectedTemplate?.type && (
+                                <p className="text-xs text-muted-foreground">Auto-filled from template</p>
+                            )}
                         </div>
 
                         {!isProblemTicket && (

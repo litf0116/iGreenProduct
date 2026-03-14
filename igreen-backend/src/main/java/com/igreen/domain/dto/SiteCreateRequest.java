@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SiteCreateRequest(
+        @Size(max = 100) String code,
         @NotBlank @Size(max = 255) String name,
         @Size(max = 1000) String address,
         @Size(max = 50) String level,

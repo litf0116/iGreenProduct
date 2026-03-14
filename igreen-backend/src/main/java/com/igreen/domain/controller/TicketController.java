@@ -11,6 +11,7 @@ import com.igreen.domain.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -43,15 +44,33 @@ public class TicketController {
             @RequestParam(required = false) String priority, 
             @RequestParam(required = false) String assignedTo, 
             @RequestParam(required = false) String keyword, 
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter) {
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdBefore) {
         String userId = getCurrentUserId(httpRequest);
-        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter, userId)));
+        return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter, createdBefore, userId)));
     }
 
     @Operation(summary = "获取工单详情")
     @GetMapping("/{id}")
     public ResponseEntity<Result<TicketResponse>> getTicketById(@PathVariable Long id) {
         return ResponseEntity.ok(Result.success(ticketService.getTicketById(id)));
+    }
+
+    @Operation(summary = "导出工单到Excel")
+    @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public void exportTickets(
+            HttpServletRequest httpRequest,
+            HttpServletResponse response,
+            @RequestParam(required = false) String type, 
+            @RequestParam(required = false) String status, 
+            @RequestParam(required = false) String priority, 
+            @RequestParam(required = false) String assignedTo, 
+            @RequestParam(required = false) String keyword, 
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdAfter,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdBefore) {
+        String userId = getCurrentUserId(httpRequest);
+        ticketService.exportTickets(type, status, priority, assignedTo, keyword, createdAfter, createdBefore, userId, response);
     }
 
     @Operation(summary = "创建工单")

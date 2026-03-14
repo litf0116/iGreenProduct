@@ -14,7 +14,17 @@ import {useUIStore} from "../store";
 import api from "../lib/api";
 import {formatDateTime} from "../lib/utils";
 import {toast} from "sonner";
-import {AlertCircle, Calendar, CheckCircle2, ClipboardList, Clock, Filter, Plus, Search,} from "lucide-react";
+import {AlertCircle, Calendar, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Clock, Download, Filter, Plus, Search,} from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 type TimeFilter = "8hours" | "today" | "week" | "month" | "3months" | "all";
 
@@ -85,6 +95,13 @@ export function Dashboard() {
     const [priorityFilter, setPriorityFilter] = useState<string>("all");
     const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalItems, setTotalItems] = useState(0);
+    const [showExportConfirm, setShowExportConfirm] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [createdAfterDate, setCreatedAfterDate] = useState<string>("");
+    const [createdBeforeDate, setCreatedBeforeDate] = useState<string>("");
 
     useEffect(() => {
         const tab = searchParams.get("type") as TicketType;
@@ -140,23 +157,25 @@ export function Dashboard() {
         setIsLoading(true);
         try {
             const response = await api.getTickets({
-                page: 0,
-                size: 100,
+                page: currentPage,
+                size: 20,
                 type: activeTab,
                 status: statusFilter !== "all" ? statusFilter : undefined,
                 priority: priorityFilter !== "all" ? priorityFilter : undefined,
                 keyword: searchQuery || undefined,
-                createdAfter: getCreatedAfter(timeFilter)
+                createdAfter: createdAfterDate || getCreatedAfter(timeFilter),
+                createdBefore: createdBeforeDate || undefined
             });
-            // 设置到本地状态
-            setTickets(response.records || response || []);
+            setTickets(response.records || []);
+            setTotalItems(response.total || 0);
+            setTotalPages(Math.ceil((response.total || 0) / 20));
         } catch (error) {
             console.error("Failed to load tickets:", error);
             toast.error(t("failedToLoadTickets") || "Failed to load tickets");
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, t]);
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, currentPage, createdAfterDate, createdBeforeDate, t]);
 
     // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
     useEffect(() => {
@@ -165,6 +184,39 @@ export function Dashboard() {
             loadStats();
         }
     }, [location.pathname, loadTickets, loadStats]);
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const blob = await api.exportTickets({
+                type: activeTab,
+                status: statusFilter !== "all" ? statusFilter : undefined,
+                priority: priorityFilter !== "all" ? priorityFilter : undefined,
+                keyword: searchQuery || undefined,
+                createdAfter: createdAfterDate || getCreatedAfter(timeFilter),
+                createdBefore: createdBeforeDate || undefined
+            });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tickets_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.success(t("exportSuccess") || "Export successful");
+        } catch (error) {
+            console.error("Export failed:", error);
+            toast.error(t("exportFailed") || "Export failed");
+        } finally {
+            setIsExporting(false);
+            setShowExportConfirm(false);
+        }
+    };
+
+    useEffect(() => {
+        setCurrentPage(0);
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, createdAfterDate, createdBeforeDate]);
 
     // Filter tickets by time
     const filterByTime = (ticket: Ticket): boolean => {
@@ -319,11 +371,39 @@ export function Dashboard() {
                     <h1 className="text-primary">{t("welcomeBack")}</h1>
                     <p className="text-muted-foreground">{t("ticketOverview")}</p>
                 </div>
-                <Button onClick={() => navigate("/tickets")} className="gap-2 bg-[#0ea5e9] hover:bg-[#0284c7]">
-                    <Plus className="h-4 w-4"/>
-                    {t("createTicket")}
-                </Button>
+                <div className="flex gap-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => setShowExportConfirm(true)}
+                        className="gap-2"
+                        disabled={isExporting}
+                    >
+                        <Download className="h-4 w-4"/>
+                        {isExporting ? (t("exporting") || "Exporting...") : (t("export") || "Export")}
+                    </Button>
+                    <Button onClick={() => navigate("/tickets")} className="gap-2 bg-[#0ea5e9] hover:bg-[#0284c7]">
+                        <Plus className="h-4 w-4"/>
+                        {t("createTicket")}
+                    </Button>
+                </div>
             </div>
+
+            <AlertDialog open={showExportConfirm} onOpenChange={setShowExportConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t("confirmExport") || "Confirm Export"}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t("confirmExportDescription") || "Are you sure you want to export the current filtered tickets to Excel?"}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t("cancel") || "Cancel"}</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleExport} disabled={isExporting}>
+                            {t("export") || "Export"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Tabs for Ticket Types */}
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TicketType)} className="space-y-6">
@@ -422,7 +502,7 @@ export function Dashboard() {
                         </div>
 
                         {/* Clear Filters */}
-                        {(timeFilter !== "all" || statusFilter !== "all" || priorityFilter !== "all" || searchQuery) && (
+                        {(timeFilter !== "all" || statusFilter !== "all" || priorityFilter !== "all" || searchQuery || createdAfterDate || createdBeforeDate) && (
                             <Button
                                 variant="outline"
                                 onClick={() => {
@@ -430,12 +510,35 @@ export function Dashboard() {
                                     setStatusFilter("all");
                                     setPriorityFilter("all");
                                     setSearchQuery("");
+                                    setCreatedAfterDate("");
+                                    setCreatedBeforeDate("");
                                 }}
                                 className="shrink-0"
                             >
                                 {t("clearFilters")}
                             </Button>
                         )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-muted-foreground">{t("createdAfter") || "Created After"}</label>
+                            <Input
+                                type="datetime-local"
+                                value={createdAfterDate}
+                                onChange={(e) => setCreatedAfterDate(e.target.value)}
+                                className="bg-white w-full sm:w-auto"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-muted-foreground">{t("createdBefore") || "Created Before"}</label>
+                            <Input
+                                type="datetime-local"
+                                value={createdBeforeDate}
+                                onChange={(e) => setCreatedBeforeDate(e.target.value)}
+                                className="bg-white w-full sm:w-auto"
+                            />
+                        </div>
                     </div>
 
                     {/* Stats Cards */}
@@ -637,6 +740,34 @@ export function Dashboard() {
                                 </TableBody>
                             </Table>
                         </div>
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between px-4 py-3 border-t">
+                                <div className="text-sm text-muted-foreground">
+                                    {t("showing") || "Showing"} {currentPage * 20 + 1} - {Math.min((currentPage + 1) * 20, totalItems)} {t("of") || "of"} {totalItems} {t("tickets") || "tickets"}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                                        disabled={currentPage === 0}
+                                    >
+                                        <ChevronLeft className="h-4 w-4"/>
+                                    </Button>
+                                    <span className="text-sm">
+                                        {currentPage + 1} / {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                                        disabled={currentPage >= totalPages - 1}
+                                    >
+                                        <ChevronRight className="h-4 w-4"/>
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </Card>
                 </TabsContent>
             </Tabs>

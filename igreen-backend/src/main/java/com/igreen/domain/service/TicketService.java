@@ -1,5 +1,6 @@
 package com.igreen.domain.service;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,6 +18,7 @@ import com.igreen.domain.enums.TicketStatus;
 import com.igreen.domain.enums.TicketType;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.mapper.*;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +26,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -101,10 +106,9 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
-    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter, String currentUserId) {
+    public PageResult<TicketResponse> getTickets(int page, int size, String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter, LocalDateTime createdBefore, String currentUserId) {
         String country = CountryContext.get();
         
-        // 查询当前用户信息，用于权限判断
         User currentUser = userMapper.selectById(currentUserId);
         UserRole currentUserRole = currentUser != null ? currentUser.getRole() : null;
         
@@ -116,7 +120,6 @@ public class TicketService {
                 wrapper.eq(Ticket::getCountry, country);
             }
             
-            // 权限过滤：ENGINEER 只能查看自己的工单和同组的工单
             if (currentUserRole == UserRole.ENGINEER) {
                 String groupId = currentUser.getGroupId();
                 wrapper.and(w -> w
@@ -140,6 +143,9 @@ public class TicketService {
             }
             if (createdAfter != null) {
                 wrapper.ge(Ticket::getCreatedAt, createdAfter);
+            }
+            if (createdBefore != null) {
+                wrapper.le(Ticket::getCreatedAt, createdBefore);
             }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String keywordLower = keyword.trim().toLowerCase();
@@ -165,6 +171,103 @@ public class TicketService {
             return PageResult.of(pageInfo, ticketResponses);
         } finally {
             PageHelper.clearPage();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void exportTickets(String type, String status, String priority, String assignedTo, String keyword, LocalDateTime createdAfter, LocalDateTime createdBefore, String currentUserId, HttpServletResponse response) {
+        String country = CountryContext.get();
+        
+        User currentUser = userMapper.selectById(currentUserId);
+        UserRole currentUserRole = currentUser != null ? currentUser.getRole() : null;
+        
+        LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
+        
+        if (country != null && !country.isBlank()) {
+            wrapper.eq(Ticket::getCountry, country);
+        }
+        
+        if (currentUserRole == UserRole.ENGINEER) {
+            String groupId = currentUser.getGroupId();
+            wrapper.and(w -> w
+                .eq(Ticket::getAcceptedUserId, currentUserId)
+                .or()
+                .eq(Ticket::getAssignedTo, groupId)
+            );
+        }
+        
+        if (type != null) {
+            wrapper.eq(Ticket::getType, type);
+        }
+        if (status != null) {
+            wrapper.eq(Ticket::getStatus, status);
+        }
+        if (priority != null) {
+            wrapper.eq(Ticket::getPriority, priority);
+        }
+        if (assignedTo != null) {
+            wrapper.eq(Ticket::getAssignedTo, assignedTo);
+        }
+        if (createdAfter != null) {
+            wrapper.ge(Ticket::getCreatedAt, createdAfter);
+        }
+        if (createdBefore != null) {
+            wrapper.le(Ticket::getCreatedAt, createdBefore);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String keywordLower = keyword.trim().toLowerCase();
+            wrapper.and(w -> w
+                .like(Ticket::getTitle, keywordLower)
+                .or()
+                .like(Ticket::getDescription, keywordLower)
+                .or()
+                .apply("CAST(id AS CHAR) LIKE {0}", "%" + keywordLower + "%")
+            );
+        }
+
+        wrapper.orderByDesc(Ticket::getCreatedAt);
+
+        List<Ticket> tickets = ticketMapper.selectList(wrapper);
+
+        List<TicketExcelDTO> excelDTOs = tickets.stream().map(ticket -> {
+            User creator = userMapper.selectById(ticket.getCreatedBy());
+            Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
+            Site site = siteMapper.selectById(ticket.getSiteId());
+            User acceptedUser = ticket.getAcceptedUserId() != null ? userMapper.selectById(ticket.getAcceptedUserId()) : null;
+            
+            TicketExcelDTO dto = new TicketExcelDTO();
+            dto.setId(String.valueOf(ticket.getId()));
+            dto.setTitle(ticket.getTitle());
+            dto.setType(ticket.getType());
+            dto.setStatus(ticket.getStatus() != null ? ticket.getStatus().getValue() : null);
+            dto.setPriority(ticket.getPriority());
+            dto.setSiteName(site != null ? site.getName() : null);
+            dto.setSiteAddress(site != null ? site.getAddress() : null);
+            dto.setAssignedToName(assignGroup != null ? assignGroup.getName() : null);
+            dto.setAcceptedUserName(acceptedUser != null ? acceptedUser.getName() : null);
+            dto.setCreatedByName(creator != null ? creator.getName() : null);
+            dto.setCreatedAt(ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null);
+            dto.setDueDate(ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null);
+            dto.setCompletedAt(ticket.getUpdatedAt() != null && ticket.getStatus() == TicketStatus.COMPLETED 
+                ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null);
+            return dto;
+        }).collect(Collectors.toList());
+
+        String fileName = "tickets_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".xlsx";
+
+        try {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            response.setHeader("Content-Disposition",
+                "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+
+            EasyExcel.write(response.getOutputStream(), TicketExcelDTO.class)
+                .sheet("Tickets")
+                .doWrite(excelDTOs);
+
+        } catch (IOException e) {
+            log.error("导出工单数据失败", e);
+            throw new BusinessException("导出失败: " + e.getMessage());
         }
     }
 
