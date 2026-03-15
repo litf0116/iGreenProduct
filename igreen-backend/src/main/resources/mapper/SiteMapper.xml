@@ -30,6 +30,12 @@
         WHERE code = #{code}
     </select>
 
+    <select id="countByCodeAndIdNot" resultType="int">
+        SELECT COUNT(*)
+        FROM sites
+        WHERE code = #{code} AND id != #{id}
+    </select>
+
     <select id="selectByNameContaining" resultMap="SiteResultMap">
         SELECT <include refid="Base_Column_List"/>
         FROM sites

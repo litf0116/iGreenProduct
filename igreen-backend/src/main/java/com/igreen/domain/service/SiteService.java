@@ -147,6 +147,16 @@ public class SiteService {
             throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
         }
 
+        // 更新 code
+        if (request.getCode() != null && !request.getCode().isBlank()) {
+            if (!request.getCode().equals(existingSite.getCode())) {
+                if (siteMapper.countByCodeAndIdNot(request.getCode(), id) > 0) {
+                    throw new BusinessException(ErrorCode.SITE_EXISTS);
+                }
+existingSite.setCode(request.getCode());
+            }
+        }
+
         if (request.getName() != null && !request.getName().equals(existingSite.getName())) {
             if (siteMapper.countByName(request.getName()) > 0) {
                 throw new BusinessException(ErrorCode.SITE_EXISTS);

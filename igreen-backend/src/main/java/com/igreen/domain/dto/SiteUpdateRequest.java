@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SiteUpdateRequest {
+    private String code;
     private String name;
     private String address;
     private String level;
