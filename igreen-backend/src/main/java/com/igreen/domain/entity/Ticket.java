@@ -31,11 +31,13 @@ public class Ticket {
     private TicketStatus status;
     private String country;
     private String priority;
+    @TableField("site")
     private String siteId;
     private String templateId;
     private String assignedTo;
     private String acceptedUserId;
     private String createdBy;
+    @TableField(exist = false)
     private String templateData;
     private Boolean accepted;
     private LocalDateTime acceptedAt;
