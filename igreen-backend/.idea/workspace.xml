@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="u" />
+    <list default="true" id="c6020390-892f-474d-99c7-f8e1f88c5ed8" name="更改" comment="u">
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/components/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/components/Login.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../iGreenApp/src/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/igreen/domain/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../igreen-front/src/components/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../igreen-front/src/components/Login.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -30,7 +35,6 @@
   </component>
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="1769" />
-    <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
