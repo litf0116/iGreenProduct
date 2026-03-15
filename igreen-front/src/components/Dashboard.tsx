@@ -8,7 +8,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "./ui/tabs";
 import {Skeleton} from "./ui/skeleton";
 import {Select, SelectContent, SelectItem, SelectTrigger,} from "./ui/select";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
-import {Ticket, TicketStatus, TicketType} from "../lib/types";
+import {Ticket, TicketStatus, TicketType, toAdminStatus, AdminTicketStatus} from "../lib/types";
 import {TranslationKey, translations} from "../lib/i18n";
 import {useUIStore} from "../store";
 import api from "../lib/api";
@@ -273,48 +273,52 @@ export function Dashboard() {
         });
     }, [tickets, activeTab, timeFilter, statusFilter, priorityFilter, searchQuery]);
 
-    const getStatusColor = (status: TicketStatus) => {
-        switch (status) {
+const getStatusColor = (status: TicketStatus) => {
+        const adminStatus = toAdminStatus(status);
+        switch (adminStatus) {
             case "open":
                 return "bg-blue-500";
-            case "assigned":
-                return "bg-indigo-500";
-            case "accepted":
-                return "bg-cyan-500";
             case "in_progress":
                 return "bg-orange-500";
             case "submitted":
                 return "bg-purple-500";
-            case "completed":
-                return "bg-green-500";
             case "on_hold":
                 return "bg-yellow-500";
-            case "cancelled":
-                return "bg-red-500";
+            case "closed":
+                return "bg-green-500";
             default:
                 return "bg-gray-500";
         }
     };
 
     const getStatusBadgeVariant = (status: TicketStatus) => {
-        switch (status) {
+        const adminStatus = toAdminStatus(status);
+        switch (adminStatus) {
             case "open":
                 return "default";
-            case "assigned":
-            case "accepted":
             case "in_progress":
                 return "secondary";
             case "submitted":
                 return "default";
-            case "completed":
-                return "outline";
             case "on_hold":
                 return "default";
-            case "cancelled":
-                return "destructive";
+            case "closed":
+                return "outline";
             default:
                 return "default";
         }
+    };
+
+    const getStatusTranslationKey = (status: TicketStatus): TranslationKey => {
+        const adminStatus = toAdminStatus(status);
+        const statusMap: Record<AdminTicketStatus, TranslationKey> = {
+            "open": "open",
+            "in_progress": "inProgress",
+            "submitted": "submitted",
+            "on_hold": "onHold",
+            "closed": "closed",
+        };
+        return statusMap[adminStatus];
     };
 
     const getPriorityBadge = (priority: string): "default" | "secondary" | "outline" | "destructive" => {
@@ -334,20 +338,6 @@ export function Dashboard() {
             default:
                 return "default";
         }
-    };
-
-    const getStatusTranslationKey = (status: string): TranslationKey => {
-        const statusMap: Record<string, TranslationKey> = {
-            "open": "open",
-            "accepted": "accepted",
-            "in_progress": "inProgress",
-            "submitted": "submitted",
-            "completed": "closed",
-            "on_hold": "onHold",
-            "cancelled": "cancelled",
-            "closed": "closed",
-        };
-        return statusMap[status] || status as TranslationKey;
     };
 
     const getPriorityTranslationKey = (priority: string): TranslationKey => {
