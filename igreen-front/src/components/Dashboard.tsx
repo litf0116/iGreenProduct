@@ -6,7 +6,7 @@ import {Button} from "./ui/button";
 import {Input} from "./ui/input";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "./ui/tabs";
 import {Skeleton} from "./ui/skeleton";
-import {Select, SelectContent, SelectItem, SelectTrigger,} from "./ui/select";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
 import {Ticket, TicketStatus, TicketType, toAdminStatus, AdminTicketStatus} from "../lib/types";
 import {TranslationKey, translations} from "../lib/i18n";
@@ -744,7 +744,7 @@ const getStatusColor = (status: TicketStatus) => {
                                             setPageSize(Number(v));
                                             setCurrentPage(0);
                                         }}>
-                                            <SelectTrigger className="w-16 h-8">
+                                            <SelectTrigger className="w-20 h-8">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
