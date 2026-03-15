@@ -17,10 +17,6 @@ import java.time.LocalDateTime;
 @HeadRowHeight(25)
 public class SiteExcelDTO {
 
-    @ExcelProperty("ID")
-    @ColumnWidth(20)
-    private String id;
-
     @ExcelProperty("Site Code")
     @ColumnWidth(20)
     private String code;

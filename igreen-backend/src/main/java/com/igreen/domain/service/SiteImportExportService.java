@@ -211,7 +211,6 @@ public class SiteImportExportService {
 
     private SiteExcelDTO toExcelDTO(Site site) {
         SiteExcelDTO dto = new SiteExcelDTO();
-        dto.setId(site.getId());
         dto.setCode(site.getCode());
         dto.setName(site.getName());
         dto.setAddress(site.getAddress());
