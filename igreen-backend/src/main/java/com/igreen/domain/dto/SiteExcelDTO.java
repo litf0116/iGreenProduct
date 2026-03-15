@@ -17,54 +17,35 @@ import java.time.LocalDateTime;
 @HeadRowHeight(25)
 public class SiteExcelDTO {
 
-    /**
-     * 站点ID (仅导出时使用，导入时忽略)
-     */
     @ExcelProperty("ID")
     @ColumnWidth(20)
     private String id;
 
-    /**
-     * 站点名称
-     */
-    @ExcelProperty("站点名称")
+    @ExcelProperty("Site Code")
+    @ColumnWidth(20)
+    private String code;
+
+    @ExcelProperty("Site Name")
     @ColumnWidth(25)
     private String name;
 
-    /**
-     * 站点地址
-     */
-    @ExcelProperty("站点地址")
+    @ExcelProperty("Address")
     @ColumnWidth(40)
     private String address;
 
-    /**
-     * 站点等级
-     * 可选，有效值: A/B/C/normal，默认 normal
-     */
-    @ExcelProperty("站点等级")
+    @ExcelProperty("Level")
     @ColumnWidth(15)
     private String level;
 
-    /**
-     * 站点状态
-     * 可选，有效值: online/offline/under_construction，默认 online
-     */
-    @ExcelProperty("站点状态")
+    @ExcelProperty("Status")
     @ColumnWidth(15)
     private String status;
 
-    /**
-     * 创建时间 (仅导出时使用)
-     */
-    @ExcelProperty("创建时间")
+    @ExcelProperty("Created At")
     @ColumnWidth(20)
     private LocalDateTime createdAt;
 
-    /**
-     * 更新时间 (仅导出时使用)
-     */
-    @ExcelProperty("更新时间")
+    @ExcelProperty("Updated At")
     @ColumnWidth(20)
     private LocalDateTime updatedAt;
 }

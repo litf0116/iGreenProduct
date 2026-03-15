@@ -11,29 +11,18 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class SiteTemplateDTO {
 
-    /**
-     * 站点名称
-     */
+    @ExcelProperty("Site Code")
+    private String code;
+
     @ExcelProperty("Site Name")
     private String name;
 
-    /**
-     * 站点地址
-     */
     @ExcelProperty("Address")
     private String address;
 
-    /**
-     * 站点等级
-     * 可选，有效值: A/B/C/normal
-     */
     @ExcelProperty("Level")
     private String level;
 
-    /**
-     * 站点状态
-     * 可选，有效值: online/offline/under_construction
-     */
     @ExcelProperty("Status")
     private String status;
 }

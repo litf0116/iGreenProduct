@@ -25,9 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 站点导入导出服务 (使用阿里巴巴 EasyExcel)
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,33 +35,25 @@ public class SiteImportExportService {
     private static final DateTimeFormatter EXPORT_DATE_FORMAT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /**
-     * 导出站点数据
-     */
     public void exportSites(SiteQueryDTO query, HttpServletResponse response) {
-        // 1. 查询数据
         List<Site> sites = querySites(query);
 
-        // 2. 转换为 DTO
         List<SiteExcelDTO> dtos = sites.stream()
             .map(this::toExcelDTO)
             .collect(Collectors.toList());
 
-        // 3. 生成文件名
         String fileName = "sites_export_" +
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) +
             ".xlsx";
 
         try {
-            // 4. 设置响应头
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setCharacterEncoding("utf-8");
             response.setHeader("Content-Disposition",
                 "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
 
-            // 5. 使用 EasyExcel 导出
             EasyExcel.write(response.getOutputStream(), SiteExcelDTO.class)
-                .sheet("站点数据")
+                .sheet("Sites")
                 .doWrite(dtos);
 
         } catch (IOException e) {
@@ -73,26 +62,19 @@ public class SiteImportExportService {
         }
     }
 
-    /**
-     * 下载导入模板
-     */
     public void downloadTemplate(HttpServletResponse response) {
-        // 1. 创建示例数据
         List<SiteTemplateDTO> templates = createTemplateData();
 
-        // 2. 生成文件名
         String fileName = "sites_import_template.xlsx";
 
         try {
-            // 3. 设置响应头
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setCharacterEncoding("utf-8");
             response.setHeader("Content-Disposition",
                 "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
 
-            // 4. 使用 EasyExcel 导出模板
             EasyExcel.write(response.getOutputStream(), SiteTemplateDTO.class)
-                .sheet("导入模板")
+                .sheet("Template")
                 .doWrite(templates);
 
         } catch (IOException e) {
@@ -101,9 +83,6 @@ public class SiteImportExportService {
         }
     }
 
-    /**
-     * 导入站点数据
-     */
     @Transactional(rollbackFor = Exception.class)
     public SiteImportResultDTO importSites(MultipartFile file, boolean overwrite) {
         SiteImportResultDTO result = new SiteImportResultDTO();
@@ -144,20 +123,22 @@ public class SiteImportExportService {
                 int rowNum = i + 2; // Excel行号 (1是表头)
 
                 try {
-                    // 字段校验
                     String error = validateDTO(dto);
                     if (error != null) {
                         errors.add(createError(rowNum, null, null, error));
                         continue;
                     }
 
-                    // 检查重复
-                    if (!overwrite && existsByNameAndAddress(dto.getName(), dto.getAddress())) {
-                        errors.add(createError(rowNum, "name", dto.getName(), "站点已存在"));
+                    if (dto.getCode() != null && !dto.getCode().isEmpty() && existsByCode(dto.getCode())) {
+                        errors.add(createError(rowNum, "code", dto.getCode(), "Site code already exists"));
                         continue;
                     }
 
-                    // 保存站点
+                    if (!overwrite && existsByNameAndAddress(dto.getName(), dto.getAddress())) {
+                        errors.add(createError(rowNum, "name", dto.getName(), "Site already exists"));
+                        continue;
+                    }
+
                     Site site = toEntity(dto);
                     site.setId(generateId());
                     site.setCreatedAt(LocalDateTime.now());
@@ -168,8 +149,8 @@ public class SiteImportExportService {
                     successCount++;
 
                 } catch (Exception e) {
-                    log.error("导入站点失败，行号: {}, 数据: {}", rowNum, dto, e);
-                    errors.add(createError(rowNum, null, null, "系统错误: " + e.getMessage()));
+                    log.error("Import site failed, row: {}, data: {}", rowNum, dto, e);
+                    errors.add(createError(rowNum, null, null, "System error: " + e.getMessage()));
                 }
             }
 
@@ -179,16 +160,16 @@ public class SiteImportExportService {
             result.setErrors(errors);
 
             if (!errors.isEmpty()) {
-                result.setMessage(String.format("导入完成，成功%d条，失败%d条",
+                result.setMessage(String.format("Import completed, %d succeeded, %d failed",
                     successCount, errors.size()));
             } else {
-                result.setMessage("导入成功");
+                result.setMessage("Import successful");
             }
 
         } catch (Exception e) {
-            log.error("导入站点失败", e);
+            log.error("Import sites failed", e);
             result.setSuccess(false);
-            result.setMessage("导入失败: " + e.getMessage());
+            result.setMessage("Import failed: " + e.getMessage());
         }
 
         return result;
@@ -231,10 +212,10 @@ public class SiteImportExportService {
     private SiteExcelDTO toExcelDTO(Site site) {
         SiteExcelDTO dto = new SiteExcelDTO();
         dto.setId(site.getId());
+        dto.setCode(site.getCode());
         dto.setName(site.getName());
         dto.setAddress(site.getAddress());
         dto.setLevel(site.getLevel());
-        // 状态使用小写值 (与前端约定)
         dto.setStatus(site.getStatus() != null ? site.getStatus().name().toLowerCase() : null);
         dto.setCreatedAt(site.getCreatedAt());
         dto.setUpdatedAt(site.getUpdatedAt());
@@ -243,13 +224,13 @@ public class SiteImportExportService {
 
     private Site toEntity(SiteTemplateDTO dto) {
         Site site = new Site();
+        site.setCode(dto.getCode());
         site.setName(dto.getName());
         site.setAddress(dto.getAddress());
         site.setLevel(dto.getLevel() != null ? dto.getLevel() : "normal");
 
         if (dto.getStatus() != null && !dto.getStatus().isEmpty()) {
             try {
-                // 状态值可能是大写或小写，尝试转换
                 String statusValue = dto.getStatus().toUpperCase();
                 site.setStatus(SiteStatus.valueOf(statusValue));
             } catch (Exception e) {
@@ -264,16 +245,19 @@ public class SiteImportExportService {
 
     private String validateDTO(SiteTemplateDTO dto) {
         if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            return "站点名称不能为空";
+            return "Site name is required";
         }
         if (dto.getName().length() > 100) {
-            return "站点名称不能超过100字符";
+            return "Site name cannot exceed 100 characters";
         }
         if (dto.getAddress() == null || dto.getAddress().trim().isEmpty()) {
-            return "站点地址不能为空";
+            return "Address is required";
         }
         if (dto.getAddress().length() > 500) {
-            return "站点地址不能超过500字符";
+            return "Address cannot exceed 500 characters";
+        }
+        if (dto.getCode() != null && dto.getCode().length() > 50) {
+            return "Site code cannot exceed 50 characters";
         }
         return null;
     }
@@ -283,6 +267,10 @@ public class SiteImportExportService {
         wrapper.eq(Site::getName, name)
                .eq(Site::getAddress, address);
         return siteMapper.selectCount(wrapper) > 0;
+    }
+
+    private boolean existsByCode(String code) {
+        return siteMapper.countByCode(code) > 0;
     }
 
     private String generateId() {
@@ -301,24 +289,26 @@ public class SiteImportExportService {
     private List<SiteTemplateDTO> createTemplateData() {
         List<SiteTemplateDTO> templates = new ArrayList<>();
 
-        // 添加示例数据
         SiteTemplateDTO example1 = new SiteTemplateDTO();
-        example1.setName("示例站点1");
-        example1.setAddress("123 示例地址");
+        example1.setCode("SITE001");
+        example1.setName("Example Site 1");
+        example1.setAddress("123 Example Street");
         example1.setLevel("A");
         example1.setStatus("online");
         templates.add(example1);
 
         SiteTemplateDTO example2 = new SiteTemplateDTO();
-        example2.setName("示例站点2");
-        example2.setAddress("456 示例地址");
+        example2.setCode("SITE002");
+        example2.setName("Example Site 2");
+        example2.setAddress("456 Example Avenue");
         example2.setLevel("B");
         example2.setStatus("offline");
         templates.add(example2);
 
         SiteTemplateDTO example3 = new SiteTemplateDTO();
-        example3.setName("示例站点3");
-        example3.setAddress("789 示例地址");
+        example3.setCode("SITE003");
+        example3.setName("Example Site 3");
+        example3.setAddress("789 Example Road");
         example3.setLevel("C");
         example3.setStatus("under_construction");
         templates.add(example3);
