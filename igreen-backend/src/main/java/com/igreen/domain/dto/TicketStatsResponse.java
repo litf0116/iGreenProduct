@@ -1,14 +1,17 @@
 package com.igreen.domain.dto;
 
-/**
- * 工单统计响应
- * 使用管理端状态作为统计维度
- */
-public record TicketStatsResponse(
-    int total,
-    int open,
-    int inProgress,
-    int submitted,
-    int onHold,
-    int closed
-) {}
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TicketStatsResponse {
+    private int total;
+    private int open;
+    private int inProgress;
+    private int submitted;
+    private int onHold;
+    private int closed;
+}

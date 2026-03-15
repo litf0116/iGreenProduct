@@ -32,9 +32,9 @@ public class AuthController {
         TokenResponse response = userService.login(request);
 
         // 生成 refresh token
-        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.accessToken()), jwtUtils.extractUsername(response.accessToken()));
+        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.getAccessToken()), jwtUtils.extractUsername(response.getAccessToken()));
 
-        response = new TokenResponse(response.accessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
+        response = new TokenResponse(response.getAccessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
 
         return ResponseEntity.ok(Result.success(response));
     }
@@ -44,8 +44,8 @@ public class AuthController {
     public ResponseEntity<Result<TokenResponse>> register(@Valid @RequestBody RegisterRequest request) {
         TokenResponse response = userService.register(request);
 
-        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.accessToken()), jwtUtils.extractUsername(response.accessToken()));
-        response = new TokenResponse(response.accessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtUtils.extractUserId(response.getAccessToken()), jwtUtils.extractUsername(response.getAccessToken()));
+        response = new TokenResponse(response.getAccessToken(), refreshToken, jwtUtils.getExpirationMs() / 1000);
 
         return ResponseEntity.ok(Result.success(response));
     }
@@ -53,12 +53,12 @@ public class AuthController {
     @Operation(summary = "刷新 Token")
     @PostMapping("/refresh")
     public ResponseEntity<Result<TokenResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
-        if (!jwtUtils.validateToken(request.refreshToken())) {
+        if (!jwtUtils.validateToken(request.getRefreshToken())) {
             throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
-        String username = jwtUtils.extractUsername(request.refreshToken());
-        String userId = jwtUtils.extractUserId(request.refreshToken());
+        String username = jwtUtils.extractUsername(request.getRefreshToken());
+        String userId = jwtUtils.extractUserId(request.getRefreshToken());
 
         User user = userMapper.selectByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 

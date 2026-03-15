@@ -1,15 +1,22 @@
 package com.igreen.domain.dto;
 
-public record UserResponse(
-        String id,
-        String name,
-        String username,
-        String email,
-        String phone,
-        String role,      // 小写: "admin", "manager", "engineer"
-        String groupId,
-        String groupName,
-        String status,    // 小写: "active", "inactive"
-        String country,
-        String createdAt
-) {}
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserResponse {
+    private String id;
+    private String name;
+    private String username;
+    private String email;
+    private String phone;
+    private String role;
+    private String groupId;
+    private String groupName;
+    private String status;
+    private String country;
+    private String createdAt;
+}

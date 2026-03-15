@@ -1,15 +1,36 @@
 package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TicketUpdateRequest(String title, String description, String type, String siteId, String status, String priority,
-                                  String assignedTo, LocalDateTime dueDate, List<String> completedSteps, Map<String, Object> templateData,
-                                   LocalDateTime departureAt, String departurePhoto, LocalDateTime arrivalAt, String arrivalPhoto,
-                                   String completionPhoto, String cause, String solution, List<String> relatedTicketIds, String problemType) {
-
+public class TicketUpdateRequest {
+    private String title;
+    private String description;
+    private String type;
+    private String siteId;
+    private String status;
+    private String priority;
+    private String assignedTo;
+    private LocalDateTime dueDate;
+    private List<String> completedSteps;
+    private Map<String, Object> templateData;
+    private LocalDateTime departureAt;
+    private String departurePhoto;
+    private LocalDateTime arrivalAt;
+    private String arrivalPhoto;
+    private String completionPhoto;
+    private String cause;
+    private String solution;
+    private List<String> relatedTicketIds;
+    private String problemType;
 }

@@ -33,24 +33,24 @@ public class SiteService {
         String country = CountryContext.get();
         
         LambdaQueryWrapper<Site> nameWrapper = new LambdaQueryWrapper<>();
-        nameWrapper.eq(Site::getName, request.name()).eq(Site::getCountry, country);
+        nameWrapper.eq(Site::getName, request.getName()).eq(Site::getCountry, country);
         if (siteMapper.selectCount(nameWrapper) > 0) {
             throw new BusinessException(ErrorCode.SITE_EXISTS);
         }
 
-        if (request.code() != null && !request.code().isBlank()) {
-            if (siteMapper.countByCode(request.code()) > 0) {
+        if (request.getCode() != null && !request.getCode().isBlank()) {
+            if (siteMapper.countByCode(request.getCode()) > 0) {
                 throw new BusinessException(ErrorCode.SITE_EXISTS);
             }
         }
 
         Site site = Site.builder()
                 .id(UUID.randomUUID().toString())
-                .code(request.code())
-                .name(request.name())
-                .address(request.address())
-                .level(request.level() != null ? request.level() : "normal")
-                .status(request.status() != null ? request.status() : SiteStatus.ONLINE)
+                .code(request.getCode())
+                .name(request.getName())
+                .address(request.getAddress())
+                .level(request.getLevel() != null ? request.getLevel() : "normal")
+                .status(request.getStatus() != null ? request.getStatus() : SiteStatus.ONLINE)
                 .country(country)
                 .build();
 
@@ -147,20 +147,20 @@ public class SiteService {
             throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
         }
 
-        if (request.name() != null && !request.name().equals(existingSite.getName())) {
-            if (siteMapper.countByName(request.name()) > 0) {
+        if (request.getName() != null && !request.getName().equals(existingSite.getName())) {
+            if (siteMapper.countByName(request.getName()) > 0) {
                 throw new BusinessException(ErrorCode.SITE_EXISTS);
             }
-            existingSite.setName(request.name());
+            existingSite.setName(request.getName());
         }
-        if (request.address() != null) {
-            existingSite.setAddress(request.address());
+        if (request.getAddress() != null) {
+            existingSite.setAddress(request.getAddress());
         }
-        if (request.level() != null) {
-            existingSite.setLevel(request.level());
+        if (request.getLevel() != null) {
+            existingSite.setLevel(request.getLevel());
         }
-        if (request.status() != null) {
-            existingSite.setStatus(request.status());
+        if (request.getStatus() != null) {
+            existingSite.setStatus(request.getStatus());
         }
 
         siteMapper.updateById(existingSite);

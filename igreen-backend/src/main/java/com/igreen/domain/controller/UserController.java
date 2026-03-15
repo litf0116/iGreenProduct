@@ -105,7 +105,7 @@ public class UserController {
     public ResponseEntity<Result<UserResponse>> updateUserCountries(
             @PathVariable String id,
             @Valid @RequestBody UserCountryRequest request) {
-        return ResponseEntity.ok(Result.success(userService.updateUserCountry(id, request.country())));
+        return ResponseEntity.ok(Result.success(userService.updateUserCountry(id, request.getCountry())));
     }
 
     @Operation(summary = "获取当前用户信息")

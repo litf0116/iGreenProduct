@@ -6,18 +6,26 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CreateTemplateRequest(
+public class CreateTemplateRequest {
     @NotBlank(message = "模板名称不能为空")
     @Size(max = 100, message = "模板名称不能超过100个字符")
-    String name,
+    private String name;
 
     @Size(max = 500, message = "模板描述不能超过500个字符")
-    String description,
+    private String description;
 
-    TicketType type,
+    private TicketType type;
 
     @Valid
-    List<TemplateStepRequest> steps
-) {}
+    private List<TemplateStepRequest> steps;
+}

@@ -31,22 +31,22 @@ public class GroupService {
     public Group createGroup(GroupCreateRequest request) {
         String country = CountryContext.get();
         
-        if (groupMapper.countByName(request.name()) > 0) {
+        if (groupMapper.countByName(request.getName()) > 0) {
             throw new BusinessException(ErrorCode.GROUP_EXISTS);
         }
 
         Group group = Group.builder()
                 .id(UUID.randomUUID().toString())
-                .name(request.name())
-                .description(request.description())
-                .status(request.status() != null ? request.status() : GroupStatus.ACTIVE)
+                .name(request.getName())
+                .description(request.getDescription())
+                .status(request.getStatus() != null ? request.getStatus() : GroupStatus.ACTIVE)
                 .country(country)
                 .memberCount(0)
                 .build();
 
         // 设置 tags 数组
-        if (request.tags() != null && request.tags().length > 0) {
-            group.setTagsArray(request.tags());
+        if (request.getTags() != null && request.getTags().length > 0) {
+            group.setTagsArray(request.getTags());
         }
 
         groupMapper.insert(group);
@@ -106,21 +106,21 @@ public class GroupService {
             throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
 
-        if (request.name() != null && !request.name().equals(existingGroup.getName())) {
-            if (groupMapper.countByName(request.name()) > 0) {
+        if (request.getName() != null && !request.getName().equals(existingGroup.getName())) {
+            if (groupMapper.countByName(request.getName()) > 0) {
                 throw new BusinessException(ErrorCode.GROUP_EXISTS);
             }
-            existingGroup.setName(request.name());
+            existingGroup.setName(request.getName());
         }
-        if (request.description() != null) {
-            existingGroup.setDescription(request.description());
+        if (request.getDescription() != null) {
+            existingGroup.setDescription(request.getDescription());
         }
         // 更新 tags 数组
-        if (request.tags() != null) {
-            existingGroup.setTagsArray(request.tags());
+        if (request.getTags() != null) {
+            existingGroup.setTagsArray(request.getTags());
         }
-        if (request.status() != null) {
-            existingGroup.setStatus(request.status());
+        if (request.getStatus() != null) {
+            existingGroup.setStatus(request.getStatus());
         }
 
         groupMapper.updateById(existingGroup);

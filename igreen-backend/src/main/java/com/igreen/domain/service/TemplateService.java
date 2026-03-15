@@ -33,19 +33,19 @@ public class TemplateService {
         String country = CountryContext.get();
         
         LambdaQueryWrapper<Template> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Template::getName, request.name()).eq(Template::getCountry, country);
+        wrapper.eq(Template::getName, request.getName()).eq(Template::getCountry, country);
         if (templateMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
         }
 
         Template template = new Template();
         template.setId(UUID.randomUUID().toString());
-        template.setName(request.name());
-        template.setDescription(request.description());
-        template.setType(request.type() != null ? request.type() : TicketType.PLANNED);
+        template.setName(request.getName());
+        template.setDescription(request.getDescription());
+        template.setType(request.getType() != null ? request.getType() : TicketType.PLANNED);
         template.setCountry(country);
 
-        List<TemplateStep> steps = convertStepsRequest(request.steps());
+        List<TemplateStep> steps = convertStepsRequest(request.getSteps());
         template.setSteps(steps);
 
         templateMapper.insert(template);
@@ -61,24 +61,24 @@ public class TemplateService {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
-        if (request.name() != null && !request.name().equals(existing.getName())) {
+        if (request.getName() != null && !request.getName().equals(existing.getName())) {
             LambdaQueryWrapper<Template> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Template::getName, request.name()).eq(Template::getCountry, country);
+            wrapper.eq(Template::getName, request.getName()).eq(Template::getCountry, country);
             if (templateMapper.selectCount(wrapper) > 0) {
                 throw new BusinessException(ErrorCode.TEMPLATE_EXISTS);
             }
-            existing.setName(request.name());
+            existing.setName(request.getName());
         }
-        if (request.description() != null) {
-            existing.setDescription(request.description());
+        if (request.getDescription() != null) {
+            existing.setDescription(request.getDescription());
         }
         
-        if (request.type() != null) {
-            existing.setType(request.type());
+        if (request.getType() != null) {
+            existing.setType(request.getType());
         }
 
-        if (request.steps() != null) {
-            List<TemplateStep> steps = convertStepsRequest(request.steps());
+        if (request.getSteps() != null) {
+            List<TemplateStep> steps = convertStepsRequest(request.getSteps());
             existing.setSteps(steps);
         }
 
@@ -96,7 +96,7 @@ public class TemplateService {
         int order = 1;
 
         for (TemplateStepRequest stepRequest : stepsRequests) {
-            TemplateStep step = TemplateStep.builder().name(stepRequest.name()).description(stepRequest.description()).sortOrder(stepRequest.order() != null ? stepRequest.order() : order++).fields(convertFieldsRequest(stepRequest.fields())).build();
+            TemplateStep step = TemplateStep.builder().name(stepRequest.getName()).description(stepRequest.getDescription()).sortOrder(stepRequest.getOrder() != null ? stepRequest.getOrder() : order++).fields(convertFieldsRequest(stepRequest.getFields())).build();
 
             steps.add(step);
         }
@@ -113,9 +113,9 @@ public class TemplateService {
 
         for (TemplateFieldRequest fieldRequest : fieldsRequests) {
             TemplateField field = TemplateField.builder()
-                .name(fieldRequest.name())
-                .type(fieldRequest.type())
-                .required(fieldRequest.required())
+                .name(fieldRequest.getName())
+                .type(fieldRequest.getType())
+                .required(fieldRequest.getRequired())
                 .build();
 
             fields.add(field);

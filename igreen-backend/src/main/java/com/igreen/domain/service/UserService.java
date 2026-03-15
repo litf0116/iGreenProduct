@@ -111,48 +111,48 @@ public class UserService {
 
     @Transactional
     public TokenResponse register(RegisterRequest request) {
-        if (request.country() == null || request.country().isBlank()) {
+        if (request.getCountry() == null || request.getCountry().isBlank()) {
             throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
         }
 
-        if (!request.password().equals(request.confirmPassword())) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new BusinessException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        if (request.password().length() < 8) {
+        if (request.getPassword().length() < 8) {
             throw new BusinessException(ErrorCode.PASSWORD_TOO_WEAK);
         }
-        if (!request.password().matches(".*[A-Za-z].*") || !request.password().matches(".*[0-9].*")) {
+        if (!request.getPassword().matches(".*[A-Za-z].*") || !request.getPassword().matches(".*[0-9].*")) {
             throw new BusinessException(ErrorCode.PASSWORD_TOO_WEAK);
         }
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, request.username()).eq(User::getCountry, request.country());
+        wrapper.eq(User::getUsername, request.getUsername()).eq(User::getCountry, request.getCountry());
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.USERNAME_EXISTS);
         }
 
         wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getName, request.name()).eq(User::getCountry, request.country());
+        wrapper.eq(User::getName, request.getName()).eq(User::getCountry, request.getCountry());
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException(ErrorCode.NAME_EXISTS);
         }
 
         UserRole role;
         try {
-            role = request.role() != null ? UserRole.valueOf(request.role().toUpperCase()) : UserRole.ENGINEER;
+            role = request.getRole() != null ? UserRole.valueOf(request.getRole().toUpperCase()) : UserRole.ENGINEER;
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.INVALID_ROLE);
         }
 
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
-                .name(request.name())
-                .username(request.username()).email(request.username() + "@igreen.com")
-                .hashedPassword(passwordEncoder.encode(request.password()))
+                .name(request.getName())
+                .username(request.getUsername()).email(request.getUsername() + "@igreen.com")
+                .hashedPassword(passwordEncoder.encode(request.getPassword()))
                 .role(role)
                 .status(UserStatus.ACTIVE)
-                .country(request.country())
+                .country(request.getCountry())
                 .build();
 
         userMapper.insert(user);
@@ -201,31 +201,31 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        if (request.name() != null) {
-            user.setName(request.name());
+        if (request.getName() != null) {
+            user.setName(request.getName());
         }
-        if (request.username() != null && !request.username().equals(user.getUsername())) {
+        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
             LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(User::getUsername, request.username());
+            wrapper.eq(User::getUsername, request.getUsername());
             if (userMapper.selectCount(wrapper) > 0) {
                 throw new BusinessException(ErrorCode.USERNAME_EXISTS);
             }
-            user.setUsername(request.username());
+            user.setUsername(request.getUsername());
         }
-        if (request.groupId() != null) {
-            user.setGroupId(request.groupId());
+        if (request.getGroupId() != null) {
+            user.setGroupId(request.getGroupId());
         }
-        if (request.status() != null) {
-            user.setStatus(request.status());
+        if (request.getStatus() != null) {
+            user.setStatus(request.getStatus());
         }
-        if (request.role() != null) {
-            user.setRole(request.role());
+        if (request.getRole() != null) {
+            user.setRole(request.getRole());
         }
-        if (request.password() != null && !request.password().isBlank()) {
-            user.setHashedPassword(passwordEncoder.encode(request.password()));
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setHashedPassword(passwordEncoder.encode(request.getPassword()));
         }
-        if (request.country() != null) {
-            user.setCountry(request.country());
+        if (request.getCountry() != null) {
+            user.setCountry(request.getCountry());
         }
 
         userMapper.updateById(user);
@@ -250,11 +250,11 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        if (request.name() != null && !request.name().isBlank()) {
-            user.setName(request.name());
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
         }
-        if (request.phone() != null) {
-            user.setPhone(request.phone());
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
         }
 
         userMapper.updateById(user);

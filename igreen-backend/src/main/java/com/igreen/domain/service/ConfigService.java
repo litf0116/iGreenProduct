@@ -45,30 +45,30 @@ public class ConfigService {
     public SLAConfigResponse createOrUpdateSLAConfig(SLAConfigRequest request) {
         SLAConfig config;
 
-        if (request.id() != null) {
-            config = slaConfigMapper.selectById(request.id());
-            if (config == null && request.priority() != null) {
-                config = slaConfigMapper.selectByPriority(request.priority().name()).orElse(null);
+        if (request.getId() != null) {
+            config = slaConfigMapper.selectById(request.getId());
+            if (config == null && request.getPriority() != null) {
+                config = slaConfigMapper.selectByPriority(request.getPriority().name()).orElse(null);
             }
-        } else if (request.priority() != null) {
-            config = slaConfigMapper.selectByPriority(request.priority().name()).orElse(null);
+        } else if (request.getPriority() != null) {
+            config = slaConfigMapper.selectByPriority(request.getPriority().name()).orElse(null);
         } else {
             config = null;
         }
 
         if (config == null) {
             config = new SLAConfig();
-            config.setId(request.id() != null ? request.id() : UUID.randomUUID().toString());
+            config.setId(request.getId() != null ? request.getId() : UUID.randomUUID().toString());
         }
 
-        if (request.priority() != null) {
-            config.setPriority(request.priority());
+        if (request.getPriority() != null) {
+            config.setPriority(request.getPriority());
         }
-        if (request.responseTimeMinutes() != null) {
-            config.setResponseTimeMinutes(request.responseTimeMinutes());
+        if (request.getResponseTimeMinutes() != null) {
+            config.setResponseTimeMinutes(request.getResponseTimeMinutes());
         }
-        if (request.completionTimeHours() != null) {
-            config.setCompletionTimeHours(request.completionTimeHours());
+        if (request.getCompletionTimeHours() != null) {
+            config.setCompletionTimeHours(request.getCompletionTimeHours());
         }
 
         if (slaConfigMapper.selectById(config.getId()) == null) {
@@ -100,11 +100,11 @@ public class ConfigService {
 
     @Transactional
     public ProblemTypeResponse createProblemType(ProblemTypeRequest request) {
-        if (problemTypeMapper.selectByName(request.name()).isPresent()) {
+        if (problemTypeMapper.selectByName(request.getName()).isPresent()) {
             throw new BusinessException(ErrorCode.PROBLEM_TYPE_EXISTS);
         }
 
-        ProblemType problemType = ProblemType.builder().id(UUID.randomUUID().toString()).name(request.name()).description(request.description()).build();
+        ProblemType problemType = ProblemType.builder().id(UUID.randomUUID().toString()).name(request.getName()).description(request.getDescription()).build();
 
         problemTypeMapper.insert(problemType);
         return toProblemTypeResponse(problemType);
@@ -117,15 +117,15 @@ public class ConfigService {
             throw new BusinessException(ErrorCode.PROBLEM_TYPE_NOT_FOUND);
         }
 
-        if (request.name() != null) {
-            if (problemTypeMapper.countByNameAndIdNot(request.name(), id) > 0) {
+        if (request.getName() != null) {
+            if (problemTypeMapper.countByNameAndIdNot(request.getName(), id) > 0) {
                 throw new BusinessException(ErrorCode.PROBLEM_TYPE_EXISTS);
             }
-            problemType.setName(request.name());
+            problemType.setName(request.getName());
         }
 
-        if (request.description() != null) {
-            problemType.setDescription(request.description());
+        if (request.getDescription() != null) {
+            problemType.setDescription(request.getDescription());
         }
 
         problemTypeMapper.updateById(problemType);
@@ -147,11 +147,11 @@ public class ConfigService {
 
     @Transactional
     public SiteLevelConfigResponse createSiteLevelConfig(SiteLevelConfigRequest request) {
-        if (siteLevelConfigMapper.countByLevelName(request.levelName()) > 0) {
+        if (siteLevelConfigMapper.countByLevelName(request.getLevelName()) > 0) {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
         }
 
-        SiteLevelConfig config = SiteLevelConfig.builder().id(UUID.randomUUID().toString()).levelName(request.levelName()).description(request.description()).slaMultiplier(request.slaMultiplier()).build();
+        SiteLevelConfig config = SiteLevelConfig.builder().id(UUID.randomUUID().toString()).levelName(request.getLevelName()).description(request.getDescription()).slaMultiplier(request.getSlaMultiplier()).build();
 
         siteLevelConfigMapper.insert(config);
         return toSiteLevelConfigResponse(config);
@@ -164,19 +164,19 @@ public class ConfigService {
             throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_NOT_FOUND);
         }
 
-        if (request.levelName() != null) {
-            if (siteLevelConfigMapper.countByLevelNameAndIdNot(request.levelName(), id) > 0) {
+        if (request.getLevelName() != null) {
+            if (siteLevelConfigMapper.countByLevelNameAndIdNot(request.getLevelName(), id) > 0) {
                 throw new BusinessException(ErrorCode.SITE_LEVEL_CONFIG_EXISTS);
             }
-            config.setLevelName(request.levelName());
+            config.setLevelName(request.getLevelName());
         }
 
-        if (request.description() != null) {
-            config.setDescription(request.description());
+        if (request.getDescription() != null) {
+            config.setDescription(request.getDescription());
         }
 
-        if (request.slaMultiplier() != null) {
-            config.setSlaMultiplier(request.slaMultiplier());
+        if (request.getSlaMultiplier() != null) {
+            config.setSlaMultiplier(request.getSlaMultiplier());
         }
 
         siteLevelConfigMapper.updateById(config);

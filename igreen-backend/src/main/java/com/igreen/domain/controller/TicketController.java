@@ -50,12 +50,6 @@ public class TicketController {
         return ResponseEntity.ok(Result.success(ticketService.getTickets(page, size, type, status, priority, assignedTo, keyword, createdAfter, createdBefore, userId)));
     }
 
-    @Operation(summary = "获取工单详情")
-    @GetMapping("/{id}")
-    public ResponseEntity<Result<TicketResponse>> getTicketById(@PathVariable Long id) {
-        return ResponseEntity.ok(Result.success(ticketService.getTicketById(id)));
-    }
-
     @Operation(summary = "导出工单到Excel")
     @GetMapping("/export")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -71,6 +65,12 @@ public class TicketController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime createdBefore) {
         String userId = getCurrentUserId(httpRequest);
         ticketService.exportTickets(type, status, priority, assignedTo, keyword, createdAfter, createdBefore, userId, response);
+    }
+
+    @Operation(summary = "获取工单详情")
+    @GetMapping("/{id}")
+    public ResponseEntity<Result<TicketResponse>> getTicketById(@PathVariable Long id) {
+        return ResponseEntity.ok(Result.success(ticketService.getTicketById(id)));
     }
 
     @Operation(summary = "创建工单")

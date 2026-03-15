@@ -58,15 +58,15 @@ public class TicketService {
         }
 
         // 验证 assignedTo 是用户组ID
-        Group group = groupMapper.selectById(request.assignedTo());
+        Group group = groupMapper.selectById(request.getAssignedTo());
         if (group == null) {
             throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
         }
 
         // 验证 siteId（如果提供）
-        Site site = siteMapper.selectById(request.siteId());
+        Site site = siteMapper.selectById(request.getSiteId());
 
-        if (!TicketType.PROBLEM.name().equals(request.type().toUpperCase())) {
+        if (!TicketType.PROBLEM.name().equals(request.getType().toUpperCase())) {
             if (site == null) {
                 throw new BusinessException(ErrorCode.SITE_NOT_FOUND);
             }
@@ -74,13 +74,13 @@ public class TicketService {
 
 
         String relatedTicketIdsJson = null;
-        if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
-            relatedTicketIdsJson = String.join(",", request.relatedTicketIds());
+        if (request.getRelatedTicketIds() != null && !request.getRelatedTicketIds().isEmpty()) {
+            relatedTicketIdsJson = String.join(",", request.getRelatedTicketIds());
         }
 
         String country = CountryContext.get();
 
-        Ticket ticket = Ticket.builder().title(request.title()).description(request.description()).type(request.type()).siteId(request.siteId()).priority(request.priority()).templateId(request.templateId()).assignedTo(request.assignedTo()).createdBy(currentUserId).dueDate(request.dueDate()).status(TicketStatus.OPEN).country(country).problemType(request.problemType()).relatedTicketIds(relatedTicketIdsJson).build();
+        Ticket ticket = Ticket.builder().title(request.getTitle()).description(request.getDescription()).type(request.getType()).siteId(request.getSiteId()).priority(request.getPriority()).templateId(request.getTemplateId()).assignedTo(request.getAssignedTo()).createdBy(currentUserId).dueDate(request.getDueDate()).status(TicketStatus.OPEN).country(country).problemType(request.getProblemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
 
@@ -275,63 +275,63 @@ public class TicketService {
     public TicketResponse updateTicket(Long id, TicketUpdateRequest request) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 
-        if (request.title() != null) {
-            ticket.setTitle(request.title());
+        if (request.getTitle() != null) {
+            ticket.setTitle(request.getTitle());
         }
-        if (request.description() != null) {
-            ticket.setDescription(request.description());
+        if (request.getDescription() != null) {
+            ticket.setDescription(request.getDescription());
         }
-        if (request.type() != null) {
-            ticket.setType(request.type());
+        if (request.getType() != null) {
+            ticket.setType(request.getType());
         }
-        if (request.siteId() != null) {
-            ticket.setSiteId(request.siteId());
+        if (request.getSiteId() != null) {
+            ticket.setSiteId(request.getSiteId());
         }
-        if (request.status() != null) {
-            ticket.setStatus(TicketStatus.fromValue(request.status()));
+        if (request.getStatus() != null) {
+            ticket.setStatus(TicketStatus.fromValue(request.getStatus()));
         }
-        if (request.priority() != null) {
-            ticket.setPriority(request.priority());
+        if (request.getPriority() != null) {
+            ticket.setPriority(request.getPriority());
         }
-        if (request.assignedTo() != null) {
-            ticket.setAssignedTo(request.assignedTo());
+        if (request.getAssignedTo() != null) {
+            ticket.setAssignedTo(request.getAssignedTo());
         }
-        if (request.dueDate() != null) {
-            ticket.setDueDate(request.dueDate());
+        if (request.getDueDate() != null) {
+            ticket.setDueDate(request.getDueDate());
         }
-        if (request.templateData() != null) {
+        if (request.getTemplateData() != null) {
             try {
-                ticket.setTemplateData(objectMapper.writeValueAsString(request.templateData()));
+                ticket.setTemplateData(objectMapper.writeValueAsString(request.getTemplateData()));
             } catch (JsonProcessingException e) {
                 log.error("Error serializing template data", e);
             }
         }
-        if (request.departureAt() != null) {
-            ticket.setDepartureAt(request.departureAt());
+        if (request.getDepartureAt() != null) {
+            ticket.setDepartureAt(request.getDepartureAt());
         }
-        if (request.departurePhoto() != null) {
-            ticket.setDeparturePhoto(request.departurePhoto());
+        if (request.getDeparturePhoto() != null) {
+            ticket.setDeparturePhoto(request.getDeparturePhoto());
         }
-        if (request.arrivalAt() != null) {
-            ticket.setArrivalAt(request.arrivalAt());
+        if (request.getArrivalAt() != null) {
+            ticket.setArrivalAt(request.getArrivalAt());
         }
-        if (request.arrivalPhoto() != null) {
-            ticket.setArrivalPhoto(request.arrivalPhoto());
+        if (request.getArrivalPhoto() != null) {
+            ticket.setArrivalPhoto(request.getArrivalPhoto());
         }
-        if (request.completionPhoto() != null) {
-            ticket.setCompletionPhoto(request.completionPhoto());
+        if (request.getCompletionPhoto() != null) {
+            ticket.setCompletionPhoto(request.getCompletionPhoto());
         }
-        if (request.cause() != null) {
-            ticket.setCause(request.cause());
+        if (request.getCause() != null) {
+            ticket.setCause(request.getCause());
         }
-        if (request.solution() != null) {
-            ticket.setSolution(request.solution());
+        if (request.getSolution() != null) {
+            ticket.setSolution(request.getSolution());
         }
-        if (request.relatedTicketIds() != null && !request.relatedTicketIds().isEmpty()) {
-            ticket.setRelatedTicketIds(String.join(",", request.relatedTicketIds()));
+        if (request.getRelatedTicketIds() != null && !request.getRelatedTicketIds().isEmpty()) {
+            ticket.setRelatedTicketIds(String.join(",", request.getRelatedTicketIds()));
         }
-        if (request.problemType() != null) {
-            ticket.setProblemType(request.problemType());
+        if (request.getProblemType() != null) {
+            ticket.setProblemType(request.getProblemType());
         }
 
         ticketMapper.updateById(ticket);
@@ -367,8 +367,8 @@ public class TicketService {
         ticket.setAccepted(true);
         ticket.setAcceptedAt(LocalDateTime.now());
 
-        if (request.comment() != null) {
-            TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(CommentType.ACCEPT).ticketId(id).userId(userId).build();
+        if (request.getComment() != null) {
+            TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.getComment()).type(CommentType.ACCEPT).ticketId(id).userId(userId).build();
             ticketCommentMapper.insert(comment);
         }
 
@@ -392,7 +392,7 @@ public class TicketService {
         ticket.setStatus(TicketStatus.CANCELLED);
         ticket.setAccepted(false);
 
-        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(CommentType.DECLINE).ticketId(id).userId(userId).build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.getComment()).type(CommentType.DECLINE).ticketId(id).userId(userId).build();
         ticketCommentMapper.insert(comment);
 
         ticketMapper.updateById(ticket);
@@ -413,7 +413,7 @@ public class TicketService {
 
         ticket.setStatus(TicketStatus.CANCELLED);
 
-        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.reason()).type(CommentType.CANCEL).ticketId(id).userId(userId).build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.getReason()).type(CommentType.CANCEL).ticketId(id).userId(userId).build();
         ticketCommentMapper.insert(comment);
 
         ticketMapper.updateById(ticket);
@@ -681,7 +681,7 @@ ticket.setStatus(TicketStatus.COMPLETED);
             throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
         }
 
-        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.comment()).type(request.type() != null ? request.type() : CommentType.GENERAL).ticketId(ticketId).userId(userId).build();
+        TicketComment comment = TicketComment.builder().id(UUID.randomUUID().toString()).comment(request.getComment()).type(request.getType() != null ? request.getType() : CommentType.GENERAL).ticketId(ticketId).userId(userId).build();
 
         ticketCommentMapper.insert(comment);
 

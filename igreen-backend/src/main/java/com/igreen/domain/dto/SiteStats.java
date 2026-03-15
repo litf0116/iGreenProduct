@@ -1,8 +1,15 @@
 package com.igreen.domain.dto;
 
-public record SiteStats(
-        Long totalSites,
-        Long onlineSites,
-        Long offlineSites,
-        Long vipSites
-) {}
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SiteStats {
+    private Long totalSites;
+    private Long onlineSites;
+    private Long offlineSites;
+    private Long vipSites;
+}

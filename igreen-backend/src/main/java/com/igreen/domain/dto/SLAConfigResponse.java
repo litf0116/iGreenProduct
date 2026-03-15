@@ -1,10 +1,16 @@
 package com.igreen.domain.dto;
 
 import com.igreen.domain.enums.Priority;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record SLAConfigResponse(
-        String id,
-        Priority priority,
-        Integer responseTimeMinutes,
-        Integer completionTimeHours
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SLAConfigResponse {
+    private String id;
+    private Priority priority;
+    private Integer responseTimeMinutes;
+    private Integer completionTimeHours;
+}

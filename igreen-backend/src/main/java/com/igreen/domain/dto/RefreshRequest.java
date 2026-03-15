@@ -2,9 +2,15 @@ package com.igreen.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record RefreshRequest(
+public class RefreshRequest {
     @NotBlank(message = "Refresh token 不能为空")
-    String refreshToken
-) {}
+    private String refreshToken;
+}
