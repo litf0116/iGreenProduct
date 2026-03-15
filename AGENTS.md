@@ -33,9 +33,15 @@
 
 ## 构建、测试和检查命令
 
-### 后端 (Spring Boot 3 + Java 21)
+### 后端 (Spring Boot 3 + Java 17)
+
+**环境要求**: Java 17 (必须)
 
 ```bash
+# 设置 Java 17 环境
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+java -version  # 验证版本
+
 cd igreen-backend
 
 # 开发模式运行（端口 8080）

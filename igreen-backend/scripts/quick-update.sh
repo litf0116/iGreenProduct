@@ -170,6 +170,9 @@ case "$1" in
         restart_service
         log_success "仅重启完成"
         ;;
+    ""|"full")
+        main
+        ;;
     "--help"|"-h")
         echo "iGreenProduct JAR包快速更新脚本"
         echo "==================================="
