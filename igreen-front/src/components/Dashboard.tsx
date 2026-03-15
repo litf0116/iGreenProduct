@@ -97,6 +97,7 @@ export function Dashboard() {
     const t = useCallback((key: TranslationKey) => translations[language][key], [language]);
     const [searchParams, setSearchParams] = useSearchParams();
     const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
     const [totalPages, setTotalPages] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
     const [showExportConfirm, setShowExportConfirm] = useState(false);
@@ -159,7 +160,7 @@ export function Dashboard() {
         try {
             const response = await api.getTickets({
                 page: currentPage,
-                size: 20,
+                size: pageSize,
                 type: activeTab,
                 status: statusFilter !== "all" ? statusFilter : undefined,
                 priority: priorityFilter !== "all" ? priorityFilter : undefined,
@@ -169,14 +170,14 @@ export function Dashboard() {
             });
             setTickets(response.records || []);
             setTotalItems(response.total || 0);
-            setTotalPages(Math.ceil((response.total || 0) / 20));
+            setTotalPages(Math.ceil((response.total || 0) / pageSize));
         } catch (error) {
             console.error("Failed to load tickets:", error);
             toast.error(t("failedToLoadTickets") || "Failed to load tickets");
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, currentPage, createdAfterDate, createdBeforeDate, t]);
+    }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, currentPage, pageSize, createdAfterDate, createdBeforeDate, t]);
 
     // 监听路由变化和刷新触发器，当从其他页面跳转到 dashboard 或数据变更时重新加载数据
     useEffect(() => {
@@ -733,8 +734,27 @@ const getStatusColor = (status: TicketStatus) => {
                         </div>
                         {totalItems > 0 && (
                             <div className="flex items-center justify-between px-4 py-3 border-t">
-                                <div className="text-sm text-muted-foreground">
-                                    {t("showing") || "Showing"} {currentPage * 20 + 1} - {Math.min((currentPage + 1) * 20, totalItems)} {t("of") || "of"} {totalItems} {t("tickets") || "tickets"}
+                                <div className="flex items-center gap-4">
+                                    <div className="text-sm text-muted-foreground">
+                                        {t("showing") || "Showing"} {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalItems)} {t("of") || "of"} {totalItems} {t("tickets") || "tickets"}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground">{t("rowsPerPage") || "Rows per page"}:</span>
+                                        <Select value={String(pageSize)} onValueChange={(v) => {
+                                            setPageSize(Number(v));
+                                            setCurrentPage(0);
+                                        }}>
+                                            <SelectTrigger className="w-16 h-8">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="10">10</SelectItem>
+                                                <SelectItem value="20">20</SelectItem>
+                                                <SelectItem value="50">50</SelectItem>
+                                                <SelectItem value="100">100</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Button

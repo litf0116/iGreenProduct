@@ -304,6 +304,9 @@ export const translations = {
         actions: "Actions",
         view: "View",
         noTicketsFound: "No tickets found",
+        showing: "Showing",
+        of: "of",
+        rowsPerPage: "Rows per page",
 
         // Site Management
         siteManagement: "Site Management",
@@ -673,6 +676,9 @@ export const translations = {
         actions: "การดำเนินการ",
         view: "ดู",
         noTicketsFound: "ไม่พบตั๋ว",
+        showing: "แสดง",
+        of: "จาก",
+        rowsPerPage: "แถวต่อหน้า",
 
         // Site Management
         siteManagement: "การจัดการสถานที่",
