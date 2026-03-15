@@ -49,7 +49,7 @@ interface TicketDetailProps {
     onDecline?: (comment: string) => void;
     onHold?: (reason: string) => void;
     onResume?: () => void;
-    onReassign?: (newAssigneeId: string, newAssigneeName: string) => void;
+    onReassign?: (newGroupId: string) => void;
     onDeparture?: (photo?: string) => void;
     onArrival?: (photo?: string) => void;
     onComplete?: (photo: string, cause: string, solution: string) => void;
@@ -141,13 +141,10 @@ export function TicketDetail({
     };
 
     const handleReassign = () => {
-        if (onReassign && selectedAssignee && groups) {
-            const newAssigneeGroup = groups.find(g => g.id === selectedAssignee);
-            if (newAssigneeGroup) {
-                onReassign(selectedAssignee, newAssigneeGroup.name);
-                setSelectedAssignee("");
-                setShowReassignDialog(false);
-            }
+        if (onReassign && selectedAssignee) {
+            onReassign(selectedAssignee);
+            setSelectedAssignee("");
+            setShowReassignDialog(false);
         }
     };
 
@@ -453,7 +450,7 @@ export function TicketDetail({
                             </div>
                             {ticket.acceptedUserName && (
                                 <div className="mt-2 pt-2 border-t border-border">
-                                    <p className="text-xs text-muted-foreground">Accepted by</p>
+                                    <p className="text-xs text-muted-foreground">{t("acceptedBy")}</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Avatar className="h-5 w-5 flex-shrink-0">
                                             <AvatarFallback className="bg-green-500 text-white text-xs">

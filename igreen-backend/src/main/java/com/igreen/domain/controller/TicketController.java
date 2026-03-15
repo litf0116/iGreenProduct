@@ -118,6 +118,14 @@ public class TicketController {
         return ResponseEntity.ok(Result.success(ticketService.cancelTicket(id, request, userId)));
     }
 
+    @Operation(summary = "重新分配工单")
+    @PostMapping("/{id}/reassign")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Result<TicketResponse>> reassignTicket(HttpServletRequest httpRequest, @PathVariable Long id, @Valid @RequestBody TicketReassignRequest request) {
+        String userId = getCurrentUserId(httpRequest);
+        return ResponseEntity.ok(Result.success(ticketService.reassignTicket(id, request, userId)));
+    }
+
     @Operation(summary = "工程师出发")
     @PostMapping("/{id}/depart")
     public ResponseEntity<Result<TicketResponse>> departTicket(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody(required = false) String departurePhoto) {

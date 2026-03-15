@@ -731,7 +731,7 @@ const getStatusColor = (status: TicketStatus) => {
                                 </TableBody>
                             </Table>
                         </div>
-                        {totalPages > 1 && (
+                        {totalItems > 0 && (
                             <div className="flex items-center justify-between px-4 py-3 border-t">
                                 <div className="text-sm text-muted-foreground">
                                     {t("showing") || "Showing"} {currentPage * 20 + 1} - {Math.min((currentPage + 1) * 20, totalItems)} {t("of") || "of"} {totalItems} {t("tickets") || "tickets"}
@@ -746,13 +746,13 @@ const getStatusColor = (status: TicketStatus) => {
                                         <ChevronLeft className="h-4 w-4"/>
                                     </Button>
                                     <span className="text-sm">
-                                        {currentPage + 1} / {totalPages}
+                                        {currentPage + 1} / {Math.max(1, totalPages)}
                                     </span>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-                                        disabled={currentPage >= totalPages - 1}
+                                        onClick={() => setCurrentPage(p => Math.min(Math.max(0, totalPages - 1), p + 1))}
+                                        disabled={currentPage >= Math.max(0, totalPages - 1)}
                                     >
                                         <ChevronRight className="h-4 w-4"/>
                                     </Button>

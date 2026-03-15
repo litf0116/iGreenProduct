@@ -178,6 +178,8 @@ export const translations = {
         // Ticket Detail
         done: "Done",
         createdBy: "Created By",
+        acceptedBy: "Accepted By",
+        acceptedByEngineer: "Accepted by engineer",
 
         // Dashboard
         recentTickets: "Recent Tickets",
@@ -280,6 +282,15 @@ export const translations = {
         allPriorities: "All Priorities",
         searchTickets: "Search tickets...",
         clearFilters: "Clear Filters",
+        createdAfter: "Created After",
+        createdBefore: "Created Before",
+
+        // Export
+        export: "Export",
+        exporting: "Exporting...",
+        confirmExport: "Confirm Export",
+        confirmExportDescription: "Are you sure you want to export the current filtered tickets to Excel?",
+        exportFailed: "Export failed",
 
         // Table
         ticketId: "Ticket ID",
@@ -541,6 +552,8 @@ export const translations = {
         // Ticket Detail
         done: "เสร็จสิ้น",
         createdBy: "สร้างโดย",
+        acceptedBy: "รับโดย",
+        acceptedByEngineer: "รับโดยวิศวกร",
 
         // Dashboard
         recentTickets: "ตั๋วล่าสุด",
@@ -640,6 +653,14 @@ export const translations = {
         allPriorities: "ทุกระดับความสำคัญ",
         searchTickets: "ค้นหาตั๋ว...",
         clearFilters: "ล้างตัวกรอง",
+        createdAfter: "สร้างหลังจาก",
+        createdBefore: "สร้างก่อน",
+
+        export: "ส่งออก",
+        exporting: "กำลังส่งออก...",
+        confirmExport: "ยืนยันการส่งออก",
+        confirmExportDescription: "คุณแน่ใจหรือไม่ว่าต้องการส่งออกตั๋วที่กรองแล้วไปยัง Excel?",
+        exportFailed: "ส่งออกล้มเหลว",
 
         // Table
         ticketId: "รหัสตั๋ว",

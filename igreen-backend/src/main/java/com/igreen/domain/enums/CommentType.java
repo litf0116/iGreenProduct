@@ -11,6 +11,7 @@ public enum CommentType {
     ACCEPT,
     DECLINE,
     CANCEL,
+    REASSIGN,
     SYSTEM;
 
     @JsonValue

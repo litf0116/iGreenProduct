@@ -347,17 +347,13 @@ const getStatusColor = (status: TicketStatus) => {
         }
     };
 
-    const handleReassignTicket = async (ticketId: string, newAssigneeId: string, newAssigneeName: string) => {
+    const handleReassignTicket = async (ticketId: string, newGroupId: string) => {
         try {
-            const updated = await api.updateTicket(ticketId, {
-                assignedTo: newAssigneeId,
-              status: "open" as TicketStatus,
-            });
-            await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
+            const updated = await api.reassignTicket(ticketId, newGroupId);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
             triggerRefresh();
-            toast.success(`Ticket reassigned to ${newAssigneeName}`);
+            toast.success("Ticket reassigned successfully");
         } catch (error: any) {
             toast.error(error.message || "Failed to reassign ticket");
         }
@@ -664,7 +660,7 @@ const getStatusColor = (status: TicketStatus) => {
                             onDecline={(reason) => handleDeclineTicket(selectedTicket.id, reason)}
                             onHold={(reason) => handleHoldTicket(selectedTicket.id, reason)}
                             onResume={() => handleResumeTicket(selectedTicket.id)}
-                            onReassign={(newId, newName) => handleReassignTicket(selectedTicket.id, newId, newName)}
+                            onReassign={(newGroupId) => handleReassignTicket(selectedTicket.id, newGroupId)}
                             onDeparture={(photo) => handleDeparture(selectedTicket.id, photo)}
                             onArrival={(photo) => handleArrival(selectedTicket.id, photo)}
                             onComplete={(photo, cause, solution) => handleCompleteTicket(selectedTicket.id, photo, cause, solution)}

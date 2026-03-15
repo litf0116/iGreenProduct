@@ -425,6 +425,48 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponse reassignTicket(Long id, TicketReassignRequest request, String userId) {
+        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+
+        String newGroupId = request.getNewGroupId();
+        
+        Group newGroup = groupMapper.selectById(newGroupId);
+        if (newGroup == null) {
+            throw new BusinessException(ErrorCode.GROUP_NOT_FOUND);
+        }
+
+        Group oldGroup = ticket.getAssignGroup();
+        String oldGroupName = oldGroup != null ? oldGroup.getName() : "Unknown";
+
+        ticket.setAssignedTo(newGroupId);
+        ticket.setAcceptedUserId(null);
+        ticket.setStatus(TicketStatus.OPEN);
+        ticket.setAccepted(false);
+        ticket.setAcceptedAt(null);
+
+        String commentText = String.format("Ticket reassigned from group '%s' to group '%s'", oldGroupName, newGroup.getName());
+        if (request.getReason() != null && !request.getReason().isBlank()) {
+            commentText += ". Reason: " + request.getReason();
+        }
+
+        TicketComment comment = TicketComment.builder()
+                .id(UUID.randomUUID().toString())
+                .comment(commentText)
+                .type(CommentType.REASSIGN)
+                .ticketId(id)
+                .userId(userId)
+                .build();
+        ticketCommentMapper.insert(comment);
+
+        ticketMapper.updateById(ticket);
+
+        ticket.setAssignGroup(newGroup);
+        User creator = ticket.getCreator();
+        Site site = siteMapper.selectById(ticket.getSiteId());
+        return toResponse(ticket, creator, newGroup, site);
+    }
+
+    @Transactional
     public TicketResponse departTicket(Long id, String departurePhoto, String userId) {
         Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
 

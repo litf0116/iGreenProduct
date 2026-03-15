@@ -404,6 +404,10 @@ export const api = {
         return kyInstance.post(`api/tickets/${id}/review`, {json: {cause}}).json<Ticket>();
     },
 
+    reassignTicket: async (id: number, newGroupId: string): Promise<Ticket> => {
+        return kyInstance.post(`api/tickets/${id}/reassign`, {json: {newGroupId}}).json<Ticket>();
+    },
+
     getTicketComments: async (ticketId: number): Promise<TicketComment[]> => {
         const response = await kyInstance.get(`api/tickets/${ticketId}/comments`).json<{ data: { records: TicketComment[] } }>();
         return response.data.records;
