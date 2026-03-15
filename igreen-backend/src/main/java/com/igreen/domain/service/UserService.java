@@ -90,10 +90,12 @@ public class UserService {
             if (request.getCountry() == null || request.getCountry().isBlank()) {
                 throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
             }
-            if (!CountryCode.isValidCode(request.getCountry())) {
+            // 支持国家代码 (TH/ID/BR/MX) 或国家名称 (Thailand/Indonesia/Brazil/Mexico)
+            if (!CountryCode.isValidCountry(request.getCountry())) {
                 throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
             }
-            tokenCountry = request.getCountry();
+            // 统一转换为国家代码
+            tokenCountry = CountryCode.fromNameOrCode(request.getCountry()).getCode();
         } else {
             if (request.getCountry() == null || request.getCountry().isBlank()) {
                 tokenCountry = user.getCountry();

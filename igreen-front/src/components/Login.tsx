@@ -28,7 +28,7 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("Thailand");
+  const [country, setCountry] = useState("TH");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -103,10 +103,10 @@ export function Login({ language, onLogin, onSwitchToSignUp }: LoginProps) {
                   <SelectValue placeholder={t("selectCountry")} />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
-                  <SelectItem value="Thailand">🇹🇭 Thailand / ไทย</SelectItem>
-                  <SelectItem value="Indonesia">🇮🇩 Indonesia / Indonesia</SelectItem>
-                  <SelectItem value="Brazil">🇧🇷 Brazil / Brasil</SelectItem>
-                  <SelectItem value="Mexico">🇲🇽 Mexico / México</SelectItem>
+                  <SelectItem value="TH">🇹🇭 Thailand / ไทย</SelectItem>
+                  <SelectItem value="ID">🇮🇩 Indonesia / Indonesia</SelectItem>
+                  <SelectItem value="BR">🇧🇷 Brazil / Brasil</SelectItem>
+                  <SelectItem value="MX">🇲🇽 Mexico / México</SelectItem>
                 </SelectContent>
               </Select>
             </div>
