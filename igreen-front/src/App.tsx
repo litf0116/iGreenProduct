@@ -503,8 +503,17 @@ const getStatusColor = (status: TicketStatus) => {
         }
     };
 
-    // Navigation helper
     const isActive = (path: string) => location.pathname === path;
+
+    const canAccessSettings = currentUser?.role === 'admin';
+
+    const navItems = [
+        { path: "/dashboard", label: t("dashboard") },
+        { path: "/tickets", label: t("tickets") },
+        { path: "/sites", label: t("sites") },
+        { path: "/groups", label: t("groups") },
+        ...(canAccessSettings ? [{ path: "/settings", label: t("systemSettings") }] : []),
+    ];
 
     return (
         <div className="min-h-screen bg-background">
@@ -518,41 +527,16 @@ const getStatusColor = (status: TicketStatus) => {
                             </div>
 
                             <nav className="hidden md:flex items-center gap-1">
-                                <Button
-                                    variant={isActive("/dashboard") ? "default" : "ghost"}
-                                    onClick={() => navigate("/dashboard")}
-                                    className={isActive("/dashboard") ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
-                                >
-                                    {t("dashboard")}
-                                </Button>
-                                <Button
-                                    variant={isActive("/tickets") ? "default" : "ghost"}
-                                    onClick={() => navigate("/tickets")}
-                                    className={isActive("/tickets") ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
-                                >
-                                    {t("tickets")}
-                                </Button>
-                                <Button
-                                    variant={isActive("/sites") ? "default" : "ghost"}
-                                    onClick={() => navigate("/sites")}
-                                    className={isActive("/sites") ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
-                                >
-                                    {t("sites")}
-                                </Button>
-                                <Button
-                                    variant={isActive("/groups") ? "default" : "ghost"}
-                                    onClick={() => navigate("/groups")}
-                                    className={isActive("/groups") ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
-                                >
-                                    {t("groups")}
-                                </Button>
-                                <Button
-                                    variant={isActive("/settings") ? "default" : "ghost"}
-                                    onClick={() => navigate("/settings")}
-                                    className={isActive("/settings") ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
-                                >
-                                    {t("systemSettings")}
-                                </Button>
+                                {navItems.map((item) => (
+                                    <Button
+                                        key={item.path}
+                                        variant={isActive(item.path) ? "default" : "ghost"}
+                                        onClick={() => navigate(item.path)}
+                                        className={isActive(item.path) ? "bg-primary hover:bg-primary/90" : "hover:bg-secondary"}
+                                    >
+                                        {item.label}
+                                    </Button>
+                                ))}
                             </nav>
                         </div>
 
@@ -598,15 +582,15 @@ const getStatusColor = (status: TicketStatus) => {
                     </div>
 
                     <nav className="md:hidden flex items-center gap-2 mt-3 overflow-x-auto pb-2">
-                        {["/dashboard", "/tickets", "/sites", "/groups", "/settings"].map((path) => (
+                        {navItems.map((item) => (
                             <Button
-                                key={path}
-                                variant={isActive(path) ? "default" : "ghost"}
-                                onClick={() => navigate(path)}
-                                className={isActive(path) ? "bg-primary hover:bg-primary/90 flex-1 min-w-fit" : "hover:bg-secondary flex-1 min-w-fit"}
+                                key={item.path}
+                                variant={isActive(item.path) ? "default" : "ghost"}
+                                onClick={() => navigate(item.path)}
+                                className={isActive(item.path) ? "bg-primary hover:bg-primary/90 flex-1 min-w-fit" : "hover:bg-secondary flex-1 min-w-fit"}
                                 size="sm"
                             >
-                                {t(path.replace("/", "") as TranslationKey)}
+                                {item.label}
                             </Button>
                         ))}
                     </nav>

@@ -8,7 +8,7 @@ export type TicketType = 'planned' | 'preventive' | 'corrective' | 'problem';
 
 export type Priority = 'P1' | 'P2' | 'P3' | 'P4';
 
-export type UserRole = 'admin' | 'manager' | 'engineer';
+export type UserRole = 'admin' | 'supervisor' | 'manager' | 'engineer';
 
 export type UserStatus = 'active' | 'inactive';
 

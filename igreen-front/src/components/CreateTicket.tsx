@@ -8,10 +8,7 @@ import {Input} from "./ui/input";
 import {Textarea} from "./ui/textarea";
 import {Label} from "./ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
-import {Calendar} from "./ui/calendar";
-import {Popover, PopoverContent, PopoverTrigger} from "./ui/popover";
-import {CalendarIcon, Check, Loader2, Lock} from "lucide-react";
-import {format} from "date-fns";
+import {Check, Loader2, Lock} from "lucide-react";
 import {
     Command,
     CommandEmpty,
@@ -20,6 +17,7 @@ import {
     CommandItem,
     CommandList,
 } from "./ui/command";
+import {Popover, PopoverContent, PopoverTrigger} from "./ui/popover";
 import {cn} from "../lib/utils";
 import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
@@ -465,17 +463,17 @@ export function CreateTicket(props: CreateTicketProps) {
 
                     <div className="space-y-2">
                         <Label>{t("dueDate")}</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-start">
-                                    <CalendarIcon className="mr-2 h-4 w-4"/>
-                                    {format(dueDate, "PPP")}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={dueDate} onSelect={(date) => date && setDueDate(date)}/>
-                            </PopoverContent>
-                        </Popover>
+                        <Input
+                            type="datetime-local"
+                            step="1"
+                            value={dueDate.toISOString().slice(0, 19)}
+                            onChange={(e) => {
+                                const newDate = new Date(e.target.value);
+                                if (!isNaN(newDate.getTime())) {
+                                    setDueDate(newDate);
+                                }
+                            }}
+                        />
                     </div>
 
                     <div className="flex gap-2 justify-end">
