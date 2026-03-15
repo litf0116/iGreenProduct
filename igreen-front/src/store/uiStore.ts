@@ -25,6 +25,9 @@ interface UIState {
   // 当前语言
   language: 'en' | 'th';
 
+  // 数据刷新触发器
+  refreshKey: number;
+
   // Actions
   openModal: (name: keyof UIState['modals']) => void;
   closeModal: (name: keyof UIState['modals']) => void;
@@ -32,6 +35,7 @@ interface UIState {
   setTicketFilters: (filters: Partial<UIState['ticketFilters']>) => void;
   resetTicketFilters: () => void;
   setLanguage: (lang: 'en' | 'th') => void;
+  triggerRefresh: () => void;
 }
 
 const defaultFilters = {
@@ -51,6 +55,7 @@ export const useUIStore = create<UIState>((set) => ({
   selectedTicket: null,
   ticketFilters: defaultFilters,
   language: 'en',
+  refreshKey: 0,
 
   openModal: (name) => set((state) => ({
     modals: { ...state.modals, [name]: true }
@@ -69,4 +74,6 @@ export const useUIStore = create<UIState>((set) => ({
   resetTicketFilters: () => set({ ticketFilters: defaultFilters }),
 
   setLanguage: (lang) => set({ language: lang }),
+
+  triggerRefresh: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
 }));

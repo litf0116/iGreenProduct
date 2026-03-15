@@ -42,6 +42,7 @@ function AppLayout() {
     const setLanguage = useUIStore((state) => state.setLanguage);
     const selectedTicket = useUIStore((state) => state.selectedTicket);
     const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
+    const triggerRefresh = useUIStore((state) => state.triggerRefresh);
 
     // Use data store for tickets and other data
     const tickets = useDataStore((state) => state.tickets);
@@ -302,6 +303,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.acceptTicket(ticketId, comment);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Ticket accepted");
         } catch (error: any) {
             toast.error(error.message || "Failed to accept ticket");
@@ -313,6 +315,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.declineTicket(ticketId, reason);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Ticket declined");
         } catch (error: any) {
             toast.error(error.message || "Failed to decline ticket");
@@ -325,6 +328,7 @@ const getStatusColor = (status: TicketStatus) => {
             await api.addComment(ticketId, reason, "GENERAL");
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.info("Ticket put on hold");
         } catch (error: any) {
             toast.error(error.message || "Failed to hold ticket");
@@ -336,6 +340,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.updateTicket(ticketId, {status: "IN_PROGRESS" as TicketStatus});
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Ticket resumed");
         } catch (error: any) {
             toast.error(error.message || "Failed to resume ticket");
@@ -351,6 +356,7 @@ const getStatusColor = (status: TicketStatus) => {
             await api.addComment(ticketId, `Ticket reassigned to ${newAssigneeName}`, "GENERAL");
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success(`Ticket reassigned to ${newAssigneeName}`);
         } catch (error: any) {
             toast.error(error.message || "Failed to reassign ticket");
@@ -362,6 +368,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.departTicket(ticketId, photo);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Departure marked successfully");
         } catch (error: any) {
             toast.error(error.message || "Failed to mark departure");
@@ -373,6 +380,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.arriveTicket(ticketId, photo);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Arrival marked successfully");
         } catch (error: any) {
             toast.error(error.message || "Failed to mark arrival");
@@ -385,6 +393,7 @@ const getStatusColor = (status: TicketStatus) => {
             await api.updateTicket(ticketId, {cause, solution});
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Ticket submitted for confirmation");
         } catch (error: any) {
             toast.error(error.message || "Failed to complete ticket");
@@ -396,6 +405,7 @@ const getStatusColor = (status: TicketStatus) => {
             const updated = await api.reviewTicket(ticketId);
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.success("Ticket confirmed and closed");
         } catch (error: any) {
             toast.error(error.message || "Failed to confirm completion");
@@ -408,6 +418,7 @@ const getStatusColor = (status: TicketStatus) => {
             await api.addComment(ticketId, `Completion rejected: ${reason}`, "COMMENT");
             setTickets((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
             setSelectedTicket(null);
+            triggerRefresh();
             toast.info("Ticket returned to In Progress");
         } catch (error: any) {
             toast.error(error.message || "Failed to reject completion");

@@ -90,6 +90,7 @@ export function Dashboard() {
     const language = useUIStore((state) => state.language);
     const setSelectedTicket = useUIStore((state) => state.setSelectedTicket);
     const openModal = useUIStore((state) => state.openModal);
+    const refreshKey = useUIStore((state) => state.refreshKey);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
     const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -177,13 +178,13 @@ export function Dashboard() {
         }
     }, [activeTab, timeFilter, statusFilter, priorityFilter, searchQuery, currentPage, createdAfterDate, createdBeforeDate, t]);
 
-    // 监听路由变化，当从其他页面跳转到 dashboard 时重新加载数据
+    // 监听路由变化和刷新触发器，当从其他页面跳转到 dashboard 或数据变更时重新加载数据
     useEffect(() => {
         if (location.pathname === "/dashboard") {
             loadTickets();
             loadStats();
         }
-    }, [location.pathname, loadTickets, loadStats]);
+    }, [location.pathname, loadTickets, loadStats, refreshKey]);
 
     const handleExport = async () => {
         setIsExporting(true);
