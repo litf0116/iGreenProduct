@@ -588,16 +588,7 @@ export function TemplateManager({
                         </div>
 
 <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label>Steps</Label>
-                                    <Button onClick={handleAddStep} variant="outline" size="sm">
-                                        <Plus className="h-4 w-4 mr-2"/>
-                                        {t("addStep")}
-                                    </Button>
-                                </div>
-                                {validationErrors.steps && (
-                                    <p className="text-sm text-destructive">{validationErrors.steps}</p>
-                                )}
+                            <Label>Steps</Label>
                             <div className="space-y-1">
                                 {(template.steps || []).slice(0, 3).map((step, index) => (
                                     <div key={step.id} className="text-muted-foreground">
