@@ -15,7 +15,6 @@ export const translations = {
 
         // Ticket Status
         open: "Open",
-        accepted: "Accepted",
         inProgress: "In Progress",
         in_progress: "In Progress",
         submitted: "Submitted",
@@ -393,7 +392,6 @@ export const translations = {
 
         // Ticket Status
         open: "เปิด",
-        accepted: "รับแล้ว",
         inProgress: "กำลังดำเนินการ",
         in_progress: "กำลังดำเนินการ",
         submitted: "ส่งแล้ว",
