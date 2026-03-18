@@ -18,5 +18,7 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
-    private String country;  // country 可选，小程序登录不传 country
+    private String country;
+
+    private String appType;
 }

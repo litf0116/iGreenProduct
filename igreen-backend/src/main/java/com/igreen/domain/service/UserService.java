@@ -84,26 +84,39 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_INACTIVE);
         }
 
+        if ("app".equals(request.getAppType())) {
+            if (user.getRole() != UserRole.ENGINEER) {
+                throw new BusinessException(ErrorCode.APP_ENGINEER_ONLY);
+            }
+        } else {
+            if (user.getRole() == UserRole.ENGINEER) {
+                throw new BusinessException(ErrorCode.WEB_ADMIN_ONLY);
+            }
+        }
+
         String tokenCountry;
 
-        if (user.getRole() == UserRole.ADMIN) {
-            if (request.getCountry() == null || request.getCountry().isBlank()) {
+        // country 参数是租户标识，可选
+        // 优先使用请求中的 country 进行租户路由，其次使用账号中配置的国家
+        String requestCountry = request.getCountry();
+        
+        if (requestCountry == null || requestCountry.isBlank()) {
+            // 请求没有传 country，使用账号中配置的国家
+            if (user.getCountry() == null || user.getCountry().isBlank()) {
                 throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
             }
-            // 支持国家代码 (TH/ID/BR/MX) 或国家名称 (Thailand/Indonesia/Brazil/Mexico)
-            if (!CountryCode.isValidCountry(request.getCountry())) {
+            tokenCountry = user.getCountry();
+        } else {
+            // 请求传了 country，验证是否是有效的国家代码
+            if (!CountryCode.isValidCountry(requestCountry)) {
                 throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
             }
             // 统一转换为国家代码
-            tokenCountry = CountryCode.fromNameOrCode(request.getCountry()).getCode();
-        } else {
-            if (request.getCountry() == null || request.getCountry().isBlank()) {
-                tokenCountry = user.getCountry();
-            } else {
-                if (!request.getCountry().equalsIgnoreCase(user.getCountry())) {
-                    throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
-                }
-                tokenCountry = user.getCountry();
+            tokenCountry = CountryCode.fromNameOrCode(requestCountry).getCode();
+            // 如果账号中已配置国家，使用账号的国家（不支持跨国家登录）
+            if (user.getCountry() != null && !user.getCountry().isBlank() 
+                && !tokenCountry.equalsIgnoreCase(user.getCountry())) {
+                throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
             }
         }
 

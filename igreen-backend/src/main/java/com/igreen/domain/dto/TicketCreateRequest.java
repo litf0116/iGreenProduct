@@ -31,4 +31,5 @@ public class TicketCreateRequest {
     private LocalDateTime dueDate;
     private String problemType;
     private List<String> relatedTicketIds;
+    private List<String> attachmentIds;
 }

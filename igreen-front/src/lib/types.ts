@@ -144,6 +144,7 @@ export interface Ticket {
     relatedTicketIds?: string[];
     problemType?: string;
     country?: string;
+    attachmentIds?: string[];
 }
 
 export interface User {

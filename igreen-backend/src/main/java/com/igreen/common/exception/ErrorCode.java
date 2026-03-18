@@ -40,7 +40,9 @@ public enum ErrorCode {
     COUNTRY_REQUIRED("COUNTRY_REQUIRED", "国家不能为空"),
     COUNTRY_NOT_ALLOWED("COUNTRY_NOT_ALLOWED", "账号不支持在当前国家登录"),
     INVALID_COUNTRY_CODE("INVALID_COUNTRY_CODE", "无效的国家代码"),
-    INVALID_ROLE("INVALID_ROLE", "无效的用户角色");
+    INVALID_ROLE("INVALID_ROLE", "无效的用户角色"),
+    APP_ENGINEER_ONLY("APP_ENGINEER_ONLY", "APP仅允许工程师账号登录"),
+    WEB_ADMIN_ONLY("WEB_ADMIN_ONLY", "管理端仅允许管理员账号登录");
 
     private final String code;
     private final String message;

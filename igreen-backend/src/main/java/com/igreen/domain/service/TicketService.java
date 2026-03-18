@@ -43,9 +43,12 @@ public class TicketService {
 
     private final TicketMapper ticketMapper;
     private final TicketCommentMapper ticketCommentMapper;
+    private final TicketAttachmentMapper ticketAttachmentMapper;
     private final UserMapper userMapper;
     private final GroupMapper groupMapper;
     private final SiteMapper siteMapper;
+    private final SLAConfigMapper slaConfigMapper;
+    private final SiteLevelConfigMapper siteLevelConfigMapper;
     private final TemplateService templateService;
     private final StatusMappingService statusMappingService;
     private final ObjectMapper objectMapper;
@@ -80,14 +83,23 @@ public class TicketService {
 
         String country = CountryContext.get();
 
-        Ticket ticket = Ticket.builder().title(request.getTitle()).description(request.getDescription()).type(request.getType()).siteId(request.getSiteId()).priority(request.getPriority()).templateId(request.getTemplateId()).assignedTo(request.getAssignedTo()).createdBy(currentUserId).dueDate(request.getDueDate()).status(TicketStatus.OPEN).country(country).problemType(request.getProblemType()).relatedTicketIds(relatedTicketIdsJson).build();
+        LocalDateTime dueDate = request.getDueDate();
+        if (dueDate == null && request.getPriority() != null) {
+            dueDate = calculateDueDateFromSLA(request.getPriority(), request.getSiteId());
+        }
+
+        Ticket ticket = Ticket.builder().title(request.getTitle()).description(request.getDescription()).type(request.getType()).siteId(request.getSiteId()).priority(request.getPriority()).templateId(request.getTemplateId()).assignedTo(request.getAssignedTo()).createdBy(currentUserId).dueDate(dueDate).status(TicketStatus.OPEN).country(country).problemType(request.getProblemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
+
+        if (request.getAttachmentIds() != null && !request.getAttachmentIds().isEmpty()) {
+            List<TicketAttachment> attachments = request.getAttachmentIds().stream().map(fileId -> TicketAttachment.builder().id(UUID.randomUUID().toString()).ticketId(ticket.getId()).fileId(fileId).createdAt(LocalDateTime.now()).build()).toList();
+            ticketAttachmentMapper.insertBatch(attachments);
+        }
 
         // Initialize templateData from template if ticket has templateId
         if (ticket.getTemplateId() != null) {
             initializeTemplateDataFromTemplate(ticket);
-            // 更新工单以包含 templateData
             ticketMapper.updateById(ticket);
         }
 
@@ -847,6 +859,35 @@ ticket.setStatus(TicketStatus.COMPLETED);
         return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) closed);
     }
 
+    private LocalDateTime calculateDueDateFromSLA(String priority, String siteId) {
+        if (priority == null) {
+            return null;
+        }
+
+        int completionHours = 24;
+
+        var slaConfig = slaConfigMapper.selectByPriority(priority).orElse(null);
+        if (slaConfig != null && slaConfig.getCompletionTimeHours() != null) {
+            completionHours = slaConfig.getCompletionTimeHours();
+        }
+
+        if (siteId != null) {
+            var site = siteMapper.selectById(siteId);
+            if (site != null && site.getLevel() != null) {
+                var siteLevelConfig = siteLevelConfigMapper.selectList(
+                    new LambdaQueryWrapper<SiteLevelConfig>()
+                        .eq(SiteLevelConfig::getLevelName, site.getLevel())
+                ).stream().findFirst().orElse(null);
+
+                if (siteLevelConfig != null && siteLevelConfig.getSlaMultiplier() != null) {
+                    completionHours = slaConfig.getCompletionTimeHours().intValue() * siteLevelConfig.getSlaMultiplier().intValue();
+                }
+            }
+        }
+
+        return LocalDateTime.now().plusHours(completionHours);
+    }
+
     private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {
         // Fetch accepted user if ticket has acceptedUserId
         User acceptedUser = null;
@@ -871,7 +912,9 @@ ticket.setStatus(TicketStatus.COMPLETED);
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType(), ticket.getCountry());
+        List<String> attachmentIds = ticketAttachmentMapper.selectByTicketId(ticket.getId()).stream().map(TicketAttachment::getFileId).collect(Collectors.toList());
+
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType(), ticket.getCountry(), attachmentIds);
     }
 
     @Transactional

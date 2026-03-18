@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {Template, User, Priority, TicketType, Group, Ticket} from "../lib/types";
+import {Template, User, Priority, TicketType, Group, Ticket, SLAConfig, Site, SiteLevelConfig} from "../lib/types";
 import {translations, TranslationKey, Language} from "../lib/i18n";
 import {api} from "../lib/api";
 import {Card} from "./ui/card";
@@ -8,7 +8,7 @@ import {Input} from "./ui/input";
 import {Textarea} from "./ui/textarea";
 import {Label} from "./ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
-import {Check, Loader2, Lock} from "lucide-react";
+import {Check, Loader2, Lock, Paperclip, X, Upload} from "lucide-react";
 import {
     Command,
     CommandEmpty,
@@ -34,6 +34,7 @@ interface CreateTicketProps {
         priority: Priority;
         dueDate: Date;
         problemType?: string;
+        attachmentIds?: string[];
     }) => void;
     onCancel: () => void;
 }
@@ -45,9 +46,11 @@ export function CreateTicket(props: CreateTicketProps) {
     const [templates, setTemplates] = useState<Template[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
-    const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
+    const [sites, setSites] = useState<Site[]>([]);
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [problemTypes, setProblemTypes] = useState<{ id: string; name: string }[]>([]);
+    const [slaConfigs, setSlaConfigs] = useState<SLAConfig[]>([]);
+    const [siteLevelConfigs, setSiteLevelConfigs] = useState<SiteLevelConfig[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +64,8 @@ export function CreateTicket(props: CreateTicketProps) {
     const [dueDate, setDueDate] = useState<Date>(new Date());
     const [relatedTicketIds, setRelatedTicketIds] = useState<string[]>([]);
     const [problemType, setProblemType] = useState("");
+    const [attachments, setAttachments] = useState<File[]>([]);
+    const [uploading, setUploading] = useState(false);
     const [openCombobox, setOpenCombobox] = useState(false);
 
     useEffect(() => {
@@ -70,13 +75,15 @@ export function CreateTicket(props: CreateTicketProps) {
             setLoading(true);
             setError(null);
             try {
-                const [templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData] = await Promise.all([
+                const [templatesData, usersData, groupsData, sitesData, ticketsData, problemTypesData, slaData, levelsData] = await Promise.all([
                     api.getTemplates(),
                     api.getUsers({}),
                     api.getGroups(),
                     api.getSites({}),
                     api.getTickets({}),
-                    api.getProblemTypes()
+                    api.getProblemTypes(),
+                    api.getSLAConfigs(),
+                    api.getSiteLevelConfigs()
                 ]);
 
                 setTemplates(Array.isArray(templatesData) ? templatesData : (templatesData || []));
@@ -85,6 +92,8 @@ export function CreateTicket(props: CreateTicketProps) {
                 setSites(Array.isArray(sitesData) ? sitesData : (sitesData?.records || []));
                 setTickets(Array.isArray(ticketsData) ? ticketsData : (ticketsData?.records || []));
                 setProblemTypes(Array.isArray(problemTypesData) ? problemTypesData : (problemTypesData || []));
+                setSlaConfigs(Array.isArray(slaData) ? slaData : (slaData || []));
+                setSiteLevelConfigs(Array.isArray(levelsData) ? levelsData : (levelsData || []));
             } catch (err) {
                 console.error("Failed to fetch data:", err);
                 setError("Failed to load data");
@@ -108,6 +117,33 @@ export function CreateTicket(props: CreateTicketProps) {
         }
     }, [selectedTemplate]);
 
+    const calculateDueDate = (priority: Priority, siteId: string): Date => {
+        const slaConfig = slaConfigs.find(s => s.priority === priority);
+        let hours = slaConfig?.completionTimeHours || 24;
+
+        if (siteId) {
+            const selectedSite = sites.find(s => s.id === siteId);
+            const levelConfig = siteLevelConfigs.find(l => l.levelName === selectedSite?.level);
+            if (levelConfig?.slaMultiplier) {
+                hours = hours * levelConfig.slaMultiplier;
+            }
+        }
+
+        const due = new Date();
+        due.setHours(due.getHours() + hours);
+        return due;
+    };
+
+    const handlePriorityChange = (newPriority: Priority) => {
+        setPriority(newPriority);
+        setDueDate(calculateDueDate(newPriority, site));
+    };
+
+    const handleSiteChange = (newSite: string) => {
+        setSite(newSite);
+        setDueDate(calculateDueDate(priority, newSite));
+    };
+
     const handleCreateTicket = async (ticketData: {
         title: string;
         description: string;
@@ -119,15 +155,28 @@ export function CreateTicket(props: CreateTicketProps) {
         dueDate: Date;
         relatedTicketIds: string[];
         problemType?: string;
+        attachmentFiles?: File[];
     }) => {
         try {
+            let attachmentIds: string[] = [];
+
+            if (ticketData.attachmentFiles && ticketData.attachmentFiles.length > 0) {
+                setUploading(true);
+                const uploadPromises = ticketData.attachmentFiles.map(async (file) => {
+                    const result = await api.uploadFile(file, 'attachment');
+                    return result.id;
+                });
+                attachmentIds = await Promise.all(uploadPromises);
+                setUploading(false);
+            }
+
             const created = await api.createTicket({
                 ...ticketData,
                 dueDate: ticketData.dueDate.toISOString(),
                 relatedTicketIds: ticketData.relatedTicketIds,
+                attachmentIds,
             });
 
-            // 乐观更新：立即添加到本地状态
             setTickets((prev) => {
                 const currentTickets = Array.isArray(prev) ? prev : [];
                 return [created, ...currentTickets];
@@ -136,6 +185,7 @@ export function CreateTicket(props: CreateTicketProps) {
             toast.success(t("ticketCreated"));
             navigate("/dashboard");
         } catch (error: any) {
+            setUploading(false);
             toast.error(error.message || "Failed to create ticket");
         }
     };
@@ -157,6 +207,7 @@ export function CreateTicket(props: CreateTicketProps) {
             dueDate,
             relatedTicketIds: isProblemTicket ? relatedTicketIds : [],
             problemType: isProblemTicket ? problemType : undefined,
+            attachmentFiles: attachments,
         });
     };
 
@@ -168,7 +219,21 @@ export function CreateTicket(props: CreateTicketProps) {
         );
     };
 
-    const priorities: Priority[] = ["P1", "P2", "P3", "P4"];
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            setAttachments(current => [...current, ...Array.from(files)]);
+        }
+        e.target.value = '';
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments(current => current.filter((_, i) => i !== index));
+    };
+
+    const priorities: Priority[] = slaConfigs.length > 0 
+        ? slaConfigs.map(s => s.priority).sort() 
+        : ["P1", "P2", "P3", "P4"];
     const ticketTypes: TicketType[] = ["planned", "preventive", "corrective", "problem"];
 
     if (loading) {
@@ -299,7 +364,7 @@ export function CreateTicket(props: CreateTicketProps) {
                         {!isProblemTicket && (
                             <div className="space-y-2">
                                 <Label required>{t("site")}</Label>
-                                <Select value={site} onValueChange={setSite} required={!isProblemTicket}>
+                                <Select value={site} onValueChange={handleSiteChange} required={!isProblemTicket}>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t("selectSite")}/>
                                     </SelectTrigger>
@@ -445,7 +510,7 @@ export function CreateTicket(props: CreateTicketProps) {
                         {!isProblemTicket && (
                             <div className="space-y-2">
                                 <Label>{t("priority")}</Label>
-                                <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+                                <Select value={priority} onValueChange={handlePriorityChange}>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t("priority")}/>
                                     </SelectTrigger>
@@ -476,9 +541,58 @@ export function CreateTicket(props: CreateTicketProps) {
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <Label>Attachments</Label>
+                        <div className="border-2 border-dashed border-border rounded-lg p-4">
+                            <input
+                                type="file"
+                                id="file-upload"
+                                className="hidden"
+                                multiple
+                                onChange={handleFileChange}
+                            />
+                            <label
+                                htmlFor="file-upload"
+                                className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <Upload className="h-8 w-8 mb-2" />
+                                <span className="text-sm">Click to upload files</span>
+                            </label>
+                        </div>
+                        {attachments.length > 0 && (
+                            <div className="space-y-2 mt-2">
+                                {attachments.map((file, index) => (
+                                    <div key={index} className="flex items-center justify-between bg-muted rounded px-3 py-2">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <Paperclip className="h-4 w-4 flex-shrink-0" />
+                                            <span className="text-sm truncate">{file.name}</span>
+                                            <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(1)} KB)</span>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 flex-shrink-0"
+                                            onClick={() => removeAttachment(index)}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex gap-2 justify-end">
-                        <Button type="submit" className="bg-primary hover:bg-primary/90">
-                            {t("submit")}
+                        <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={uploading}>
+                            {uploading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Uploading attachments...
+                                </>
+                            ) : (
+                                t("submit")
+                            )}
                         </Button>
                     </div>
                 </form>

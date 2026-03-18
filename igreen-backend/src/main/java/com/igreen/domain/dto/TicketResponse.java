@@ -49,4 +49,5 @@ public class TicketResponse {
     private List<String> relatedTicketIds;
     private String problemType;
     private String country;
+    private List<String> attachmentIds;
 }
