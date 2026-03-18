@@ -47,8 +47,6 @@ public class TicketService {
     private final UserMapper userMapper;
     private final GroupMapper groupMapper;
     private final SiteMapper siteMapper;
-    private final SLAConfigMapper slaConfigMapper;
-    private final SiteLevelConfigMapper siteLevelConfigMapper;
     private final TemplateService templateService;
     private final StatusMappingService statusMappingService;
     private final ObjectMapper objectMapper;
@@ -83,12 +81,7 @@ public class TicketService {
 
         String country = CountryContext.get();
 
-        LocalDateTime dueDate = request.getDueDate();
-        if (dueDate == null && request.getPriority() != null) {
-            dueDate = calculateDueDateFromSLA(request.getPriority(), request.getSiteId());
-        }
-
-        Ticket ticket = Ticket.builder().title(request.getTitle()).description(request.getDescription()).type(request.getType()).siteId(request.getSiteId()).priority(request.getPriority()).templateId(request.getTemplateId()).assignedTo(request.getAssignedTo()).createdBy(currentUserId).dueDate(dueDate).status(TicketStatus.OPEN).country(country).problemType(request.getProblemType()).relatedTicketIds(relatedTicketIdsJson).build();
+        Ticket ticket = Ticket.builder().title(request.getTitle()).description(request.getDescription()).type(request.getType()).siteId(request.getSiteId()).priority(request.getPriority()).templateId(request.getTemplateId()).assignedTo(request.getAssignedTo()).createdBy(currentUserId).dueDate(request.getDueDate()).status(TicketStatus.OPEN).country(country).problemType(request.getProblemType()).relatedTicketIds(relatedTicketIdsJson).build();
 
         ticketMapper.insert(ticket);
 
@@ -857,35 +850,6 @@ ticket.setStatus(TicketStatus.COMPLETED);
             }
         }
         return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) closed);
-    }
-
-    private LocalDateTime calculateDueDateFromSLA(String priority, String siteId) {
-        if (priority == null) {
-            return null;
-        }
-
-        int completionHours = 24;
-
-        var slaConfig = slaConfigMapper.selectByPriority(priority).orElse(null);
-        if (slaConfig != null && slaConfig.getCompletionTimeHours() != null) {
-            completionHours = slaConfig.getCompletionTimeHours();
-        }
-
-        if (siteId != null) {
-            var site = siteMapper.selectById(siteId);
-            if (site != null && site.getLevel() != null) {
-                var siteLevelConfig = siteLevelConfigMapper.selectList(
-                    new LambdaQueryWrapper<SiteLevelConfig>()
-                        .eq(SiteLevelConfig::getLevelName, site.getLevel())
-                ).stream().findFirst().orElse(null);
-
-                if (siteLevelConfig != null && siteLevelConfig.getSlaMultiplier() != null) {
-                    completionHours = slaConfig.getCompletionTimeHours().intValue() * siteLevelConfig.getSlaMultiplier().intValue();
-                }
-            }
-        }
-
-        return LocalDateTime.now().plusHours(completionHours);
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {
