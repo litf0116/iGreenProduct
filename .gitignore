@@ -88,3 +88,6 @@ openspec/output/
 *~
 .fleet/
 igreen-backend/uploads/
+.gstack/
+igreen-front/screenshots/
+test-results/

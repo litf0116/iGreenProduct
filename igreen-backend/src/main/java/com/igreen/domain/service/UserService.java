@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
@@ -65,16 +64,9 @@ public class UserService {
         return toResponse(user);
     }
 
-    @Transactional
     public TokenResponse login(LoginRequest request) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, request.getUsername());
-        wrapper.last("LIMIT 1");
-        User user = userMapper.selectOne(wrapper);
-
-        if (user == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
+        User user = userMapper.selectByUsername(request.getUsername())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getHashedPassword())) {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
@@ -114,9 +106,27 @@ public class UserService {
             // 统一转换为国家代码
             tokenCountry = CountryCode.fromNameOrCode(requestCountry).getCode();
             // 如果账号中已配置国家，使用账号的国家（不支持跨国家登录）
-            if (user.getCountry() != null && !user.getCountry().isBlank() 
-                && !tokenCountry.equalsIgnoreCase(user.getCountry())) {
-                throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+            // 注意：user.country 可能因为 MyBatis 映射问题返回国家名而非代码，需要统一转换
+            String userCountry = user.getCountry();
+            if (userCountry != null && !userCountry.isBlank()) {
+                // 如果用户国家是代码，直接比较；如果是国家名，转换为代码
+                if (CountryCode.isValidCode(userCountry)) {
+                    // 已经是代码，直接比较
+                    if (!tokenCountry.equalsIgnoreCase(userCountry)) {
+                        throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+                    }
+                } else {
+                    // 是国家名，转换为代码后比较
+                    try {
+                        String normalizedUserCountry = CountryCode.fromNameOrCode(userCountry).getCode();
+                        if (!tokenCountry.equalsIgnoreCase(normalizedUserCountry)) {
+                            throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        // 无法识别的国家值，直接拒绝
+                        throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
+                    }
+                }
             }
         }
 
