@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum CountryCode {
+    CHINA("CN", "China", "中国"),
     THAILAND("TH", "Thailand", "ไทย"),
     INDONESIA("ID", "Indonesia", "อินโดนีเซีย"),
     BRAZIL("BR", "Brazil", "บราซิล"),

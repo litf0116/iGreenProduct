@@ -479,31 +479,18 @@ export const api = {
 
         try {
             // 使用 kyInstance.post 并确保认证头通过 hooks 自动添加
-            const response = await kyInstance.post('api/files/upload', {
+            // 注意：afterResponse hook 已经把 {success, message, data, code} 剥掉了，
+            // 所以 response.json() 直接返回 data 对象 {id, url, name, type, size}
+            const result = await kyInstance.post('api/files/upload', {
                 body: formData,
-            });
+            }).json<{ id: string; url: string; name: string; type: string; size: number }>();
 
-            const result = await response.json<{
-                success: boolean;
-                data: { id: string; url: string; name: string; type: string; size: number };
-                message: string
-            }>();
-
-            if (!result.success) {
-                // 详细的 401 错误处理
-                if (result.message && result.message.includes('401') || result.message.includes('Unauthorized') || result.message.includes('Authentication')) {
-                    console.error('[Upload] Authentication failed:', result.message);
-                    console.error('[Upload] Current token:', localStorage.getItem('auth_token'));
-                    throw new Error('Authentication failed. Please login again.');
-                }
-                throw new Error(result.message || 'File upload failed');
-            }
-
-            console.log('[Upload] Success:', result.data);
-            return result.data;
+            console.log('[Upload] Success:', result);
+            return result;
         } catch (error) {
             console.error('[Upload] Network error:', error);
-            if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
                 throw new Error('Network error. Please check your connection.');
             }
             throw error;
