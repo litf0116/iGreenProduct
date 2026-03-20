@@ -74,7 +74,7 @@
       open: true,
       proxy: {
         '/api': {
-          target: process.env.PROXY_TARGET || 'http://127.0.0.1:8089',
+          target: 'http://43.255.212.68:8088',
           changeOrigin: true,
           secure: false,
         },

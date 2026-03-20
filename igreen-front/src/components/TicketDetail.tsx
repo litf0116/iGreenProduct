@@ -887,14 +887,14 @@ export function TicketDetail({
                             </SelectContent>
                         </Select>
                     </div>
-                    <AlertDialogFooter className="sm:items-center sm:justify-end">
-                        <AlertDialogCancel onClick={() => setSelectedAssignee("")}>
+                    <AlertDialogFooter className="sm:items-center sm:justify-end gap-2">
+                        <AlertDialogCancel onClick={() => setSelectedAssignee("")} className="mt-0 sm:mt-0">
                             {t("cancel")}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleReassign}
                             disabled={!selectedAssignee}
-                            className="bg-blue-500 hover:bg-blue-600"
+                            className="bg-blue-500 hover:bg-blue-600 mt-0 sm:mt-0"
                         >
                             {t("reassign")}
                         </AlertDialogAction>
