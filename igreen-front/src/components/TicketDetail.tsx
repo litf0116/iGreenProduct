@@ -887,7 +887,7 @@ export function TicketDetail({
                             </SelectContent>
                         </Select>
                     </div>
-                    <AlertDialogFooter>
+                    <AlertDialogFooter className="sm:items-center sm:justify-end">
                         <AlertDialogCancel onClick={() => setSelectedAssignee("")}>
                             {t("cancel")}
                         </AlertDialogCancel>
