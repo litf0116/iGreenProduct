@@ -155,8 +155,8 @@ export interface PaginatedResult<T> {
 
 export const api = {
   // Authentication
-  login: async (username: string, password: string, country: string = 'TH') => {
-    console.log('[API] Login request:', { username, country, apiUrl: API_BASE_URL });
+  login: async (username: string, password: string) => {
+    console.log('[API] Login request:', { username, apiUrl: API_BASE_URL });
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -164,7 +164,7 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password, country, appType: 'app' }),
+        body: JSON.stringify({ username, password, platform: 'app' }),
       });
 
       console.log('[API] Login response status:', response.status);

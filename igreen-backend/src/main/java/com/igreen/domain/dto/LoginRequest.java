@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
-
 @AllArgsConstructor
 public class LoginRequest {
     @NotBlank
@@ -20,5 +19,5 @@ public class LoginRequest {
 
     private String country;
 
-    private String appType;
+    private String platform;
 }

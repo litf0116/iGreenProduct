@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { User, Lock, ArrowRight, Loader2, Globe } from 'lucide-react';
+import { User, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+
 import { toast } from "sonner@2.0.3";
 import logoImage from "figma:asset/e827750074831b7c0b1fd927cc5b318bf0bb80ab.png";
 import { api } from '../lib/api';
@@ -23,7 +17,7 @@ export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("TH");
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +30,7 @@ export function Login({ onLogin }: LoginProps) {
     setIsLoading(true);
 
     try {
-      const data = await api.login(account, password, country);
+      const data = await api.login(account, password);
       toast.success("登录成功");
       onLogin();
     } catch (error: any) {
@@ -101,23 +95,7 @@ export function Login({ onLogin }: LoginProps) {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="country" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-slate-400" />
-                  Country
-                </Label>
-                <Select value={country} onValueChange={setCountry} disabled={isLoading}>
-                  <SelectTrigger className="focus-visible:ring-teal-600">
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="TH">🇹🇭 Thailand / ไทย</SelectItem>
-                    <SelectItem value="ID">🇮🇩 Indonesia</SelectItem>
-                    <SelectItem value="BR">🇧🇷 Brazil / Brasil</SelectItem>
-                    <SelectItem value="MX">🇲🇽 Mexico / México</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
               <Button 
                 type="submit" 
                 className="w-full bg-teal-600 hover:bg-teal-700 h-11 text-base"

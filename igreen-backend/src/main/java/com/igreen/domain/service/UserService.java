@@ -76,7 +76,9 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_INACTIVE);
         }
 
-        if ("app".equals(request.getAppType())) {
+        boolean isAppLogin = "app".equals(request.getPlatform());
+        
+        if (isAppLogin) {
             if (user.getRole() != UserRole.ENGINEER) {
                 throw new BusinessException(ErrorCode.APP_ENGINEER_ONLY);
             }
@@ -88,46 +90,21 @@ public class UserService {
 
         String tokenCountry;
 
-        // country 参数是租户标识，可选
-        // 优先使用请求中的 country 进行租户路由，其次使用账号中配置的国家
         String requestCountry = request.getCountry();
         
-        if (requestCountry == null || requestCountry.isBlank()) {
-            // 请求没有传 country，使用账号中配置的国家
+        if (isAppLogin) {
             if (user.getCountry() == null || user.getCountry().isBlank()) {
                 throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
             }
             tokenCountry = user.getCountry();
         } else {
-            // 请求传了 country，验证是否是有效的国家代码
+            if (requestCountry == null || requestCountry.isBlank()) {
+                throw new BusinessException(ErrorCode.COUNTRY_REQUIRED);
+            }
             if (!CountryCode.isValidCountry(requestCountry)) {
                 throw new BusinessException(ErrorCode.INVALID_COUNTRY_CODE);
             }
-            // 统一转换为国家代码
             tokenCountry = CountryCode.fromNameOrCode(requestCountry).getCode();
-            // 如果账号中已配置国家，使用账号的国家（不支持跨国家登录）
-            // 注意：user.country 可能因为 MyBatis 映射问题返回国家名而非代码，需要统一转换
-            String userCountry = user.getCountry();
-            if (userCountry != null && !userCountry.isBlank()) {
-                // 如果用户国家是代码，直接比较；如果是国家名，转换为代码
-                if (CountryCode.isValidCode(userCountry)) {
-                    // 已经是代码，直接比较
-                    if (!tokenCountry.equalsIgnoreCase(userCountry)) {
-                        throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
-                    }
-                } else {
-                    // 是国家名，转换为代码后比较
-                    try {
-                        String normalizedUserCountry = CountryCode.fromNameOrCode(userCountry).getCode();
-                        if (!tokenCountry.equalsIgnoreCase(normalizedUserCountry)) {
-                            throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // 无法识别的国家值，直接拒绝
-                        throw new BusinessException(ErrorCode.COUNTRY_NOT_ALLOWED);
-                    }
-                }
-            }
         }
 
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole().name(), tokenCountry);
