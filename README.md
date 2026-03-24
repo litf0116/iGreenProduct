@@ -328,3 +328,7 @@ cd igreen-front && pnpm test:e2e
 ## 支持
 
 如有问题，请联系技术支持或创建issue。
+
+## CI/CD Status
+
+Gitee CI/CD service enabled on 2026-03-24.
