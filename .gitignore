@@ -10,6 +10,15 @@ igreen-backend/target/
 *.ipr
 *.iws
 
+# Eclipse
+.classpath
+.factorypath
+.project
+.settings/
+bin/
+tmp/
+.metadata/
+
 # OS
 .DS_Store
 Thumbs.db
