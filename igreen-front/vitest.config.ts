@@ -55,8 +55,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
-    include: ['**/*.{test,spec}.{js,ts,tsx}'],
-    exclude: ['node_modules', 'build', 'dist'],
+    include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
+    exclude: ['node_modules', 'build', 'dist', 'e2e'],
     env: {
       VITE_API_URL: 'http://localhost:8000',
     },
