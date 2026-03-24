@@ -1,0 +1,46 @@
+name: CI Full Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 17)
+    uses: ./.github/workflows/backend-ci.yml
+
+  frontend:
+    name: Frontend (React)
+    uses: ./.github/workflows/frontend-ci.yml
+
+  mobile:
+    name: Mobile App
+    uses: ./.github/workflows/mobile-ci.yml
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [backend, frontend, mobile]
+    
+    steps:
+      - name: Summary
+        run: |
+          echo "## CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Module | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile | ${{ needs.mobile.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.backend.result }}" != "success" ] || [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs.mobile.result }}" != "success" ]; then
+            echo ""
+            echo "⚠️ Some jobs failed. Please check the details above."
+            exit 1
+          fi

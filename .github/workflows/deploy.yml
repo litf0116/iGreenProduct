@@ -1,0 +1,94 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    types: [completed]
+    branches: [main, master]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: igreen-backend/target/
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Deploy to server
+        run: |
+          echo "Deploying backend to production server..."
+          # rsync or scp the JAR file to server
+          scp -o StrictHostKeyChecking=no igreen-backend/target/*.jar root@${{ secrets.PRODUCTION_HOST }}:/opt/igreen-backend/
+          
+          # Restart the service via SSH
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            cd /opt/igreen-backend
+            # Stop existing instance
+            pkill -f 'java.*igreen-backend' || true
+            # Start new instance
+            nohup java -jar igreen-backend-*.jar --spring.profiles.active=prod > backend.log 2>&1 &
+            echo "Backend deployed successfully"
+          EOF
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: igreen-front/dist/
+
+      - name: Deploy to server
+        run: |
+          echo "Deploying frontend to production server..."
+          # Sync files to web server
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+            --delete \
+            igreen-front/dist/ \
+            root@${{ secrets.PRODUCTION_HOST }}:/www/wwwroot/igreen/igreen-front/
+          
+          echo "Frontend deployed successfully"
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-backend, deploy-frontend]
+    
+    steps:
+      - name: Send notification
+        if: github.event_name == 'push'
+        run: |
+          if [ "${{ needs.deploy-backend.result }}" == "success" ] && [ "${{ needs.deploy-frontend.result }}" == "success" ]; then
+            echo "Deployment successful!"
+            # 可以添加 Slack/Email 通知
+          else
+            echo "Deployment failed!"
+            exit 1
+          fi
