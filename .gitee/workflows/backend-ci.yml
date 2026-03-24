@@ -1,0 +1,59 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - igreen-backend/**
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - igreen-backend/**
+  schedule:
+    - cron: "0 2 * * *"  # Daily backup at 2 AM
+
+stages:
+  - build
+  - test
+  - package
+
+build:
+  stage: build
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/  # All feature branches
+  script:
+    - cd igreen-backend
+    - mvn compile
+
+test:
+  stage: test
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/
+  script:
+    - cd igreen-backend
+    - mvn test
+  coverage: '/Total coverage: [\d\.]+%/'
+
+package:
+  stage: package
+  only:
+    - main
+    - master
+  script:
+    - cd igreen-backend
+    - mvn package -DskipTests
+  artifacts:
+    paths:
+      - igreen-backend/target/*.jar
+    expire_in: 7 days

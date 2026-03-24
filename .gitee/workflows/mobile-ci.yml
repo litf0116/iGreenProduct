@@ -1,0 +1,64 @@
+name: Mobile CI (iGreenApp)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - iGreenApp/**
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - iGreenApp/**
+
+variables:
+  NODE_VERSION: "20"
+  NPM_REGISTRY: "https://registry.npmmirror.com"
+
+stages:
+  - install
+  - typecheck
+  - build
+
+install_dependencies:
+  stage: install
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/
+  script:
+    - cd iGreenApp
+    - pnpm install --frozen-lockfile
+
+type_check:
+  stage: typecheck
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/
+  needs:
+    - install_dependencies
+  script:
+    - cd iGreenApp
+    - pnpm exec tsc --noEmit || true
+
+build_web:
+  stage: build
+  only:
+    - main
+    - master
+  needs:
+    - install_dependencies
+  script:
+    - cd iGreenApp
+    - pnpm build
+  artifacts:
+    paths:
+      - iGreenApp/dist/
+    expire_in: 7 days

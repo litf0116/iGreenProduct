@@ -1,0 +1,89 @@
+name: Frontend CI (igreen-front)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - igreen-front/**
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - igreen-front/**
+
+variables:
+  NODE_VERSION: "20"
+  NPM_REGISTRY: "https://registry.npmmirror.com"
+
+stages:
+  - install
+  - test
+  - build
+
+install_dependencies:
+  stage: install
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/
+  script:
+    - cd igreen-front
+    - pnpm install --frozen-lockfile
+
+unit_test:
+  stage: test
+  only:
+    - main
+    - master
+    - develop
+    - /^vk.*$/
+  needs:
+    - install_dependencies
+  script:
+    - cd igreen-front
+    - pnpm test:run --coverage
+  coverage: '/Coverage:/'
+  artifacts:
+    paths:
+      - igreen-front/coverage/
+    expire_in: 7 days
+    when: always
+
+e2e_test:
+  stage: test
+  only:
+    - main
+    - master
+  needs:
+    - install_dependencies
+  script:
+    - cd igreen-front
+    - pnpm build
+    - pnpm exec playwright install --with-deps chromium
+    - pnpm test:e2e
+  artifacts:
+    paths:
+      - igreen-front/test-results/
+      - igreen-front/playwright-report/
+    expire_in: 7 days
+    when: always
+
+build:
+  stage: build
+  only:
+    - main
+    - master
+  needs:
+    - unit_test
+  script:
+    - cd igreen-front
+    - pnpm build
+  artifacts:
+    paths:
+      - igreen-front/dist/
+    expire_in: 7 days
