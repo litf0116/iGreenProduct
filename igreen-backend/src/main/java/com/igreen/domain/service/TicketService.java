@@ -137,8 +137,14 @@ public class TicketService {
             if (type != null) {
                 wrapper.eq(Ticket::getType, type);
             }
-            if (status != null) {
-                wrapper.eq(Ticket::getStatus, status);
+            if (status != null && !status.isBlank()) {
+                // Support comma-separated status values for IN query
+                if (status.contains(",")) {
+                    List<String> statusList = Arrays.asList(status.split(","));
+                    wrapper.in(Ticket::getStatus, statusList);
+                } else {
+                    wrapper.eq(Ticket::getStatus, status);
+                }
             }
             if (priority != null) {
                 wrapper.eq(Ticket::getPriority, priority);
@@ -204,8 +210,14 @@ public class TicketService {
         if (type != null) {
             wrapper.eq(Ticket::getType, type);
         }
-        if (status != null) {
-            wrapper.eq(Ticket::getStatus, status);
+        if (status != null && !status.isBlank()) {
+            // Support comma-separated status values for IN query
+            if (status.contains(",")) {
+                List<String> statusList = Arrays.asList(status.split(","));
+                wrapper.in(Ticket::getStatus, statusList);
+            } else {
+                wrapper.eq(Ticket::getStatus, status);
+            }
         }
         if (priority != null) {
             wrapper.eq(Ticket::getPriority, priority);

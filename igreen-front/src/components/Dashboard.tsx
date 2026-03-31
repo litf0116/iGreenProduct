@@ -8,7 +8,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "./ui/tabs";
 import {Skeleton} from "./ui/skeleton";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "./ui/select";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "./ui/table";
-import {Ticket, TicketStatus, TicketType, toAdminStatus, AdminTicketStatus} from "../lib/types";
+import {Ticket, TicketStatus, TicketType, toAdminStatus, fromAdminStatus, AdminTicketStatus} from "../lib/types";
 import {TranslationKey, translations} from "../lib/i18n";
 import {useUIStore} from "../store";
 import api from "../lib/api";
@@ -158,11 +158,16 @@ export function Dashboard() {
     const loadTickets = useCallback(async () => {
         setIsLoading(true);
         try {
+            // Map admin status to ticket status(es) - join multiple with comma for IN query
+            const ticketStatusParam = statusFilter !== "all"
+                ? fromAdminStatus(statusFilter as AdminTicketStatus).join(",")
+                : undefined;
+
             const response = await api.getTickets({
                 page: currentPage,
                 size: pageSize,
                 type: activeTab,
-                status: statusFilter !== "all" ? statusFilter : undefined,
+                status: ticketStatusParam,
                 priority: priorityFilter !== "all" ? priorityFilter : undefined,
                 keyword: searchQuery || undefined,
                 createdAfter: createdAfterDate || getCreatedAfter(timeFilter),
@@ -254,8 +259,9 @@ export function Dashboard() {
             // Time filter
             if (!filterByTime(ticket)) return false;
 
-            // Status filter
-            if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
+            // Status filter - skip if backend already filtered
+            // Backend returns tickets matching the mapped status(es)
+            // if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
 
             // Priority filter
             if (priorityFilter !== "all" && ticket.priority !== priorityFilter) return false;
