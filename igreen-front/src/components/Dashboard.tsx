@@ -476,10 +476,10 @@ const getStatusColor = (status: TicketStatus) => {
                                 </SelectTrigger>
                                 <SelectContent className="bg-white">
                                     <SelectItem value="all">{t("allPriorities")}</SelectItem>
-                                    <SelectItem value="low">{t("low")}</SelectItem>
-                                    <SelectItem value="medium">{t("medium")}</SelectItem>
-                                    <SelectItem value="high">{t("high")}</SelectItem>
-                                    <SelectItem value="urgent">{t("urgent")}</SelectItem>
+                                    <SelectItem value="P4">{t("P4")}</SelectItem>
+                                    <SelectItem value="P3">{t("P3")}</SelectItem>
+                                    <SelectItem value="P2">{t("P2")}</SelectItem>
+                                    <SelectItem value="P1">{t("P1")}</SelectItem>
                                 </SelectContent>
                             </Select>
 
