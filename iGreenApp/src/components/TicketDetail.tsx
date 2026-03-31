@@ -520,7 +520,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
             </div>
             <div>
               <h3 className="text-lg font-semibold text-orange-900">En Route</h3>
-              <p className="text-orange-700 max-w-sm">You are on the way to {ticket.location}.</p>
+              <p className="text-orange-700 max-w-sm">You are on the way to {ticket.siteName || ticket.location}.</p>
               <p className="text-xs text-orange-600 mt-2 font-mono">Departed
                 at: {ticket.history?.departedAt ? new Date(ticket.history.departedAt).toLocaleTimeString() : 'Just now'}</p>
             </div>
@@ -839,7 +839,10 @@ case 'arrived':
                 <MapPin className="w-5 h-5 text-slate-400 shrink-0 mt-0.5"/>
                 <div>
                   <h3 className="text-sm font-medium text-slate-900">Location</h3>
-                  <p className="text-sm text-slate-600">{ticket.location || "No location specified"}</p>
+                  <p className="text-sm text-slate-600 font-medium">{ticket.siteName || ticket.location || "No site specified"}</p>
+                  {ticket.siteAddress && (
+                    <p className="text-xs text-slate-500 mt-0.5">{ticket.siteAddress}</p>
+                  )}
                 </div>
               </div>
 

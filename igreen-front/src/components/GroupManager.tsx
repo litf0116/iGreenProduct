@@ -611,7 +611,9 @@ export function GroupManager() {
               <Label>{t("groups")}</Label>
               <Select value={userGroup} onValueChange={setUserGroup}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("selectGroup")} />
+                  <SelectValue placeholder={t("selectGroup")}>
+                    {userGroup ? (groups.find(g => g.id === userGroup)?.name || t("selectGroup")) : t("selectGroup")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {groups.map((group) => (
