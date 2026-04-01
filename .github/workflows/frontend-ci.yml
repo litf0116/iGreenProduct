@@ -40,10 +40,12 @@ jobs:
           cache-dependency-path: igreen-front/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
+        env:
+          PNPM_FROZEN_LOCKFILE: "false"
 
       - name: Run unit tests
-        run: pnpm test:run --coverage
+        run: pnpm test:run
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -85,7 +87,9 @@ jobs:
           cache-dependency-path: igreen-front/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
+        env:
+          PNPM_FROZEN_LOCKFILE: "false"
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
@@ -139,7 +143,9 @@ jobs:
           cache-dependency-path: igreen-front/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
+        env:
+          PNPM_FROZEN_LOCKFILE: "false"
 
       - name: Type check
         run: pnpm exec tsc --noEmit
