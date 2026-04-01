@@ -101,11 +101,13 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public TicketResponse getTicketById(Long id) {
-        Ticket ticket = ticketMapper.selectByIdWithDetails(id).orElseThrow(() -> new BusinessException(ErrorCode.TICKET_NOT_FOUND));
+        Ticket ticket = ticketMapper.selectById(id);
+        if (ticket == null) {
+            throw new BusinessException(ErrorCode.TICKET_NOT_FOUND);
+        }
 
-        User creator = ticket.getCreator();
-        Group assignGroup = ticket.getAssignGroup();
-
+        User creator = userMapper.selectById(ticket.getCreatedBy());
+        Group assignGroup = groupMapper.selectById(ticket.getAssignedTo());
         Site site = siteMapper.selectById(ticket.getSiteId());
         return toResponse(ticket, creator, assignGroup, site);
     }
