@@ -1,0 +1,4 @@
+Scenario 2: 配置格式正确
+验证命令：grep -A2 -B2 "app.upload:" application-prod.yml
+输出结果：YAML 缩进正确，冒号格式正确
+✅ 断言通过：YAML 格式正确

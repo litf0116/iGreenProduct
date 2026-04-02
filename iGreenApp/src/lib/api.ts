@@ -395,7 +395,32 @@ export const api = {
     });
 
     if (!response.ok) {
-      throw new Error('File upload failed');
+      // 尝试解析后端返回的错误码
+      let errorCode: string | null = null;
+      try {
+        const errorResult = await response.clone().json();
+        errorCode = errorResult.code || null;
+      } catch {
+        // 忽略解析错误，使用默认错误消息
+      }
+
+      // 根据状态码和错误码区分错误类型
+      if (response.status === 401) {
+        throw new Error('Authentication failed. Please login again.');
+      } else if (response.status === 400) {
+        if (errorCode === 'FILE_EMPTY') {
+          throw new Error('File is empty. Please select a valid file.');
+        } else if (errorCode === 'FILE_TOO_LARGE') {
+          throw new Error('File is too large. Maximum size is 10MB.');
+        }
+        throw new Error('Upload failed. Please check your connection.');
+      } else if (response.status === 404) {
+        throw new Error('Upload endpoint not found. Server configuration error.');
+      } else if (response.status === 500) {
+        throw new Error('Server error. Please try again later.');
+      } else {
+        throw new Error('Upload failed. Please check your connection.');
+      }
     }
 
     const result = await response.json();

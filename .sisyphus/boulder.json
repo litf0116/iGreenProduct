@@ -1,9 +1,26 @@
 {
-  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/dynamic-form-frontend.md",
-  "started_at": "2026-02-28T18:44:20.3NZ",
+  "active_plan": "/Users/mac/workspace/iGreenProduct/.sisyphus/plans/fix-image-upload-bug.md",
+  "started_at": "2026-04-02T18:04:37.915Z",
   "session_ids": [
-    "ses_35aba3c23ffey0dbZsk731zYSM",
-    "ses_3563b2976ffe2YAec1xOdP3SV5"
+    "ses_2b0b5f39fffeR7BzFVQCqz13si",
+    "ses_2b09fdaccffeZqL5pzMtSFZNyG",
+    "ses_2b09e9fb7ffecXHqipC31SIrrg",
+    "ses_2b09da1bfffeeoWPlHhqYlz5Ix",
+    "ses_2b09c3525ffeN7zJV5lc20Ins4",
+    "ses_2b09c18baffet9UfsVe8efi7Vi",
+    "ses_2b09bf818ffeVWK66jUMYoAfSA"
   ],
-  "plan_name": "dynamic-form-frontend"
+  "plan_name": "fix-image-upload-bug",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "后端配置文件修复（端口8089）",
+      "session_id": "ses_2b09c3525ffeN7zJV5lc20Ins4",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-02T18:12:08.710Z"
+    }
+  }
 }

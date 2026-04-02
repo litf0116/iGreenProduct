@@ -1,0 +1,4 @@
+Scenario 1: 配置文件已更新
+验证命令：grep "app.upload.base-url" application-prod.yml
+输出结果：base-url: http://43.255.212.68:8089
+✅ 断言通过：输出包含 8089
