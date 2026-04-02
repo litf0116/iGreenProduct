@@ -9,10 +9,12 @@ import com.igreen.common.exception.ErrorCode;
 import com.igreen.common.result.PageResult;
 import com.igreen.common.utils.JwtUtils;
 import com.igreen.domain.dto.*;
+import com.igreen.domain.entity.Group;
 import com.igreen.domain.entity.User;
 import com.igreen.domain.enums.CountryCode;
 import com.igreen.domain.enums.UserRole;
 import com.igreen.domain.enums.UserStatus;
+import com.igreen.domain.mapper.GroupMapper;
 import com.igreen.domain.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final GroupMapper groupMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
@@ -322,9 +325,9 @@ public class UserService {
     private UserResponse toResponse(User user) {
         String groupName = null;
         if (user.getGroupId() != null) {
-            User groupUser = userMapper.selectById(user.getGroupId());
-            if (groupUser != null) {
-                groupName = groupUser.getName();
+            Group group = groupMapper.selectById(user.getGroupId());
+            if (group != null) {
+                groupName = group.getName();
             }
         }
         return new UserResponse(
