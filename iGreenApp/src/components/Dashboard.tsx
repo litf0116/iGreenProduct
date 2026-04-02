@@ -125,17 +125,16 @@ export function Dashboard({ tickets = [], onTicketClick, onViewAllClick }: Dashb
                 onClick={() => onTicketClick?.(ticket)}
                 className="bg-white border rounded-xl p-4 shadow-sm active:bg-slate-50 transition-colors cursor-pointer"
               >
-                <div className="flex justify-between items-start mb-2">
-                   <div className="flex items-center gap-2">
-                      <Badge variant={getPriorityColor(ticket.priority)} className="capitalize text-[10px] h-5 px-1.5">
-                        {ticket.priority}
-                      </Badge>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium border ${getTicketTypeColor(ticket.type)}`}>
-                         {getTicketTypeLabel(ticket.type)}
-                      </span>
-                   </div>
-                   <span className="text-xs text-slate-400">2.5km</span>
-                </div>
+                 <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                       <Badge variant={getPriorityColor(ticket.priority)} className="capitalize text-[10px] h-5 px-1.5">
+                         {ticket.priority}
+                       </Badge>
+                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium border ${getTicketTypeColor(ticket.type)}`}>
+                          {getTicketTypeLabel(ticket.type)}
+                       </span>
+                    </div>
+                 </div>
                 <h3 className="font-semibold text-slate-900 mb-1 text-sm">{ticket.title}</h3>
                 <p className="text-xs text-slate-500 mb-3 line-clamp-1">{ticket.location}</p>
                 

@@ -453,7 +453,7 @@ const getStatusColor = (status: TicketStatus) => {
                                 <SelectContent className="bg-white">
                                     <SelectItem value="all">{t("allStatus")}</SelectItem>
                                     <SelectItem value="open">{t("open")}</SelectItem>
-                                    <SelectItem value="accepted">{t("accepted")}</SelectItem>
+                                    {/* <SelectItem value="accepted">{t("accepted")}</SelectItem> */}
                                     <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
                                     <SelectItem value="submitted">{t("submitted")}</SelectItem>
                                     <SelectItem value="on_hold">{t("onHold")}</SelectItem>

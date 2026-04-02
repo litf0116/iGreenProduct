@@ -76,7 +76,7 @@ export function GroupManager() {
         const groupsData = Array.isArray(groupsRes) ? groupsRes : [];
         setGroups(groupsData);
       } else if (typeToLoad === 'users') {
-        const usersRes = await api.getUsers({ page: 0, size: 100 }).catch(() => ({ records: [] }));
+        const usersRes = await api.getUsers({ page: 0, size: 100, keyword }).catch(() => ({ records: [] }));
         const usersData = (usersRes as any)?.records || usersRes || [];
         setUsers(Array.isArray(usersData) ? usersData : []);
       }

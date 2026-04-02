@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog@1.1.6";
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
 import { cn } from "./utils";
 import { buttonVariants } from "./button";
@@ -84,7 +84,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:items-center",
         className,
       )}
       {...props}
@@ -125,7 +125,11 @@ function AlertDialogAction({
   return (
     <AlertDialogPrimitive.Action
       data-slot="alert-dialog-action"
-      className={cn(buttonVariants(), className)}
+      className={cn(
+        buttonVariants(),
+        "h-10 px-4 py-2 flex items-center justify-center",
+        className
+      )}
       {...props}
     />
   );
@@ -140,7 +144,7 @@ function AlertDialogCancel({
       data-slot="alert-dialog-cancel"
       className={cn(
         buttonVariants({ variant: "outline" }),
-        "mt-2 sm:mt-0",
+        "h-10 px-4 py-2 flex items-center justify-center sm:mt-0",
         className,
       )}
       {...props}

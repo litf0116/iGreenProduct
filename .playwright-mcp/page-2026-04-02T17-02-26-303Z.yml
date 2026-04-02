@@ -1,0 +1,273 @@
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+                - generic: iGreen+ Ticket Management
+              - navigation:
+                - button: Dashboard
+                - button: Tickets
+                - button: Sites
+                - button: Groups
+                - button: System Settings
+            - generic:
+              - button:
+                - img
+                - text: English
+              - button:
+                - generic:
+                  - generic: S
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - heading [level=1]: Welcome Back
+              - paragraph: Ticket Overview
+            - generic:
+              - button:
+                - img
+                - text: Export
+              - button:
+                - img
+                - text: Create Ticket
+          - generic:
+            - tablist:
+              - tab [selected]: Corrective Tickets
+              - tab: Preventive Tickets
+              - tab: Planned Tickets
+              - tab: Problem Tickets
+            - tabpanel:
+              - generic:
+                - generic:
+                  - combobox:
+                    - generic:
+                      - img
+                      - generic: All Time
+                    - img
+                  - combobox [expanded]:
+                    - generic:
+                      - img
+                      - generic: All Status
+                    - img
+                  - combobox:
+                    - generic:
+                      - img
+                      - generic: All Priorities
+                    - img
+                  - generic:
+                    - img
+                    - textbox:
+                      - /placeholder: Search tickets...
+              - generic:
+                - generic:
+                  - generic: Created After
+                  - textbox
+                - generic:
+                  - generic: Created Before
+                  - textbox
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Total Tickets
+                      - paragraph: "7"
+                    - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Open
+                      - paragraph: "3"
+                    - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: In Progress
+                      - paragraph: "1"
+                    - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Submitted
+                      - paragraph: "3"
+                    - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: On Hold
+                      - paragraph: "0"
+                    - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - paragraph: Closed
+                      - paragraph: "0"
+                    - img
+              - generic:
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Ticket ID
+                          - columnheader: Title
+                          - columnheader: Site
+                          - columnheader: Status
+                          - columnheader: Priority
+                          - columnheader: Assigned To
+                          - columnheader: Created Date
+                          - columnheader: Due Date
+                          - columnheader: Progress
+                          - columnheader: Actions
+                      - rowgroup:
+                        - row:
+                          - cell: T2030956691214024705
+                          - cell:
+                            - generic:
+                              - paragraph: test
+                              - paragraph: The cahrger offline
+                          - cell: 深圳罗湖东门步行街站
+                          - cell:
+                            - generic: In Progress
+                          - cell:
+                            - generic: P3 - Medium
+                          - cell: 测试分组
+                          - cell: 2026-03-09 18:39:43
+                          - cell: 2026-03-09 17:00:00
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2032070532991795201
+                          - cell:
+                            - generic:
+                              - paragraph: 20260312-TEST 001
+                              - paragraph: TEST ONLY
+                          - cell: 测试站点2
+                          - cell:
+                            - generic: Submitted
+                          - cell:
+                            - generic: P2 - High
+                          - cell: 用户组001
+                          - cell: 2026-03-12 20:25:43
+                          - cell: 2026-03-12 12:25:11
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2034092721370816513
+                          - cell:
+                            - generic:
+                              - paragraph: Pingmarche Onnut
+                              - paragraph: The EVC (SN:xxxx) offline.
+                          - cell: FB008测试站点
+                          - cell:
+                            - generic: Open
+                          - cell:
+                            - generic: P1 - Critical
+                          - cell: AutoGroup_1773491626
+                          - cell: 2026-03-18 10:21:11
+                          - cell: 2026-03-18 02:07:13
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2034608654853955586
+                          - cell:
+                            - generic:
+                              - paragraph: "111"
+                              - paragraph: "222"
+                          - cell: Test Site
+                          - cell:
+                            - generic: Open
+                          - cell:
+                            - generic: P2 - High
+                          - cell: AutoGroup_1773491534
+                          - cell: 2026-03-19 20:31:19
+                          - cell: 2026-03-20 12:31:09
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2034909449826779137
+                          - cell:
+                            - generic:
+                              - paragraph: testcase1
+                              - paragraph: test case1
+                          - cell: test-site-th-1773495123
+                          - cell:
+                            - generic: Open
+                          - cell:
+                            - generic: P4 - Low
+                          - cell: 用户组001
+                          - cell: 2026-03-20 16:26:34
+                          - cell: 2026-03-21 08:25:03
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2034910154528571393
+                          - cell:
+                            - generic:
+                              - paragraph: "123"
+                              - paragraph: "123"
+                          - cell: Test_Code_Null_1773541989
+                          - cell:
+                            - generic: Submitted
+                          - cell:
+                            - generic: P1 - Critical
+                          - cell: 测试分组
+                          - cell: 2026-03-20 16:29:22
+                          - cell: 2026-03-20 12:29:14
+                          - cell
+                          - cell:
+                            - button: View
+                        - row:
+                          - cell: T2039691220024029186
+                          - cell:
+                            - generic:
+                              - paragraph: forTestEngineer
+                          - cell: 上海浦东金桥充电站
+                          - cell:
+                            - generic: Submitted
+                          - cell:
+                            - generic: P1 - Critical
+                          - cell: 测试分组
+                          - cell: 2026-04-02 21:07:37
+                          - cell: 2026-04-02 17:07:34
+                          - cell
+                          - cell:
+                            - button: View
+                - generic:
+                  - generic:
+                    - generic: Showing 1 - 7 of 7 Tickets
+                    - generic:
+                      - generic: "Rows per page:"
+                      - combobox:
+                        - generic: "20"
+                        - img
+                  - generic:
+                    - button [disabled]:
+                      - img
+                    - generic: 1 / 1
+                    - button [disabled]:
+                      - img
+      - region "Notifications alt+T"
+  - listbox [ref=e457]:
+    - option "All Status" [active] [selected] [ref=e458]:
+      - generic [ref=e460]:
+        - img
+      - generic [ref=e461]: All Status
+    - option "Open" [ref=e462]:
+      - generic [ref=e464]: Open
+    - option "In Progress" [ref=e465]:
+      - generic [ref=e467]: In Progress
+    - option "Submitted" [ref=e468]:
+      - generic [ref=e470]: Submitted
+    - option "On Hold" [ref=e471]:
+      - generic [ref=e473]: On Hold
+    - option "Closed" [ref=e474]:
+      - generic [ref=e476]: Closed

@@ -1,0 +1,244 @@
+- generic [ref=e43]:
+  - banner [ref=e44]:
+    - generic [ref=e46]:
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - img "iGreen+ Logo" [ref=e49]
+          - generic [ref=e50]: iGreen+ Ticket Management
+        - navigation [ref=e51]:
+          - button "Dashboard" [ref=e52]
+          - button "Tickets" [ref=e53]
+          - button "Sites" [ref=e54]
+          - button "Groups" [ref=e55]
+          - button "System Settings" [ref=e56]
+      - generic [ref=e57]:
+        - button "English" [ref=e58]:
+          - img
+          - text: English
+        - button "S" [ref=e59]:
+          - generic [ref=e61]: S
+  - generic [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - heading "Welcome Back" [level=1] [ref=e66]
+        - paragraph [ref=e67]: Ticket Overview
+      - generic [ref=e68]:
+        - button "Export" [ref=e69]:
+          - img
+          - text: Export
+        - button "Create Ticket" [ref=e70]:
+          - img
+          - text: Create Ticket
+    - generic [ref=e71]:
+      - tablist [ref=e72]:
+        - tab "Corrective Tickets" [selected] [ref=e73]
+        - tab "Preventive Tickets" [ref=e74]
+        - tab "Planned Tickets" [ref=e75]
+        - tab "Problem Tickets" [ref=e76]
+      - tabpanel "Corrective Tickets" [ref=e77]:
+        - generic [ref=e79]:
+          - combobox [ref=e80]:
+            - generic [ref=e81]:
+              - img
+              - generic [ref=e82]: All Time
+            - img
+          - combobox [ref=e83]:
+            - generic [ref=e84]:
+              - img
+              - generic [ref=e85]: All Status
+            - img
+          - combobox [ref=e86]:
+            - generic [ref=e87]:
+              - img
+              - generic [ref=e88]: All Priorities
+            - img
+          - generic [ref=e89]:
+            - img [ref=e90]
+            - textbox "Search tickets..." [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Created After
+            - textbox [ref=e97]
+          - generic [ref=e98]:
+            - generic [ref=e99]: Created Before
+            - textbox [ref=e100]
+        - generic [ref=e101]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - paragraph [ref=e105]: Total Tickets
+              - paragraph [ref=e106]: "7"
+            - img [ref=e107]
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - paragraph [ref=e113]: Open
+              - paragraph [ref=e114]: "3"
+            - img [ref=e115]
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: In Progress
+              - paragraph [ref=e121]: "1"
+            - img [ref=e122]
+          - generic [ref=e126]:
+            - generic [ref=e127]:
+              - paragraph [ref=e128]: Submitted
+              - paragraph [ref=e129]: "3"
+            - img [ref=e130]
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - paragraph [ref=e136]: On Hold
+              - paragraph [ref=e137]: "0"
+            - img [ref=e138]
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - paragraph [ref=e144]: Closed
+              - paragraph [ref=e145]: "0"
+            - img [ref=e146]
+        - generic [ref=e149]:
+          - table [ref=e152]:
+            - rowgroup [ref=e153]:
+              - row "Ticket ID Title Site Status Priority Assigned To Created Date Due Date Progress Actions" [ref=e154]:
+                - columnheader "Ticket ID" [ref=e155]
+                - columnheader "Title" [ref=e156]
+                - columnheader "Site" [ref=e157]
+                - columnheader "Status" [ref=e158]
+                - columnheader "Priority" [ref=e159]
+                - columnheader "Assigned To" [ref=e160]
+                - columnheader "Created Date" [ref=e161]
+                - columnheader "Due Date" [ref=e162]
+                - columnheader "Progress" [ref=e163]
+                - columnheader "Actions" [ref=e164]
+            - rowgroup [ref=e165]:
+              - row "T2030956691214024705 test The cahrger offline 深圳罗湖东门步行街站 In Progress P3 - Medium 测试分组 2026-03-09 18:39:43 2026-03-09 17:00:00 View" [ref=e166] [cursor=pointer]:
+                - cell "T2030956691214024705" [ref=e167]
+                - cell "test The cahrger offline" [ref=e168]:
+                  - generic [ref=e169]:
+                    - paragraph [ref=e170]: test
+                    - paragraph [ref=e171]: The cahrger offline
+                - cell "深圳罗湖东门步行街站" [ref=e172]
+                - cell "In Progress" [ref=e173]:
+                  - generic [ref=e174]: In Progress
+                - cell "P3 - Medium" [ref=e175]:
+                  - generic [ref=e176]: P3 - Medium
+                - cell "测试分组" [ref=e177]
+                - cell "2026-03-09 18:39:43" [ref=e178]
+                - cell "2026-03-09 17:00:00" [ref=e179]
+                - cell [ref=e180]
+                - cell "View" [ref=e181]:
+                  - button "View" [ref=e182]
+              - row "T2032070532991795201 20260312-TEST 001 TEST ONLY 测试站点2 Submitted P2 - High 用户组001 2026-03-12 20:25:43 2026-03-12 12:25:11 View" [ref=e183] [cursor=pointer]:
+                - cell "T2032070532991795201" [ref=e184]
+                - cell "20260312-TEST 001 TEST ONLY" [ref=e185]:
+                  - generic [ref=e186]:
+                    - paragraph [ref=e187]: 20260312-TEST 001
+                    - paragraph [ref=e188]: TEST ONLY
+                - cell "测试站点2" [ref=e189]
+                - cell "Submitted" [ref=e190]:
+                  - generic [ref=e191]: Submitted
+                - cell "P2 - High" [ref=e192]:
+                  - generic [ref=e193]: P2 - High
+                - cell "用户组001" [ref=e194]
+                - cell "2026-03-12 20:25:43" [ref=e195]
+                - cell "2026-03-12 12:25:11" [ref=e196]
+                - cell [ref=e197]
+                - cell "View" [ref=e198]:
+                  - button "View" [ref=e199]
+              - row "T2034092721370816513 Pingmarche Onnut The EVC (SN:xxxx) offline. FB008测试站点 Open P1 - Critical AutoGroup_1773491626 2026-03-18 10:21:11 2026-03-18 02:07:13 View" [ref=e200] [cursor=pointer]:
+                - cell "T2034092721370816513" [ref=e201]
+                - cell "Pingmarche Onnut The EVC (SN:xxxx) offline." [ref=e202]:
+                  - generic [ref=e203]:
+                    - paragraph [ref=e204]: Pingmarche Onnut
+                    - paragraph [ref=e205]: The EVC (SN:xxxx) offline.
+                - cell "FB008测试站点" [ref=e206]
+                - cell "Open" [ref=e207]:
+                  - generic [ref=e208]: Open
+                - cell "P1 - Critical" [ref=e209]:
+                  - generic [ref=e210]: P1 - Critical
+                - cell "AutoGroup_1773491626" [ref=e211]
+                - cell "2026-03-18 10:21:11" [ref=e212]
+                - cell "2026-03-18 02:07:13" [ref=e213]
+                - cell [ref=e214]
+                - cell "View" [ref=e215]:
+                  - button "View" [ref=e216]
+              - row "T2034608654853955586 111 222 Test Site Open P2 - High AutoGroup_1773491534 2026-03-19 20:31:19 2026-03-20 12:31:09 View" [ref=e217] [cursor=pointer]:
+                - cell "T2034608654853955586" [ref=e218]
+                - cell "111 222" [ref=e219]:
+                  - generic [ref=e220]:
+                    - paragraph [ref=e221]: "111"
+                    - paragraph [ref=e222]: "222"
+                - cell "Test Site" [ref=e223]
+                - cell "Open" [ref=e224]:
+                  - generic [ref=e225]: Open
+                - cell "P2 - High" [ref=e226]:
+                  - generic [ref=e227]: P2 - High
+                - cell "AutoGroup_1773491534" [ref=e228]
+                - cell "2026-03-19 20:31:19" [ref=e229]
+                - cell "2026-03-20 12:31:09" [ref=e230]
+                - cell [ref=e231]
+                - cell "View" [ref=e232]:
+                  - button "View" [ref=e233]
+              - row "T2034909449826779137 testcase1 test case1 test-site-th-1773495123 Open P4 - Low 用户组001 2026-03-20 16:26:34 2026-03-21 08:25:03 View" [ref=e234] [cursor=pointer]:
+                - cell "T2034909449826779137" [ref=e235]
+                - cell "testcase1 test case1" [ref=e236]:
+                  - generic [ref=e237]:
+                    - paragraph [ref=e238]: testcase1
+                    - paragraph [ref=e239]: test case1
+                - cell "test-site-th-1773495123" [ref=e240]
+                - cell "Open" [ref=e241]:
+                  - generic [ref=e242]: Open
+                - cell "P4 - Low" [ref=e243]:
+                  - generic [ref=e244]: P4 - Low
+                - cell "用户组001" [ref=e245]
+                - cell "2026-03-20 16:26:34" [ref=e246]
+                - cell "2026-03-21 08:25:03" [ref=e247]
+                - cell [ref=e248]
+                - cell "View" [ref=e249]:
+                  - button "View" [ref=e250]
+              - row "T2034910154528571393 123 123 Test_Code_Null_1773541989 Submitted P1 - Critical 测试分组 2026-03-20 16:29:22 2026-03-20 12:29:14 View" [ref=e251] [cursor=pointer]:
+                - cell "T2034910154528571393" [ref=e252]
+                - cell "123 123" [ref=e253]:
+                  - generic [ref=e254]:
+                    - paragraph [ref=e255]: "123"
+                    - paragraph [ref=e256]: "123"
+                - cell "Test_Code_Null_1773541989" [ref=e257]
+                - cell "Submitted" [ref=e258]:
+                  - generic [ref=e259]: Submitted
+                - cell "P1 - Critical" [ref=e260]:
+                  - generic [ref=e261]: P1 - Critical
+                - cell "测试分组" [ref=e262]
+                - cell "2026-03-20 16:29:22" [ref=e263]
+                - cell "2026-03-20 12:29:14" [ref=e264]
+                - cell [ref=e265]
+                - cell "View" [ref=e266]:
+                  - button "View" [ref=e267]
+              - row "T2039691220024029186 forTestEngineer 上海浦东金桥充电站 Submitted P1 - Critical 测试分组 2026-04-02 21:07:37 2026-04-02 17:07:34 View" [ref=e268] [cursor=pointer]:
+                - cell "T2039691220024029186" [ref=e269]
+                - cell "forTestEngineer" [ref=e270]:
+                  - generic [ref=e271]:
+                    - paragraph [ref=e272]: forTestEngineer
+                    - paragraph
+                - cell "上海浦东金桥充电站" [ref=e273]
+                - cell "Submitted" [ref=e274]:
+                  - generic [ref=e275]: Submitted
+                - cell "P1 - Critical" [ref=e276]:
+                  - generic [ref=e277]: P1 - Critical
+                - cell "测试分组" [ref=e278]
+                - cell "2026-04-02 21:07:37" [ref=e279]
+                - cell "2026-04-02 17:07:34" [ref=e280]
+                - cell [ref=e281]
+                - cell "View" [ref=e282]:
+                  - button "View" [ref=e283]
+          - generic [ref=e284]:
+            - generic [ref=e285]:
+              - generic [ref=e286]: Showing 1 - 7 of 7 Tickets
+              - generic [ref=e287]:
+                - generic [ref=e288]: "Rows per page:"
+                - combobox [ref=e289]:
+                  - generic: "20"
+                  - img
+            - generic [ref=e290]:
+              - button [disabled]:
+                - img
+              - generic [ref=e291]: 1 / 1
+              - button [disabled]:
+                - img
+  - region "Notifications alt+T"

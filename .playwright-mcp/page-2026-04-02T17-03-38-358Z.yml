@@ -1,0 +1,134 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img "iGreen+ Logo" [ref=e9]
+          - generic [ref=e10]: iGreen+ Ticket Management
+        - navigation [ref=e11]:
+          - button "Dashboard" [ref=e12]
+          - button "Tickets" [ref=e13]
+          - button "Sites" [ref=e14]
+          - button "Groups" [ref=e15]
+          - button "System Settings" [ref=e16]
+      - generic [ref=e17]:
+        - button "English" [ref=e18]:
+          - img
+          - text: English
+        - button "S" [ref=e19]:
+          - generic [ref=e21]: S
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - heading "Welcome Back" [level=1] [ref=e26]
+        - paragraph [ref=e27]: Ticket Overview
+      - generic [ref=e28]:
+        - button "Export" [ref=e29]:
+          - img
+          - text: Export
+        - button "Create Ticket" [ref=e30]:
+          - img
+          - text: Create Ticket
+    - generic [ref=e31]:
+      - tablist [ref=e32]:
+        - tab "Corrective Tickets" [selected] [ref=e33]
+        - tab "Preventive Tickets" [ref=e34]
+        - tab "Planned Tickets" [ref=e35]
+        - tab "Problem Tickets" [ref=e36]
+      - tabpanel "Corrective Tickets" [ref=e37]:
+        - generic [ref=e39]:
+          - combobox [ref=e40]:
+            - generic [ref=e41]:
+              - img
+              - generic [ref=e42]: All Time
+            - img
+          - combobox [ref=e43]:
+            - generic [ref=e44]:
+              - img
+              - generic [ref=e45]: All Status
+            - img
+          - combobox [ref=e46]:
+            - generic [ref=e47]:
+              - img
+              - generic [ref=e48]: All Priorities
+            - img
+          - generic [ref=e49]:
+            - img [ref=e50]
+            - textbox "Search tickets..." [ref=e53]
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - generic [ref=e56]: Created After
+            - textbox [ref=e57]
+          - generic [ref=e58]:
+            - generic [ref=e59]: Created Before
+            - textbox [ref=e60]
+        - table [ref=e101]:
+          - rowgroup [ref=e102]:
+            - row "Ticket ID Title Site Status Priority Assigned To Created Date Due Date Progress Actions" [ref=e103]:
+              - columnheader "Ticket ID" [ref=e104]
+              - columnheader "Title" [ref=e105]
+              - columnheader "Site" [ref=e106]
+              - columnheader "Status" [ref=e107]
+              - columnheader "Priority" [ref=e108]
+              - columnheader "Assigned To" [ref=e109]
+              - columnheader "Created Date" [ref=e110]
+              - columnheader "Due Date" [ref=e111]
+              - columnheader "Progress" [ref=e112]
+              - columnheader "Actions" [ref=e113]
+          - rowgroup [ref=e114]:
+            - row [ref=e115]:
+              - cell [ref=e116]
+              - cell [ref=e118]
+              - cell [ref=e120]
+              - cell [ref=e122]
+              - cell [ref=e124]
+              - cell [ref=e126]
+              - cell [ref=e128]
+              - cell [ref=e130]
+              - cell [ref=e132]
+              - cell [ref=e134]
+            - row [ref=e136]:
+              - cell [ref=e137]
+              - cell [ref=e139]
+              - cell [ref=e141]
+              - cell [ref=e143]
+              - cell [ref=e145]
+              - cell [ref=e147]
+              - cell [ref=e149]
+              - cell [ref=e151]
+              - cell [ref=e153]
+              - cell [ref=e155]
+            - row [ref=e157]:
+              - cell [ref=e158]
+              - cell [ref=e160]
+              - cell [ref=e162]
+              - cell [ref=e164]
+              - cell [ref=e166]
+              - cell [ref=e168]
+              - cell [ref=e170]
+              - cell [ref=e172]
+              - cell [ref=e174]
+              - cell [ref=e176]
+            - row [ref=e178]:
+              - cell [ref=e179]
+              - cell [ref=e181]
+              - cell [ref=e183]
+              - cell [ref=e185]
+              - cell [ref=e187]
+              - cell [ref=e189]
+              - cell [ref=e191]
+              - cell [ref=e193]
+              - cell [ref=e195]
+              - cell [ref=e197]
+            - row [ref=e199]:
+              - cell [ref=e200]
+              - cell [ref=e202]
+              - cell [ref=e204]
+              - cell [ref=e206]
+              - cell [ref=e208]
+              - cell [ref=e210]
+              - cell [ref=e212]
+              - cell [ref=e214]
+              - cell [ref=e216]
+              - cell [ref=e218]
+  - region "Notifications alt+T"
