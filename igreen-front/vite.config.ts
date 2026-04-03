@@ -74,7 +74,7 @@
       open: true,
       proxy: {
         '/api': {
-          target: 'http://43.255.212.68:8088',
+          target: 'http://localhost:8089',
           changeOrigin: true,
           secure: false,
         },

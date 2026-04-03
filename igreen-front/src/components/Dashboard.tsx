@@ -702,23 +702,23 @@ const getStatusColor = (status: TicketStatus) => {
                             {formatDateTime(ticket.dueDate)}
                           </span>
                                                 </TableCell>
-                                                <TableCell>
-                                                  {(ticket?.stepValues?.length || 0) > 0 && (
-                                                        <div className="flex items-center gap-2 min-w-[100px]">
-                                                            <div className="flex-1 bg-muted rounded-full h-2">
-                                                                <div
-                                                                    className="bg-[#0ea5e9] h-2 rounded-full transition-all"
-                                                                    style={{
-                                                                      width: `${((ticket?.completedSteps?.length || 0) / (ticket?.stepValues?.length || 1)) * 100}%`,
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground whitespace-nowrap">
-                                {ticket.completedSteps.length}
-                              </span>
-                                                        </div>
-                                                    )}
-                                                </TableCell>
+<TableCell>
+  {(ticket.totalStepsCount || 0) > 0 ? (
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 bg-muted rounded-full h-2">
+        <div 
+          className="bg-[#0ea5e9] h-2 rounded-full transition-all" 
+          style={{ width: `${ticket.progressPercentage || 0}%` }} 
+        />
+      </div>
+      <span className="text-sm text-muted-foreground whitespace-nowrap">
+        {ticket.completedStepsCount || 0}/{ticket.totalStepsCount || 0}
+      </span>
+    </div>
+  ) : (
+    <span className="text-sm text-muted-foreground">-</span>
+  )}
+</TableCell>
                                                 <TableCell className="text-right">
                                                     <Button
                                                         variant="ghost"
