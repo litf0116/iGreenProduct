@@ -376,6 +376,8 @@ export const api = {
 
   // File upload
   uploadFile: async (file: File, fieldType?: string): Promise<{ id: string; url: string }> => {
+    console.log('[DEBUG] uploadFile called - file size:', file.size, 'type:', file.type, 'name:', file.name);
+    
     const formData = new FormData();
     formData.append('file', file);
     if (fieldType) {
@@ -383,48 +385,58 @@ export const api = {
     }
 
     const token = await getAuthToken();
+    console.log('[DEBUG] Token exists:', !!token);
+    
     const headers: HeadersInit = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    const url = `${API_BASE_URL}/api/files/upload`;
+    console.log('[DEBUG] Upload URL:', url);
+    console.log('[DEBUG] API_BASE_URL:', API_BASE_URL);
 
-    if (!response.ok) {
-      // 尝试解析后端返回的错误码
-      let errorCode: string | null = null;
-      try {
-        const errorResult = await response.clone().json();
-        errorCode = errorResult.code || null;
-      } catch {
-        // 忽略解析错误，使用默认错误消息
-      }
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
 
-      // 根据状态码和错误码区分错误类型
-      if (response.status === 401) {
-        throw new Error('Authentication failed. Please login again.');
-      } else if (response.status === 400) {
-        if (errorCode === 'FILE_EMPTY') {
-          throw new Error('File is empty. Please select a valid file.');
-        } else if (errorCode === 'FILE_TOO_LARGE') {
-          throw new Error('File is too large. Maximum size is 10MB.');
+      console.log('[DEBUG] Response status:', response.status, 'ok:', response.ok);
+
+      if (!response.ok) {
+        let errorCode: string | null = null;
+        try {
+          const errorResult = await response.clone().json();
+          errorCode = errorResult.code || null;
+        } catch {
         }
-        throw new Error('Upload failed. Please check your connection.');
-      } else if (response.status === 404) {
-        throw new Error('Upload endpoint not found. Server configuration error.');
-      } else if (response.status === 500) {
-        throw new Error('Server error. Please try again later.');
-      } else {
-        throw new Error('Upload failed. Please check your connection.');
-      }
-    }
 
-    const result = await response.json();
-    return { id: result.data.id, url: result.data.url };
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please login again.');
+        } else if (response.status === 400) {
+          if (errorCode === 'FILE_EMPTY') {
+            throw new Error('File is empty. Please select a valid file.');
+          } else if (errorCode === 'FILE_TOO_LARGE') {
+            throw new Error('File is too large. Maximum size is 10MB.');
+          }
+          throw new Error('Upload failed. Please check your connection.');
+        } else if (response.status === 404) {
+          throw new Error('Upload endpoint not found. Server configuration error.');
+        } else if (response.status === 500) {
+          throw new Error('Server error. Please try again later.');
+        } else {
+          throw new Error('Upload failed. Please check your connection.');
+        }
+      }
+
+      const result = await response.json();
+      return { id: result.data.id, url: result.data.url };
+    } catch (error: any) {
+      console.error('[DEBUG] Upload exception:', error?.message || error);
+      throw error;
+    }
   },
 
   // Users

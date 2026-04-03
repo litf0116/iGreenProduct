@@ -220,16 +220,34 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   ) => {
     setLoadingImage(stepId + fieldPrefix);
     try {
+      console.log('[DEBUG] Starting photo capture, source:', source);
       const photo = source === 'camera' ? await takePhoto() : await pickPhoto();
+      console.log('[DEBUG] Photo captured, photo exists:', !!photo);
 
       if (!photo) {
+        console.log('[DEBUG] No photo returned');
         setLoadingImage(null);
         return;
       }
 
-      const response = await fetch(photo);
-      const blob = await response.blob();
+      console.log('[DEBUG] Photo length:', photo.length, 'starts with:', photo.substring(0, 50));
+      
+      // 直接将dataUrl转换为Blob（Android不支持fetch dataUrl）
+      // 解析base64数据
+      const arr = photo.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const blob = new Blob([u8arr], { type: mime });
+      
+      console.log('[DEBUG] Blob created, size:', blob.size, 'type:', blob.type);
+      
       const file = new File([blob], `photo-${Date.now()}.jpg`, {type: 'image/jpeg'});
+      console.log('[DEBUG] File created, size:', file.size);
 
       const uploaded = await api.uploadFile(file, fieldPrefix);
       const fullUrl = uploaded.url;
@@ -278,9 +296,11 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       }
 
       toast.success('Photo uploaded successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload photo');
+      const errorMessage = error?.message || 'Failed to upload photo';
+      toast.error(errorMessage);
+      console.log('[DEBUG] Upload failed - source:', source, 'error:', errorMessage);
     } finally {
       setLoadingImage(null);
     }
