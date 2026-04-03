@@ -256,9 +256,7 @@ export function TicketDetail({
         return variants[priority] || "default";
     };
 
-    const progress = template
-        ? (ticket.completedSteps.length / template.steps.length) * 100
-        : 0;
+    const progress = ticket.progressPercentage || 0;
 
     const daysUntilDue = Math.ceil(
         (new Date(ticket.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
@@ -649,15 +647,17 @@ export function TicketDetail({
                                 <h4 className="text-foreground">{t("workProgress")}</h4>
                             </div>
                             <span className={`${getStatusTextColor(ticket.status)} flex-shrink-0`}>
-                {ticket.completedSteps?.length || 0} / {template.steps.length} {t("steps")}
+                {ticket.completedStepsCount || 0} / {ticket.totalStepsCount || 0} {t("steps")}
               </span>
                         </div>
 
                         <div className="space-y-2">
                             <Progress value={progress} className="h-2"/>
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">{Math.round(progress)}% Complete</span>
-                            </div>
+<div className="flex items-center justify-between">
+  <span className="text-muted-foreground">
+    {ticket.completedStepsCount || 0}/{ticket.totalStepsCount || 0} 步骤完成 ({Math.round(progress)}%)
+  </span>
+</div>
                         </div>
 
                         <Separator/>

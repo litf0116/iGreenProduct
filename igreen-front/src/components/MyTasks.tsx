@@ -206,9 +206,9 @@ export function MyTasks({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {myTickets.map((ticket) => {
                     const template = templates.find((t) => t.id === ticket.templateId);
-                    const progress = template
-                        ? (ticket.completedSteps.length / template.steps.length) * 100
-                        : 0;
+                    const completedCount = ticket.completedStepsCount || 0;
+                    const totalCount = ticket.totalStepsCount || 0;
+                    const progress = ticket.progressPercentage || 0;
 
                     return (
                         <Card key={ticket.id} className="p-6 space-y-4">

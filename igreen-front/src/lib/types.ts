@@ -128,10 +128,14 @@ export interface Ticket {
     createdByName: string;
     createdAt: string;
     updatedAt: string;
-    dueDate: string;
+dueDate: string;
   completedSteps?: string[];
+  completedStepsCount?: number;
+  totalStepsCount?: number;
+  progressPercentage?: number;
+  templateData?: any;
   stepValues?: TemplateStep[];
-    accepted?: boolean;
+  accepted?: boolean;
     acceptedAt?: string;
     departureAt?: string;
     departurePhoto?: string;

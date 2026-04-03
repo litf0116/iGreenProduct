@@ -880,19 +880,50 @@ ticket.setStatus(TicketStatus.COMPLETED);
 
         // Parse templateData
         Map<String, Object> templateData = new HashMap<>();
+        List<String> completedSteps = new ArrayList<>();
+        int completedStepsCount = 0;
+        int totalStepsCount = 0;
+        int progressPercentage = 0;
+        boolean loadedFromTemplate = false;
+        
         if (ticket.getTemplateData() != null && !ticket.getTemplateData().isEmpty()) {
             try {
-                templateData = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<Map<String, Object>>() {
+                TemplateData data = objectMapper.readValue(ticket.getTemplateData(), new TypeReference<TemplateData>() {
                 });
+                templateData = objectMapper.convertValue(data, Map.class);
+                
+                // 提取已完成的步骤 ID（completed=true 的步骤）
+                if (data.getSteps() != null && !data.getSteps().isEmpty()) {
+                    totalStepsCount = data.getSteps().size();
+                    completedSteps = data.getSteps().stream()
+                        .filter(step -> step.getCompleted() != null && step.getCompleted())
+                        .map(TemplateStepData::getId)
+                        .collect(Collectors.toList());
+                    completedStepsCount = completedSteps.size();
+                    progressPercentage = totalStepsCount > 0 ? (completedStepsCount * 100 / totalStepsCount) : 0;
+                    loadedFromTemplate = true;
+                }
             } catch (JsonProcessingException e) {
                 log.error("Error parsing template data", e);
+            }
+        }
+        
+        if (!loadedFromTemplate && ticket.getTemplateId() != null) {
+            try {
+                Template template = templateService.getTemplateById(ticket.getTemplateId());
+                if (template != null && template.getSteps() != null) {
+                    totalStepsCount = template.getSteps().size();
+                    progressPercentage = 0;
+                }
+            } catch (Exception e) {
+                log.error("Error loading template for ticket {}: {}", ticket.getId(), e.getMessage());
             }
         }
         List<TicketCommentResponse> comments = getTicketComments(ticket.getId());
 
         List<String> attachmentIds = ticketAttachmentMapper.selectByTicketId(ticket.getId()).stream().map(TicketAttachment::getFileId).collect(Collectors.toList());
 
-        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, new ArrayList<>(), templateData, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType(), ticket.getCountry(), attachmentIds);
+        return new TicketResponse(ticket.getId(), ticket.getTitle(), ticket.getDescription(), ticket.getType() != null ? ticket.getType().toLowerCase() : null, ticket.getStatus() != null ? ticket.getStatus().getValue() : null, ticket.getPriority(), site != null ? site.getId() : null, site != null ? site.getName() : null, site != null ? site.getAddress() : null, ticket.getTemplateId(), null, ticket.getAssignedTo(), assignGroup != null ? assignGroup.getName() : null, ticket.getCreatedBy(), creator != null ? creator.getName() : null, ticket.getCreatedAt() != null ? ticket.getCreatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getUpdatedAt() != null ? ticket.getUpdatedAt().format(DATE_TIME_FORMATTER) : null, ticket.getDueDate() != null ? ticket.getDueDate().format(DATE_TIME_FORMATTER) : null, completedSteps, templateData, completedStepsCount, totalStepsCount, progressPercentage, ticket.getAccepted(), ticket.getAcceptedAt() != null ? ticket.getAcceptedAt().format(DATE_TIME_FORMATTER) : null, ticket.getAcceptedUserId(), acceptedUser != null ? acceptedUser.getName() : null, ticket.getDepartureAt() != null ? ticket.getDepartureAt().format(DATE_TIME_FORMATTER) : null, ticket.getDeparturePhoto(), ticket.getArrivalAt() != null ? ticket.getArrivalAt().format(DATE_TIME_FORMATTER) : null, ticket.getArrivalPhoto(), ticket.getCompletionPhoto(), ticket.getCause(), ticket.getSolution(), comments, relatedTicketIds, ticket.getProblemType(), ticket.getCountry(), attachmentIds);
     }
 
     @Transactional

@@ -34,6 +34,9 @@ public class TicketResponse {
     private String dueDate;
     private List<String> completedSteps;
     private Map<String, Object> templateData;
+    private Integer completedStepsCount;
+    private Integer totalStepsCount;
+    private Integer progressPercentage;
     private Boolean accepted;
     private String acceptedAt;
     private String acceptedUserId;
