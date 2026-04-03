@@ -8,7 +8,8 @@
     "ses_2b09da1bfffeeoWPlHhqYlz5Ix",
     "ses_2b09c3525ffeN7zJV5lc20Ins4",
     "ses_2b09c18baffet9UfsVe8efi7Vi",
-    "ses_2b09bf818ffeVWK66jUMYoAfSA"
+    "ses_2b09bf818ffeVWK66jUMYoAfSA",
+    "ses_2af0cb59fffegcfXco6Dw6IR0F"
   ],
   "plan_name": "fix-image-upload-bug",
   "agent": "atlas",
@@ -17,10 +18,10 @@
       "task_key": "todo:1",
       "task_label": "1",
       "task_title": "后端配置文件修复（端口8089）",
-      "session_id": "ses_2b09c3525ffeN7zJV5lc20Ins4",
+      "session_id": "ses_2af0cb59fffegcfXco6Dw6IR0F",
       "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T18:12:08.710Z"
+      "category": "quick",
+      "updated_at": "2026-04-03T01:27:51.398Z"
     }
   }
 }
