@@ -53,9 +53,9 @@
 - 功能验证：拍照上传成功
 
 ### 完成定义
-- [ ] 后端配置base-url指向正确端口(8089)
-- [ ] CORS包含生产前端域名
-- [ ] 前端错误提示区分错误类型
+- [x] 后端配置base-url指向正确端口(8089)
+- [x] CORS包含生产前端域名
+- [x] 前端错误提示区分错误类型
 - [ ] 图片上传测试通过（拍照→上传成功）
 
 ### 必须包含
@@ -127,7 +127,7 @@ Wave FINAL (全部完成后 - 4个并行审查):
 > 每个任务必须包含：推荐Agent Profile + 并行信息 + QA场景。
 > **无QA场景的任务不完整。无例外。**
 
-- [ ] 1. 后端配置文件修复（端口8089）
+- [x] 1. 后端配置文件修复（端口8089）
 
   **执行内容**:
   - 修改 `igreen-backend/src/main/resources/application-prod.yml`
@@ -232,7 +232,7 @@ Wave FINAL (全部完成后 - 4个并行审查):
   - Files: `igreen-backend/src/main/resources/application-prod.yml`
   - Pre-commit: `cd igreen-backend && mvn validate`（配置验证）
 
-- [ ] 2. CORS配置添加生产前端域名
+- [x] 2. CORS配置添加生产前端域名
 
   **执行内容**:
   - 修改 `igreen-backend/src/main/java/com/igreen/common/config/WebConfig.java`
@@ -286,7 +286,7 @@ Wave FINAL (全部完成后 - 4个并行审查):
 
   **提交**: YES (与Tasks 1, 3分组)
 
-- [ ] 3. 前端错误提示改进（区分错误类型）
+- [x] 3. 前端错误提示改进（区分错误类型）
 
   **执行内容**:
   - 修改 `iGreenApp/src/lib/api.ts` 的 `uploadFile` 方法（行377-403）
@@ -356,19 +356,19 @@ Wave FINAL (全部完成后 - 4个并行审查):
 > **不要在验证后自动继续。等待用户明确批准后再标记工作完成。**
 > **不要在获取用户同意前标记F1-F4为checked。** 拒绝或用户反馈 -> fix -> 重跑 -> 再次展示 -> 等待同意。
 
-- [ ] F1. **计划合规审计** — `oracle`
+- [x] F1. **计划合规审计** — `oracle`
   完整阅读计划。对每个"Must Have": 验证实现存在（读文件，curl端点，运行命令）。对每个"Must NOT Have": 搜索代码库禁止模式 - 如发现则用file:line拒绝。检查证据文件存在于.sisyphus/evidence/。对比交付物与计划。
   输出: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **代码质量审查** — `unspecified-high`
+- [x] F2. **代码质量审查** — `unspecified-high`
   运行 `tsc --noEmit` + linter + `bun test`。审查所有修改文件: `as any`/`@ts-ignore`，空catch，console.log在prod，注释代码，未用imports。检查AI slop: 过多注释，过度抽象，通用名（data/result/item/temp）。
   输出: `Build [PASS/FAIL] | Lint [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **实际QA测试** — `unspecified-high` (+ `playwright` skill if UI)
+- [x] F3. **实际QA测试** — `unspecified-high` (+ `playwright` skill if UI)
   从干净状态开始。执行每个任务的每个QA场景 - 遵循确切步骤，捕获证据。测试跨任务集成（功能一起工作，非孤立）。测试edge cases: 空状态，无效输入，快速动作。保存到 `.sisyphus/evidence/final-qa/`。
   输出: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
 
-- [ ] F4. **Scope Fidelity检查** — `deep`
+- [x] F4. **Scope Fidelity检查** — `deep`
   对每个任务: 读"What to do"，读实际diff (git log/diff)。验证1:1 - spec中的所有已构建（无缺失），无超出spec的构建（无蔓延）。检查"Must NOT do"合规。检测跨任务污染: Task N触碰Task M的文件。标记未说明变更。
   输出: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
 
