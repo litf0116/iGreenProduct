@@ -1,13 +1,7 @@
 import React, {useState} from "react";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "../ui/sheet";
-import {Camera, Image as ImageIcon, Upload} from "lucide-react";
+import {Camera, Image as ImageIcon} from "lucide-react";
 import {getFullImageUrl} from "../../lib/api";
-
-function generateMockPhotoUrl(label: string): string {
-  const ts = Date.now();
-  const rand = Math.random().toString(36).substring(2, 8);
-  return `https://mock-photo.test/${label}/${ts}-${rand}.jpg`;
-}
 
 interface PhotoUploaderProps {
   stepId: string;
@@ -32,14 +26,6 @@ export function PhotoUploader({
   const singularField = `${fieldPrefix}Url`;
   const loadingKey = stepId + singularField;
   const isLoading = loadingImage === loadingKey;
-
-  const handleMockUpload = () => {
-    const mockUrl = generateMockPhotoUrl(fieldPrefix);
-    window.dispatchEvent(new CustomEvent('mock-photo-upload', {
-      detail: { fieldPrefix, stepId, isCorrectiveOrPlanned, url: mockUrl }
-    }));
-    setPhotoSheetOpen(false);
-  };
 
   return (
     <div className="space-y-2">
@@ -93,18 +79,7 @@ export function PhotoUploader({
                 </div>
                 <span className="text-base font-medium text-slate-800">从相册选择</span>
               </button>
-              <button
-                onClick={handleMockUpload}
-                className="flex items-center gap-4 w-full px-6 py-4 hover:bg-amber-50 active:bg-amber-100 transition-colors border-t border-slate-100 mt-1 pt-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Upload className="w-5 h-5 text-amber-600"/>
-                </div>
-                <div>
-                  <span className="text-base font-medium text-amber-800">模拟上传（浏览器测试）</span>
-                  <div className="text-xs text-amber-500">浏览器环境无法调用相机/相册</div>
-                </div>
-              </button>
+              
             </div>
             <div className="px-4 pb-8 pt-4 bg-slate-50 border-t border-slate-200">
               <button
