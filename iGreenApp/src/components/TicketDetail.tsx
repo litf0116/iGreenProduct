@@ -56,6 +56,27 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
   // 本地状态跟踪动态表单字段值，只在提交审核时发送
   const [localFieldValues, setLocalFieldValues] = useState<Record<string, any>>({});
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.isCorrectiveOrPlanned) {
+        const reverseFieldPrefixMap: Record<string, string> = {
+          'beforePhoto': 'field-before-photos',
+          'afterPhoto': 'field-after-photos',
+          'feedbackPhoto': 'field-feedback-photos',
+          'problemPhoto': 'field-problem-photos'
+        };
+        const fieldId = reverseFieldPrefixMap[detail.fieldPrefix] || detail.fieldPrefix;
+        setLocalFieldValues(prev => ({
+          ...prev,
+          [fieldId]: [...(Array.isArray(prev[fieldId]) ? prev[fieldId] : []), detail.url]
+        }));
+      }
+    };
+    window.addEventListener('mock-photo-upload', handler);
+    return () => window.removeEventListener('mock-photo-upload', handler);
+  }, []);
+
   // 当票据变化时，重置本地字段值
   useEffect(() => {
     setLocalFieldValues({});
