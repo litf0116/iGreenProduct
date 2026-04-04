@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Group, Template, Ticket, TicketStatus} from "../lib/types";
+import {AdminTicketStatus, Group, Template, Ticket, TicketStatus, toAdminStatus} from "../lib/types";
 import {Language, TranslationKey, translations} from "../lib/i18n";
 import {formatDate, formatDateTime} from "../lib/utils";
 import {Card} from "./ui/card";
@@ -106,9 +106,9 @@ export function TicketDetail({
     const canReassign = isCreator && (ticket.status === "open" || ticket.status === "accepted");
     const canDeparture = isAssigned && ticket.accepted && !ticket.departureAt;
     const canArrival = isAssigned && ticket.departureAt && !ticket.arrivalAt;
-    const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "completed" && ticket.status !== "submitted";
-    const canConfirm = ticket.status === "submitted";
-    const canReject = ticket.status === "submitted";
+    const canComplete = isAssigned && ticket.arrivalAt && ticket.status !== "completed" && ticket.status !== "review";
+    const canConfirm = ticket.status === "review";
+    const canReject = ticket.status === "review";
 
     const handleAccept = () => {
         if (onAccept) {
@@ -200,6 +200,18 @@ export function TicketDetail({
         }
     };
 
+    const getStatusTranslationKey = (status: TicketStatus): TranslationKey => {
+        const adminStatus = toAdminStatus(status);
+        const statusMap: Record<AdminTicketStatus, TranslationKey> = {
+            "open": "open",
+            "in_progress": "inProgress",
+            "submitted": "submitted",
+            "on_hold": "onHold",
+            "closed": "closed",
+        };
+        return statusMap[adminStatus];
+    };
+
     const getStatusColor = (status: TicketStatus) => {
         switch (status) {
             case "open":
@@ -280,7 +292,7 @@ export function TicketDetail({
                                 </Badge>
                             )}
                             <Badge className={getStatusColor(ticket.status)}>
-                                {t(ticket.status as TranslationKey)}
+                                {t(getStatusTranslationKey(ticket.status))}
                             </Badge>
                         </div>
                         <h2 className="text-primary break-words">{ticket.title}</h2>

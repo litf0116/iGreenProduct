@@ -400,8 +400,17 @@ export const api = {
         return kyInstance.post(`api/tickets/${id}/complete`, {json: {completionPhoto}}).json<Ticket>();
     },
 
-    reviewTicket: async (id: number, cause?: string): Promise<Ticket> => {
-        return kyInstance.post(`api/tickets/${id}/review`, {json: {cause}}).json<Ticket>();
+    reviewTicket: async (id: number | string, cause?: string): Promise<Ticket> => {
+        // 审核通过：不发送请求体
+        // 审核拒绝：发送纯字符串（不是 JSON 对象）
+        if (cause) {
+            return kyInstance.post(`api/tickets/${id}/review`, {
+                body: cause,
+                headers: { 'Content-Type': 'text/plain' }
+            }).json<Ticket>();
+        } else {
+            return kyInstance.post(`api/tickets/${id}/review`).json<Ticket>();
+        }
     },
 
     reassignTicket: async (id: number, newGroupId: string): Promise<Ticket> => {
