@@ -24,6 +24,7 @@ export const translations = {
         continueJob: 'Continue Job',
         noActiveJobs: 'No Active Jobs',
         freeToGrab: 'You are free to grab a new order.',
+        welcomeBack: 'Ready for your next assignment.',
         nearbyOpportunities: 'Nearby Opportunities',
         viewAll: 'View All',
         technicianRating: 'Technician Rating',

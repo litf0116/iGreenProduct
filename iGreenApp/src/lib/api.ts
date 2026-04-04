@@ -167,7 +167,7 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password, platform: 'app' }),
+        body: JSON.stringify({ username, password, platform: 'app', country: 'Thailand' }),
       });
 
       console.log('[API] Login response status:', response.status);

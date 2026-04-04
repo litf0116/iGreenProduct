@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {Header, MobileNav, Sidebar} from './components/Layout';
 import {Dashboard} from './components/Dashboard';
 import {TicketList} from './components/TicketList';
@@ -41,6 +41,7 @@ function AppContent() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [initializing, setInitializing] = useState(true);
+  const isLoadingRef = useRef(false);
   const {t} = useLanguage();
 
   // 检查登录状态并恢复会话
@@ -79,8 +80,10 @@ function AppContent() {
   }, []);
 
   const loadTickets = async (reset = false) => {
+    if (isLoadingRef.current) return;
     if (loadingMore && !reset) return;
 
+    isLoadingRef.current = true;
     try {
       if (reset) {
         setRefreshing(true);
@@ -119,11 +122,11 @@ function AppContent() {
       if (reset) {
         setTickets(data);
       } else {
-        setTickets(prev => [...prev, ...data]);
-      }
-
-      // Update hasMore for paginated views
-      if (currentView === 'my-work' || currentView === 'history') {
+        setTickets(prev => {
+          const existingIds = new Set(prev.map(t => t.id));
+          const newTickets = data.filter((t: Ticket) => !existingIds.has(t.id));
+          return [...prev, ...newTickets];
+        });
         setHasMore(hasNext);
       }
     } catch (error) {
@@ -133,6 +136,7 @@ function AppContent() {
       setLoading(false);
       setRefreshing(false);
       setLoadingMore(false);
+      isLoadingRef.current = false;
     }
   };
 
@@ -267,11 +271,11 @@ function AppContent() {
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
       <div className="hidden md:block">
-        <Sidebar currentView={currentView} setCurrentView={setCurrentView}/>
+        <Sidebar currentView={currentView} setCurrentView={setCurrentView} user={user}/>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden pb-16 md:pb-0">
-        <Header/>
+        <Header user={user}/>
 
         {currentView !== 'profile' && (
           <div className="bg-white border-b px-4 md:px-6 py-2 flex items-center justify-between">
@@ -307,6 +311,8 @@ function AppContent() {
               tickets={tickets}
               onTicketClick={handleTicketClick}
               onViewAllClick={() => setCurrentView('queue')}
+              userName={user?.name}
+              hasActiveJob={tickets.some(t => ['assigned', 'departed', 'arrived'].includes(t.status))}
             />
           )}
 

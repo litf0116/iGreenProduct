@@ -17,9 +17,11 @@ interface DashboardProps {
   tickets?: Ticket[];
   onTicketClick?: (ticket: Ticket) => void;
   onViewAllClick?: () => void;
+  userName?: string;
+  hasActiveJob?: boolean;
 }
 
-export function Dashboard({ tickets = [], onTicketClick, onViewAllClick }: DashboardProps) {
+export function Dashboard({ tickets = [], onTicketClick, onViewAllClick, userName, hasActiveJob }: DashboardProps) {
   const { t } = useLanguage();
 
   const stats = useMemo(() => {
@@ -35,13 +37,16 @@ export function Dashboard({ tickets = [], onTicketClick, onViewAllClick }: Dashb
     };
   }, [tickets]);
 
+  const greetingName = userName || 'User';
+  const showFreeToGrab = !hasActiveJob && stats.nearbyOpportunities.length > 0;
+
   return (
     <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-6">
       
       {/* Hero / Welcome Section */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-slate-900">{t.hello}, Mike</h1>
-        <p className="text-slate-500">{t.freeToGrab}</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t.hello}, {greetingName}</h1>
+        <p className="text-slate-500">{showFreeToGrab ? t.freeToGrab : t.welcomeBack}</p>
       </div>
 
       {/* Quick Stats Row */}
