@@ -35,12 +35,11 @@ function transformTicket(backendTicket: any): Ticket {
   const normalizedStatus = backendTicket.status?.toLowerCase();
   const mappedStatus = (statusMap[normalizedStatus] || normalizedStatus || 'open') as TicketStatus;
 
-  return {
+return {
     id: backendTicket.id,
     title: backendTicket.title,
     description: backendTicket.description || '',
     status: mappedStatus,
-    // 后端和前端都使用 P1, P2, P3, P4 优先级
     priority: mapBackendPriority(backendTicket.priority),
     type: mapBackendType(backendTicket.type),
     requester: backendTicket.createdByName || 'System',
@@ -52,6 +51,10 @@ function transformTicket(backendTicket: any): Ticket {
     siteName: backendTicket.siteName,
     siteAddress: backendTicket.siteAddress,
     steps: backendTicket.stepData?.data ? transformSteps(backendTicket.stepData.data) : [],
+    progressPercentage: backendTicket.progressPercentage,
+    completedStepsCount: backendTicket.completedStepsCount,
+    totalStepsCount: backendTicket.totalStepsCount,
+    completedSteps: backendTicket.completedSteps,
     history: {
       departedAt: backendTicket.departureAt,
       arrivedAt: backendTicket.arrivalAt,

@@ -423,7 +423,7 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       <div className="space-y-2">
         <div className="flex justify-between border-b pb-2">
           <span className="text-slate-500">Steps Completed:</span>
-          <span className="font-medium">{getSteps().filter(s => isStepCompleted(s.id)).length}/{getSteps().length}</span>
+          <span className="font-medium">{ticket.completedStepsCount ?? 0}/{ticket.totalStepsCount ?? 0}</span>
         </div>
         {ticket.type !== 'problem' && (
           <>
@@ -661,7 +661,7 @@ case 'arrived':
 
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <span className="text-sm font-medium text-slate-700">Progress</span>
-                <span className="font-medium">{steps.filter(s => isStepCompleted(s.id)).length}/{steps.length}</span>
+                <span className="font-medium">{ticket.completedStepsCount ?? 0}/{ticket.totalStepsCount ?? 0}</span>
               </div>
 
               <div className="space-y-4">

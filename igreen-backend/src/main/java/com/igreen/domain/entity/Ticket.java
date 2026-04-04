@@ -37,7 +37,6 @@ public class Ticket {
     private String assignedTo;
     private String acceptedUserId;
     private String createdBy;
-    @TableField(exist = false)
     private String templateData;
     private Boolean accepted;
     private LocalDateTime acceptedAt;

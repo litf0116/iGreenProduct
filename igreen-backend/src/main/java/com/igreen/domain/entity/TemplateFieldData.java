@@ -1,5 +1,6 @@
 package com.igreen.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.igreen.domain.enums.FieldType;
 import lombok.*;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TemplateFieldData {
 
     // ==================== 模板快照字段 ====================

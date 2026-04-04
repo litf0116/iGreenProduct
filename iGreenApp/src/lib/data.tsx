@@ -106,6 +106,11 @@ export interface Ticket {
   siteName?: string;
   siteAddress?: string;
   templateData?: TicketTypeTemplateWithData;
+  steps?: TicketStep[];
+  progressPercentage?: number;
+  completedStepsCount?: number;
+  totalStepsCount?: number;
+  completedSteps?: string[];
   history?: {
     departedAt?: string;
     arrivedAt?: string;
