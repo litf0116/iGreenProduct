@@ -89,13 +89,20 @@ public class FileService {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
 
-        Path filePath = Paths.get("." + fileEntity.getUrl());
+        // 从 URL 中提取文件名（URL 格式: {baseUrl}/api/uploads/{filename}）
+        String fileUrl = fileEntity.getUrl();
+        String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+        Path filePath = Paths.get(uploadDir, filename);
+        
         if (Files.exists(filePath)) {
             try {
                 Files.delete(filePath);
+                log.info("Successfully deleted physical file: {}", filePath);
             } catch (IOException e) {
-                log.error("Error deleting physical file: {}", fileEntity.getUrl(), e);
+                log.error("Error deleting physical file: {}", filePath, e);
             }
+        } else {
+            log.warn("Physical file not found for deletion: {}", filePath);
         }
 
         fileMapper.deleteById(fileId);
