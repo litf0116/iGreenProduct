@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -27,6 +28,17 @@ import java.util.UUID;
 public class TemplateService {
 
     private final TemplateMapper templateMapper;
+
+    /**
+     * 系统内置固定模板 ID，禁止删除
+     * 这些模板是工单系统的核心配置，删除会导致对应类型的工单无法正常工作
+     */
+    private static final Set<String> PROTECTED_TEMPLATE_IDS = Set.of(
+        "8d1ad5d0-d837-4adb-aa84-23e318d36611", // Corrective Maintenance
+        "c27f7ceb-b9c6-466a-9e18-12d8e827a6f8", // Planned Maintenance
+        "292c7267-98fd-42ff-9a4e-a76ffa552618", // Preventive Maintenance
+        "f982267a-d9e0-4462-8f93-2f8ad16b4c1c"  // Problem Management
+    );
 
     @Transactional
     public Template createTemplate(CreateTemplateRequest request) {
@@ -160,7 +172,10 @@ public class TemplateService {
             throw new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND);
         }
 
-        // 只需要删除 template 表的记录，因为 steps 和 fields 数据已经存储在 JSON 字段中
+        if (PROTECTED_TEMPLATE_IDS.contains(id)) {
+            throw new BusinessException("系统内置模板禁止删除", "TEMPLATE_PROTECTED");
+        }
+
         templateMapper.deleteById(id);
     }
 
