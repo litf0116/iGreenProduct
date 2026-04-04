@@ -412,6 +412,19 @@ export function TicketDetail({
 
             <Separator/>
 
+            {/* Rejection Reason - Show if ticket was rejected */}
+            {ticket.cause && ticket.status === "arrived" && (
+                <Card className="p-4 bg-red-50 border-red-200">
+                    <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5"/>
+                        <div className="flex-1">
+                            <h4 className="font-medium text-red-900">{t("rejectionReason") || "审核拒绝原因"}</h4>
+                            <p className="text-sm text-red-700 mt-1">{ticket.cause}</p>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* Description */}
             {ticket.description && (
                 <Card className="p-4 bg-secondary border-primary/20">
@@ -756,6 +769,9 @@ export function TicketDetail({
                                             )}
                                             {comment.type === "cancel" && (
                                                 <Badge className="bg-orange-500 flex-shrink-0">{t("cancelled")}</Badge>
+                                            )}
+                                            {comment.type === "reject" && (
+                                                <Badge className="bg-red-600 flex-shrink-0">{t("rejected") || "Rejected"}</Badge>
                                             )}
                                             {ticket.status === "ON_HOLD" && comment.comment.toLowerCase().includes("hold") && (
                                                 <Badge className="bg-yellow-500 flex-shrink-0">{t("onHold")}</Badge>

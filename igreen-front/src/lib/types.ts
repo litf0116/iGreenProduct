@@ -13,7 +13,7 @@ export type UserRole = 'admin' | 'supervisor' | 'manager' | 'engineer';
 export type UserStatus = 'active' | 'inactive';
 
 export type CommentType =
-    | 'general' | 'comment' | 'accept' | 'decline' | 'cancel' | 'system';
+    | 'general' | 'comment' | 'accept' | 'decline' | 'cancel' | 'reject' | 'system';
 
 export type SiteStatus = 'online' | 'offline' | 'under_construction';
 

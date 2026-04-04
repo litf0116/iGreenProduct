@@ -722,9 +722,19 @@ public class TicketService {
             // 有原因 → 管理员拒绝，退回给工程师，状态回退到 ARRIVED
             ticket.setCause(cause);
             ticket.setStatus(TicketStatus.ARRIVED);
+            
+            // 添加拒绝评论，记录拒绝原因
+            TicketComment rejectComment = TicketComment.builder()
+                    .id(UUID.randomUUID().toString())
+                    .comment(cause)
+                    .type(CommentType.REJECT)
+                    .ticketId(id)
+                    .userId(userId)
+                    .build();
+            ticketCommentMapper.insert(rejectComment);
         } else {
             // 无原因 → 管理员审核通过，工单完成
-ticket.setStatus(TicketStatus.COMPLETED);
+            ticket.setStatus(TicketStatus.COMPLETED);
         }
 
         ticketMapper.updateById(ticket);

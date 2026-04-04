@@ -609,6 +609,18 @@ case 'arrived':
 
           return (
             <div className="space-y-6">
+              {ticket.rootCause && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-red-900">工单被退回</h4>
+                      <p className="text-sm text-red-700 mt-1">{ticket.rootCause}</p>
+                      <p className="text-xs text-red-600 mt-2">请修改后重新提交审核</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className={`flex items-center justify-between ${colors.bg} p-4 rounded-lg ${colors.border}`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 ${colors.iconBg} rounded-full flex items-center justify-center ${colors.iconColor}`}>
@@ -666,6 +678,18 @@ case 'arrived':
           const steps = getSteps();
           return (
             <div className="space-y-6">
+              {ticket.rootCause && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-red-900">工单被退回</h4>
+                      <p className="text-sm text-red-700 mt-1">{ticket.rootCause}</p>
+                      <p className="text-xs text-red-600 mt-2">请修改后重新提交审核</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between bg-green-50 p-4 rounded-lg border border-green-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">

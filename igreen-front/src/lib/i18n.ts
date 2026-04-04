@@ -28,6 +28,8 @@ export const translations = {
         accept: "Accept",
         decline: "Decline",
         reject: "Reject",
+        rejected: "Rejected",
+        rejectionReason: "Rejection Reason",
         acceptTicket: "Accept Ticket",
         declineTicket: "Decline Ticket",
         confirmTicket: "Confirm Ticket",
