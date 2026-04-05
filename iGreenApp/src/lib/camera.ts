@@ -1,41 +1,73 @@
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
-/**
- * 拍照并返回图片数据
- * @returns 图片的 base64 数据或 web 路径
- */
-export async function takePhoto(): Promise<string | undefined> {
+export interface PhotoResult {
+  path: string;
+  webPath: string;
+  format: string;
+  saved: boolean;
+  isNative: boolean;
+}
+
+export async function takePhoto(): Promise<PhotoResult | undefined> {
   try {
+    console.log('[CAMERA] takePhoto() 开始拍照');
     const image = await Camera.getPhoto({
-      quality: 90,
+      quality: 80,
       allowEditing: false,
-      resultType: CameraResultType.DataUrl,
+      resultType: CameraResultType.Uri,
       source: CameraSource.Camera,
+      saveToGallery: false,
+      width: 1920,
+      height: 1920,
     });
-    
-    return image.dataUrl;
+    const isNative = Capacitor.isNativePlatform();
+    console.log('[CAMERA] takePhoto() 返回:', {
+      path: image.path,
+      webPath: image.webPath,
+      format: image.format,
+      saved: image.saved,
+      isNative
+    });
+    return {
+      path: image.path || '',
+      webPath: image.webPath || '',
+      format: image.format || 'jpeg',
+      saved: image.saved || false,
+      isNative
+    };
   } catch (error) {
-    console.error('拍照失败:', error);
+    console.error('[CAMERA] takePhoto() 失败:', error);
     throw error;
   }
 }
 
-/**
- * 从相册选择图片
- * @returns 图片的 base64 数据或 web 路径
- */
-export async function pickPhoto(): Promise<string | undefined> {
+export async function pickPhoto(): Promise<PhotoResult | undefined> {
   try {
+    console.log('[CAMERA] pickPhoto() 开始选择图片');
     const image = await Camera.getPhoto({
-      quality: 90,
+      quality: 80,
       allowEditing: false,
-      resultType: CameraResultType.DataUrl,
+      resultType: CameraResultType.Uri,
       source: CameraSource.Photos,
     });
-    
-    return image.dataUrl;
+    const isNative = Capacitor.isNativePlatform();
+    console.log('[CAMERA] pickPhoto() 返回:', {
+      path: image.path,
+      webPath: image.webPath,
+      format: image.format,
+      saved: image.saved,
+      isNative
+    });
+    return {
+      path: image.path || '',
+      webPath: image.webPath || '',
+      format: image.format || 'jpeg',
+      saved: image.saved || false,
+      isNative
+    };
   } catch (error) {
-    console.error('选择图片失败:', error);
+    console.error('[CAMERA] pickPhoto() 失败:', error);
     throw error;
   }
 }

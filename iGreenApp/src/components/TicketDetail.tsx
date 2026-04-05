@@ -38,6 +38,7 @@ import {toast} from "sonner";
 import {useLanguage} from './LanguageContext';
 import {api} from '../lib/api';
 import {pickPhoto, takePhoto} from '../lib/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import {getTemplateByType} from '../config/fieldConfigs';
 import {DynamicFieldRenderer} from "./form/DynamicFieldRenderer";
 import {DynamicFieldSummary} from "./form/DynamicFieldSummary";
@@ -232,30 +233,13 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
     }
   };
 
-  // Handle photo upload for templateData structure
-  const handleAddPhoto = async (
-    source: 'camera' | 'gallery',
-    stepId: string,
-    fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto' = 'photo',
-    isCorrectiveOrPlanned: boolean = false
-  ) => {
-    setLoadingImage(stepId + fieldPrefix);
-    try {
-      console.log('[DEBUG] Starting photo capture, source:', source);
-      const photo = source === 'camera' ? await takePhoto() : await pickPhoto();
-      console.log('[DEBUG] Photo captured, photo exists:', !!photo);
-
-      if (!photo) {
-        console.log('[DEBUG] No photo returned');
-        setLoadingImage(null);
-        return;
-      }
-
-      console.log('[DEBUG] Photo length:', photo.length, 'starts with:', photo.substring(0, 50));
-      
-      // 直接将dataUrl转换为Blob（Android不支持fetch dataUrl）
-      // 解析base64数据
-      const arr = photo.split(',');
+  const convertPhotoToFile = async (photoInfo: { path: string; webPath: string; isNative: boolean }): Promise<File> => {
+    console.log('[CONVERT] convertPhotoToFile() 开始转换, photoInfo:', photoInfo);
+    let blob: Blob;
+    
+    if (photoInfo.webPath && photoInfo.webPath.startsWith('data:')) {
+      console.log('[CONVERT] 使用 base64 方式处理');
+      const arr = photoInfo.webPath.split(',');
       const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
       const bstr = atob(arr[1]);
       let n = bstr.length;
@@ -263,12 +247,90 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
       }
-      const blob = new Blob([u8arr], { type: mime });
-      
-      console.log('[DEBUG] Blob created, size:', blob.size, 'type:', blob.type);
-      
-      const file = new File([blob], `photo-${Date.now()}.jpg`, {type: 'image/jpeg'});
-      console.log('[DEBUG] File created, size:', file.size);
+      blob = new Blob([u8arr], { type: mime });
+      console.log('[CONVERT] base64 转换完成, blob size:', blob.size);
+    } else if (photoInfo.isNative && photoInfo.path) {
+      console.log('[CONVERT] 原生平台: 使用 Filesystem.readFile + path, path:', photoInfo.path);
+      try {
+        const fileData = await Filesystem.readFile({
+          path: photoInfo.path,
+        });
+        console.log('[CONVERT] Filesystem.readFile 成功, data type:', typeof fileData.data);
+        const base64Data = typeof fileData.data === 'string' ? fileData.data : '';
+        const binaryString = atob(base64Data);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        blob = new Blob([bytes], { type: 'image/jpeg' });
+        console.log('[CONVERT] Filesystem 转换完成, blob size:', blob.size);
+      } catch (fsError) {
+        console.error('[CONVERT] Filesystem.readFile 失败, 尝试 webPath:', fsError);
+        if (photoInfo.webPath) {
+          const response = await fetch(photoInfo.webPath);
+          blob = await response.blob();
+        } else {
+          throw new Error('无法读取照片文件');
+        }
+      }
+    } else if (photoInfo.webPath) {
+      console.log('[CONVERT] Web 平台: 使用 fetch + webPath, webPath:', photoInfo.webPath);
+      const response = await fetch(photoInfo.webPath);
+      blob = await response.blob();
+      console.log('[CONVERT] fetch blob 成功, blob size:', blob.size);
+    } else if (photoInfo.path) {
+      console.log('[CONVERT] 使用 Filesystem API + path 方式处理, path:', photoInfo.path);
+      try {
+        const fileData = await Filesystem.readFile({
+          path: photoInfo.path,
+        });
+        console.log('[CONVERT] Filesystem.readFile 成功, data type:', typeof fileData.data);
+        const base64Data = typeof fileData.data === 'string' ? fileData.data : '';
+        const binaryString = atob(base64Data);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        blob = new Blob([bytes], { type: 'image/jpeg' });
+        console.log('[CONVERT] Filesystem 转换完成, blob size:', blob.size);
+      } catch (fsError) {
+        console.error('[CONVERT] Filesystem.readFile 失败:', fsError);
+        throw new Error('无法读取照片文件');
+      }
+    } else {
+      throw new Error('照片 path 和 webPath 都为空');
+    }
+    
+    const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    console.log('[CONVERT] File 创建完成, size:', file.size, 'name:', file.name);
+    return file;
+  };
+
+  const handleAddPhoto = async (
+    source: 'camera' | 'gallery',
+    stepId: string,
+    fieldPrefix: 'photo' | 'beforePhoto' | 'afterPhoto' | 'feedbackPhoto' | 'problemPhoto' | 'evidencePhoto' = 'photo',
+    isCorrectiveOrPlanned: boolean = false
+  ) => {
+    console.log('[HANDLE] handleAddPhoto() 开始, source:', source, 'stepId:', stepId, 'fieldPrefix:', fieldPrefix);
+    setLoadingImage(stepId + fieldPrefix);
+    try {
+      console.log('[HANDLE] 开始获取照片, source:', source);
+      const photo = source === 'camera' ? await takePhoto() : await pickPhoto();
+      console.log('[HANDLE] 照片获取完成, photo:', photo);
+
+      if (!photo || (!photo.path && !photo.webPath)) {
+        console.log('[HANDLE] 照片数据为空或 undefined');
+        toast.error('获取照片失败');
+        setLoadingImage(null);
+        return;
+      }
+
+      console.log('[HANDLE] 开始转换照片为 File');
+      const file = await convertPhotoToFile(photo);
+      console.log('[HANDLE] File 转换完成, 开始上传');
 
       const uploaded = await api.uploadFile(file, fieldPrefix);
       const fullUrl = uploaded.url;
@@ -317,11 +379,11 @@ export function TicketDetail({ticket, onClose, onUpdateTicket, onViewRelatedTick
       }
 
       toast.success('Photo uploaded successfully');
+      console.log('[HANDLE] 上传成功!');
     } catch (error: any) {
-      console.error('Upload error:', error);
-      const errorMessage = error?.message || 'Failed to upload photo';
+      console.error('[HANDLE] 发生错误:', error);
+      const errorMessage = error?.message || '上传失败';
       toast.error(errorMessage);
-      console.log('[DEBUG] Upload failed - source:', source, 'error:', errorMessage);
     } finally {
       setLoadingImage(null);
     }
