@@ -117,6 +117,17 @@ export function CreateTicket(props: CreateTicketProps) {
         }
     }, [selectedTemplate]);
 
+    // 自动从 corrective tickets 提取 site
+    useEffect(() => {
+        if (isProblemTicket && relatedTicketIds.length > 0) {
+            // 从第一个选中的 corrective ticket 提取 site
+            const firstSelectedTicket = correctiveTickets.find(t => relatedTicketIds.includes(t.id));
+            if (firstSelectedTicket && firstSelectedTicket.siteId) {
+                setSite(firstSelectedTicket.siteId);
+            }
+        }
+    }, [relatedTicketIds, isProblemTicket, correctiveTickets]);
+
     const calculateDueDate = (priority: Priority, siteId: string): Date => {
         const slaConfig = slaConfigs.find(s => s.priority === priority);
         let hours = slaConfig?.completionTimeHours || 24;
@@ -201,7 +212,7 @@ export function CreateTicket(props: CreateTicketProps) {
             description,
             templateId,
             type: ticketType,
-            siteId: isProblemTicket ? "" : site,
+            siteId: isProblemTicket ? (relatedTicketIds.length > 0 ? site : "") : site,
             assignedTo,
             priority,
             dueDate,
@@ -341,7 +352,7 @@ export function CreateTicket(props: CreateTicketProps) {
                         <div className="space-y-2">
                             <Label>{t("ticketType")}</Label>
                             <div className="flex items-center gap-2">
-                                <Select value={ticketType} onValueChange={(v) => setTicketType(v as TicketType)} disabled={!!selectedTemplate?.type}>
+                                <Select value={ticketType} onValueChange={(v: string) => setTicketType(v as TicketType)} disabled={!!selectedTemplate?.type}>
                                     <SelectTrigger className={!selectedTemplate?.type ? "" : "bg-muted cursor-not-allowed"}>
                                         <SelectValue/>
                                     </SelectTrigger>
@@ -379,10 +390,29 @@ export function CreateTicket(props: CreateTicketProps) {
                             </div>
                         )}
 
+                        {isProblemTicket && relatedTicketIds.length > 0 && site && (
+                            <div className="space-y-2">
+                                <Label>{t("site")} (Auto-filled from related ticket)</Label>
+                                <Select value={site} onValueChange={() => {}} disabled>
+                                    <SelectTrigger className="bg-muted cursor-not-allowed">
+                                        <SelectValue/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={site}>
+                                            {sites.find(s => s.id === site)?.name || site}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Site is automatically inherited from the first selected corrective ticket
+                                </p>
+                            </div>
+                        )}
+
                         {isProblemTicket && (
                             <>
                                 <div className="space-y-2">
-                                    <Label required>{t("problemType") || "Problem Type"}</Label>
+                                    <Label required>{t("problemType")}</Label>
                                     <Select value={problemType} onValueChange={setProblemType} required={isProblemTicket}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select problem type"/>
@@ -398,7 +428,7 @@ export function CreateTicket(props: CreateTicketProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>{t("relatedTickets")} (Relevant Corrective Tickets)</Label>
+                                    <Label>{t("relatedTickets")}</Label>
                                     <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                                         <PopoverTrigger asChild>
                                             <Button

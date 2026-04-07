@@ -273,6 +273,8 @@ export const translations = {
         correctiveTickets: "Corrective Tickets",
         problemTickets: "Problem Tickets",
         problem: "Problem Management",
+        problemType: "Problem Type",
+        relatedTickets: "Related Tickets",
 
         // Filters
         filters: "Filters",
@@ -648,6 +650,8 @@ export const translations = {
         correctiveTickets: "ตั๋วแก้ไข",
         problemTickets: "ตั๋วปัญหา",
         problem: "การจัดการปัญหา",
+        problemType: "ประเภทปัญหา",
+        relatedTickets: "ตั๋วที่เกี่ยวข้อง",
 
         // Filters
         filters: "ตัวกรอง",
