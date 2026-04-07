@@ -278,6 +278,65 @@ export function TicketDetail({
 
     const isProblemTicket = ticket.type === "problem";
 
+    const getFieldValue = (step: any, fieldId: string): any => {
+      if (!ticket.templateData?.steps) return undefined;
+      
+      const stepData = ticket.templateData.steps.find((s: any) => s.id === step.id);
+      if (!stepData?.fields) return undefined;
+      
+      const field = stepData.fields.find((f: any) => f.id === fieldId);
+      return field?.value;
+    };
+
+    const renderFieldValue = (field: any, step: any) => {
+      const value = getFieldValue(step, field.id);
+      if (value === undefined || value === '') return null;
+      
+      switch (field.type) {
+        case 'text':
+        case 'number':
+          return <p className="text-sm text-muted-foreground">{value}</p>;
+          
+        case 'date':
+          return <p className="text-sm text-muted-foreground">{formatDate(value)}</p>;
+          
+        case 'location':
+          return (
+            <div className="text-sm text-muted-foreground">
+              <p>{value?.address || value}</p>
+            </div>
+          );
+          
+        case 'photo':
+        case 'photos':
+          const photos = Array.isArray(value) ? value : [value];
+          return (
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {photos.map((photo: string, idx: number) => (
+                <img
+                  key={idx}
+                  src={photo}
+                  alt={`Photo ${idx + 1}`}
+                  className="w-full h-24 object-cover rounded border"
+                />
+              ))}
+            </div>
+          );
+          
+        case 'signature':
+          return (
+            <img
+              src={value}
+              alt="Signature"
+              className="max-w-xs h-24 object-contain border rounded"
+            />
+          );
+          
+        default:
+          return <p className="text-sm text-muted-foreground">{String(value)}</p>;
+      }
+    };
+
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
@@ -450,10 +509,31 @@ export function TicketDetail({
                             <div className="flex-1 min-w-0">
                                 <p className="text-muted-foreground">{t("site")}</p>
                                 <p className="text-foreground mt-1">{ticket.siteName || ticket.siteId || '-'}</p>
-                            </div>
                         </div>
-                    </Card>
-                )}
+                    </div>
+                </Card>
+            )}
+
+            {ticket.attachmentIds && ticket.attachmentIds.length > 0 && (
+              <Card className="p-6 bg-white">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary flex-shrink-0"/>
+                    <h4 className="text-foreground">附件 ({ticket.attachmentIds.length})</h4>
+                  </div>
+                  <Separator/>
+                  <div className="text-muted-foreground">
+                    <p className="text-sm">
+                      此工单有 {ticket.attachmentIds.length} 个附件。
+                      请联系系统管理员查看附件详情。
+                    </p>
+                    <p className="text-xs mt-2 text-muted-foreground">
+                      附件 ID: {ticket.attachmentIds.join(', ')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
 
                 {/* Assigned To */}
                 <Card className="p-4 bg-white">
@@ -727,10 +807,26 @@ export function TicketDetail({
                                             >
                                                 {step.description}
                                             </p>
-                                            {step.fields.length > 0 && (
-                                                <p className="text-muted-foreground mt-1">
-                                                    {step.fields.length} {t("fields")} {t("required")}
-                                                </p>
+                                            
+                                            {step.fields && step.fields.length > 0 && (
+                                              <div className="mt-3 space-y-2">
+                                                {step.fields.map((field) => {
+                                                  const value = getFieldValue(step, field.id);
+                                                  if (value === undefined || value === '') return null;
+                                                  
+                                                  return (
+                                                    <div key={field.id} className="pl-4 border-l-2 border-primary/20">
+                                                      <Label className="text-xs text-muted-foreground">
+                                                        {field.name}
+                                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                                      </Label>
+                                                      <div className="mt-1">
+                                                        {renderFieldValue(field, step)}
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
                                             )}
                                         </div>
                                     </div>
