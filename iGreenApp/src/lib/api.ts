@@ -214,17 +214,32 @@ export const api = {
     return [];
   },
 
-  getTicketStats: async (): Promise<{total: number; open: number; inProgress: number; completed: number}> => {
+  getTicketStats: async (): Promise<{total: number; open: number; inProgress: number; completed: number; cancelled: number}> => {
     const data = await fetchWithAuth('/api/tickets/stats');
     if (data.success && data.data) {
       return {
         total: data.data.total || 0,
         open: data.data.open || 0,
         inProgress: data.data.inProgress || 0,
-        completed: data.data.completed || 0
+        completed: data.data.completed || 0,
+        cancelled: data.data.cancelled || 0
       };
     }
-    return { total: 0, open: 0, inProgress: 0, completed: 0 };
+    return { total: 0, open: 0, inProgress: 0, completed: 0, cancelled: 0 };
+  },
+
+  getMyTicketStats: async (): Promise<{total: number; open: number; inProgress: number; completed: number; cancelled: number}> => {
+    const data = await fetchWithAuth('/api/tickets/my/stats');
+    if (data.success && data.data) {
+      return {
+        total: data.data.total || 0,
+        open: data.data.open || 0,
+        inProgress: data.data.inProgress || 0,
+        completed: data.data.completed || 0,
+        cancelled: data.data.cancelled || 0
+      };
+    }
+    return { total: 0, open: 0, inProgress: 0, completed: 0, cancelled: 0 };
   },
   // 获取我的工单
   getMyTickets: async (page = 1, size = 20, status?: string): Promise<PaginatedResult<Ticket>> => {

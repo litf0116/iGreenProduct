@@ -201,6 +201,9 @@
             <if test="country != null and country != ''">
                 AND country = #{country}
             </if>
+            <if test="userId != null and userId != ''">
+                AND accepted_user_id = #{userId}
+            </if>
         </where>
         GROUP BY status
     </select>

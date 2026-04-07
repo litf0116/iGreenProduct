@@ -212,10 +212,17 @@ public class TicketController {
         return ResponseEntity.ok(Result.success(ticketService.getCompletedTickets(page, size)));
     }
 
-    @Operation(summary = "获取工单统计")
+    @Operation(summary = "获取工单统计（全局）")
     @GetMapping("/stats")
     public ResponseEntity<Result<TicketStatsResponse>> getTicketStats(@RequestParam(required = false) String type) {
         return ResponseEntity.ok(Result.success(ticketService.getTicketStats(type)));
+    }
+
+    @Operation(summary = "获取我的工单统计")
+    @GetMapping("/my/stats")
+    public ResponseEntity<Result<TicketStatsResponse>> getMyTicketStats(HttpServletRequest httpRequest) {
+        String userId = getCurrentUserId(httpRequest);
+        return ResponseEntity.ok(Result.success(ticketService.getMyTicketStats(userId)));
     }
 
     private String getCurrentUserId(HttpServletRequest httpRequest) {

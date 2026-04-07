@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { 
@@ -12,6 +12,7 @@ import {
 import { Ticket, getPriorityColor, getTicketTypeColor, getTicketTypeLabel } from '../lib/data';
 import { Badge } from "./ui/badge";
 import { useLanguage } from './LanguageContext';
+import { api } from '../lib/api';
 
 interface DashboardProps {
   tickets?: Ticket[];
@@ -24,18 +25,37 @@ interface DashboardProps {
 export function Dashboard({ tickets = [], onTicketClick, onViewAllClick, userName, hasActiveJob }: DashboardProps) {
   const { t } = useLanguage();
 
+  const [ticketStats, setTicketStats] = useState<{
+    total: number;
+    open: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+  }>({ total: 0, open: 0, inProgress: 0, completed: 0, cancelled: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const stats = await api.getMyTicketStats();
+        setTicketStats(stats);
+      } catch (error) {
+        console.error('Failed to fetch my ticket stats:', error);
+      }
+    };
+    fetchStats();
+  }, [tickets]);
+
   const stats = useMemo(() => {
     const ongoingTickets = tickets.filter(t => ['assigned', 'departed', 'arrived', 'review', 'in-progress'].includes(t.status));
-    const completedToday = tickets.filter(t => t.status === 'completed').length;
     const nearbyOpportunities = tickets.filter(t => t.status === 'open').slice(0, 3);
     
     return {
       ongoingTickets,
-      completedToday,
+      completedToday: ticketStats.completed,
       nearbyOpportunities,
-      hoursLogged: 5.5 // Mock hours
+      hoursLogged: 5.5
     };
-  }, [tickets]);
+  }, [tickets, ticketStats]);
 
   const greetingName = userName || 'User';
   const showFreeToGrab = !hasActiveJob && stats.nearbyOpportunities.length > 0;

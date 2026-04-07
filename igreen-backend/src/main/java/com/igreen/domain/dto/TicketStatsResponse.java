@@ -13,5 +13,6 @@ public class TicketStatsResponse {
     private int inProgress;
     private int submitted;
     private int onHold;
-    private int closed;
+    private int completed;
+    private int cancelled;
 }

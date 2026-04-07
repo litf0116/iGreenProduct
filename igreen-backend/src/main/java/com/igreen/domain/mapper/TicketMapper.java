@@ -37,5 +37,5 @@ public interface TicketMapper extends com.baomidou.mybatisplus.core.mapper.BaseM
 
     int countByFilters(@Param("type") String type, @Param("status") String status, @Param("priority") String priority, @Param("assignedTo") String assignedTo, @Param("createdAfter") LocalDateTime createdAfter);
 
-    List<TicketStatusCount> countByStatusGroup(@Param("type") String type, @Param("country") String country);
+    List<TicketStatusCount> countByStatusGroup(@Param("type") String type, @Param("country") String country, @Param("userId") String userId);
 }

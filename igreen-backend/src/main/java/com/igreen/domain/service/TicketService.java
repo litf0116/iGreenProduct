@@ -875,7 +875,7 @@ public class TicketService {
     public TicketStatsResponse getTicketStats(String type) {
         String country = CountryContext.get();
         String queryType = "all".equalsIgnoreCase(type) ? null : type;
-        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(queryType, country);
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(queryType, country, null);
 
         long total = 0;
         long open = 0;
@@ -883,7 +883,8 @@ public class TicketService {
         long inProgress = 0;
         long submitted = 0;
         long onHold = 0;
-        long closed = 0;
+        long completed = 0;
+        long cancelled = 0;
         for (TicketStatusCount count : statusCounts) {
             total += count.getCount();
             switch (count.getStatus()) {
@@ -892,10 +893,37 @@ public class TicketService {
                 case "ACCEPTED", "DEPARTED", "ARRIVED" -> inProgress += count.getCount();
                 case "REVIEW" -> submitted += count.getCount();
                 case "ON_HOLD" -> onHold += count.getCount();
-                case "COMPLETED", "CANCELLED" -> closed += count.getCount();
+                case "COMPLETED" -> completed += count.getCount();
+                case "CANCELLED" -> cancelled += count.getCount();
             }
         }
-        return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) closed);
+        return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) completed, (int) cancelled);
+    }
+
+    @Transactional(readOnly = true)
+    public TicketStatsResponse getMyTicketStats(String userId) {
+        String country = CountryContext.get();
+        List<TicketStatusCount> statusCounts = ticketMapper.countByStatusGroup(null, country, userId);
+
+        long total = 0;
+        long open = 0;
+        long inProgress = 0;
+        long submitted = 0;
+        long onHold = 0;
+        long completed = 0;
+        long cancelled = 0;
+        for (TicketStatusCount count : statusCounts) {
+            total += count.getCount();
+            switch (count.getStatus()) {
+                case "OPEN" -> open += count.getCount();
+                case "ASSIGNED", "ACCEPTED", "DEPARTED", "ARRIVED" -> inProgress += count.getCount();
+                case "REVIEW" -> submitted += count.getCount();
+                case "ON_HOLD" -> onHold += count.getCount();
+                case "COMPLETED" -> completed += count.getCount();
+                case "CANCELLED" -> cancelled += count.getCount();
+            }
+        }
+        return new TicketStatsResponse((int) total, (int) open, (int) inProgress, (int) submitted, (int) onHold, (int) completed, (int) cancelled);
     }
 
     private TicketResponse toResponse(Ticket ticket, User creator, Group assignGroup, Site site) {
