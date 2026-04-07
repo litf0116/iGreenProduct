@@ -73,6 +73,28 @@ public class TicketService {
             }
         }
 
+        // Problem ticket: 如果未提供 siteId，从 relatedTicketIds 中推断
+        if (TicketType.PROBLEM.name().equals(request.getType().toUpperCase()) 
+            && request.getSiteId() == null 
+            && request.getRelatedTicketIds() != null 
+            && !request.getRelatedTicketIds().isEmpty()) {
+            
+            // 从第一个 related ticket 提取 siteId
+            String firstRelatedTicketId = request.getRelatedTicketIds().get(0);
+            try {
+                Long ticketId = Long.parseLong(firstRelatedTicketId);
+                Ticket relatedTicket = ticketMapper.selectById(ticketId);
+                if (relatedTicket != null && relatedTicket.getSiteId() != null) {
+                    // 使用 related ticket 的 siteId
+                    request.setSiteId(relatedTicket.getSiteId());
+                    site = siteMapper.selectById(relatedTicket.getSiteId());
+                    log.info("Auto-filled siteId {} for problem ticket from related ticket {}", 
+                        relatedTicket.getSiteId(), firstRelatedTicketId);
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Invalid related ticket ID format: {}", firstRelatedTicketId);
+            }
+        }
 
         String relatedTicketIdsJson = null;
         if (request.getRelatedTicketIds() != null && !request.getRelatedTicketIds().isEmpty()) {
